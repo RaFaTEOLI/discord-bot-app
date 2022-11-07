@@ -1,0 +1,6 @@
+node_modules
+coverage
+public
+*.json
+dist
+jest.config.js
