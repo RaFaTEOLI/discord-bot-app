@@ -1,25 +1,36 @@
-import { useEffect, FormEvent } from 'react';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 import { loginState, Input, SubmitButton, FormStatus } from './components';
 import { currentAccountState, Switcher } from '@/presentation/components';
-import { Validation } from '@/presentation/protocols/validation';
 import { Authentication } from '@/domain/usecases';
 import { useRecoilState, useRecoilValue, useResetRecoilState } from 'recoil';
 import { Flex, Heading, Box, Stack, Avatar, useColorModeValue, chakra } from '@chakra-ui/react';
 import { FiLock, FiMail, FiLogIn } from 'react-icons/fi';
 import { motion } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 const CFiMail = chakra(FiMail);
 const CFiLock = chakra(FiLock);
 const CFiLogIn = chakra(FiLogIn);
 
 type Props = {
-  validation: Validation;
   authentication: Authentication;
 };
 
-const Login = ({ validation, authentication }: Props) => {
+const schema = yupResolver(
+  yup
+    .object()
+    .shape({
+      email: yup.string().email().required('Required field'),
+      password: yup.string().required('Required field')
+    })
+    .required()
+);
+
+const Login = ({ authentication }: Props): JSX.Element => {
   const bgSide = useColorModeValue('gray.100', 'gray.900');
   const resetLoginState = useResetRecoilState(loginState);
   const { setCurrentAccount } = useRecoilValue(currentAccountState);
@@ -27,33 +38,33 @@ const Login = ({ validation, authentication }: Props) => {
 
   const navigate = useNavigate();
 
-  const validate = (field: string): void => {
-    const { email, password } = state;
-    const formData = { email, password };
-    setState(prev => ({
-      ...prev,
-      [`${field}Error`]: validation.validate(field, formData)
-    }));
-    setState(prev => ({
-      ...prev,
-      isFormInvalid: !!prev.emailError || !!prev.passwordError
-    }));
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<Authentication.Params>({
+    defaultValues: {
+      email: '',
+      password: ''
+    },
+    resolver: schema
+  });
 
   useEffect(() => resetLoginState(), []);
-  useEffect(() => validate('email'), [state.email]);
-  useEffect(() => validate('password'), [state.password]);
+  useEffect(() => {
+    setState(prev => ({
+      ...prev,
+      register,
+      errors
+    }));
+  }, [register, errors]);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
-    event.preventDefault();
+  const onSubmit = handleSubmit(async data => {
     try {
-      if (state.isLoading || state.isFormInvalid) {
-        return;
-      }
       setState(prev => ({ ...prev, isLoading: true }));
       const account = await authentication.auth({
-        email: state.email,
-        password: state.password
+        email: data.email,
+        password: data.password
       });
       setCurrentAccount(account);
       navigate('/');
@@ -64,7 +75,7 @@ const Login = ({ validation, authentication }: Props) => {
         mainError: error.message
       });
     }
-  };
+  });
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -82,6 +93,7 @@ const Login = ({ validation, authentication }: Props) => {
                 size="2xl"
                 outline="1px solid #000"
                 name={process.env.VITE_BOT_NAME}
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 src={`https://robohash.org/${process.env.VITE_BOT_NAME}`}
               />
               <Heading textAlign="center" zIndex={4}>
@@ -103,7 +115,7 @@ const Login = ({ validation, authentication }: Props) => {
               <Heading size="2xl">Login</Heading>
             </Box>
 
-            <form style={{ width: '100%' }} data-testid="form" onSubmit={handleSubmit}>
+            <form style={{ width: '100%' }} data-testid="form" onSubmit={onSubmit}>
               <Box w="full" px="8" borderRadius="10px">
                 <Stack spacing={4} py="6">
                   <Input type="email" name="email" placeholder="E-mail" icon={<CFiMail />} />
