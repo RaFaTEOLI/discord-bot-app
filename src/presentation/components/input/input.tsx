@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DetailedHTMLProps, InputHTMLAttributes } from 'react';
+import { DetailedHTMLProps, InputHTMLAttributes, useEffect, useState } from 'react';
 import {
   FormControl,
   FormErrorMessage,
@@ -12,37 +12,45 @@ import {
 type Props = DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> & {
   state: any;
   setState: any;
-  name?: string;
+  name: string;
   placeholder?: string;
   icon?: JSX.Element | undefined;
   size?: string | undefined;
 };
 
-const Input = ({ icon, state, setState, ...props }: Props) => {
-  const error = state[`${props.name}Error`];
+const Input = ({ icon, name, state, setState, ...props }: Props): JSX.Element => {
+  const register = state.register ? state.register : () => {};
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (state.errors) {
+      if (name in state.errors) {
+        setError(state.errors[name].message);
+      }
+    }
+  }, [state.errors]);
+
   return (
-    <FormControl mb={2} data-testid={`${props.name}-wrap`} data-status={error ? 'invalid' : 'valid'} isInvalid={error}>
+    <FormControl mb={2} data-testid={`${name}-wrap`} data-status={error ? 'invalid' : 'valid'} isInvalid={!!error}>
       {props.placeholder && (
-        <FormLabel title={error} data-testid={`${props.name}-label`}>
+        <FormLabel title={error} data-testid={`${name}-label`}>
           {props.placeholder}
         </FormLabel>
       )}
       <InputGroup>
-        {icon && <InputLeftElement children={icon} />}
+        {icon && <InputLeftElement>{icon}</InputLeftElement>}
 
         <ChakraInput
           variant="outline"
+          {...register(name)}
           {...props}
           size={props.size ?? 'md'}
           title={error}
           placeholder={props.placeholder}
-          data-testid={props.name}
+          data-testid={name}
           readOnly
           onFocus={e => {
             e.target.readOnly = false;
-          }}
-          onChange={e => {
-            setState({ ...state, [e.target.name]: e.target.value });
           }}
         />
       </InputGroup>
