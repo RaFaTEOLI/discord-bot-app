@@ -1,17 +1,21 @@
-import { Flex } from '@chakra-ui/react';
-import { Spinner } from '@/presentation/components';
+import { Alert, AlertIcon, Flex, Text } from '@chakra-ui/react';
 
 type Props = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   state: any;
 };
 
-const FormStatus = ({ state }: Props) => {
-  const { isLoading, mainError } = state;
+const FormStatus = ({ state }: Props): JSX.Element => {
+  const { mainError } = state;
+
   return (
     <Flex data-testid="error-wrap">
-      {isLoading && <Spinner />}
-      {mainError && <span data-testid="main-error">{mainError}</span>}
+      {mainError && (
+        <Alert status="error" borderRadius={5}>
+          <AlertIcon />
+          <Text data-testid="main-error">{mainError}</Text>
+        </Alert>
+      )}
     </Flex>
   );
 };
