@@ -11,7 +11,26 @@ export class AxiosHttpClient implements HttpClient {
         data: data.body,
         headers: data.headers
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error(error);
+      if (error.code === 'ECONNREFUSED') {
+        console.error('Unable to connect to server');
+        return {
+          statusCode: 500,
+          body: {
+            error: 'Unable to connect to server'
+          }
+        };
+      }
+      if (error.code === 'ERR_NETWORK') {
+        console.error('Unable to connect to server');
+        return {
+          statusCode: 500,
+          body: {
+            error: 'Unable to connect to server'
+          }
+        };
+      }
       axiosResponse = error.response;
     }
     return {
