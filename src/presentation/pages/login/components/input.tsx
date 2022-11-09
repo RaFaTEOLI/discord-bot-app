@@ -9,7 +9,7 @@ type Props = {
   icon?: JSX.Element | undefined;
 };
 
-const Input = ({ type, name, placeholder, icon, ...props }: Props) => {
+const Input = ({ type, name, placeholder, icon, ...props }: Props): JSX.Element => {
   const [state, setState] = useRecoilState(loginState);
   return (
     <InputBase type={type} name={name} placeholder={placeholder} state={state} setState={setState} icon={icon} {...props} />
