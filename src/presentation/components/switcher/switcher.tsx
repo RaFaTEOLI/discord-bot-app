@@ -4,7 +4,7 @@ import { FiMoon, FiSun } from 'react-icons/fi';
 const CFiMoon = chakra(FiMoon);
 const CFiSun = chakra(FiSun);
 
-const Switcher = ({ mt = 0 }: BoxProps) => {
+const Switcher = ({ mt = 0 }: BoxProps): JSX.Element => {
   const { colorMode, toggleColorMode } = useColorMode();
   return (
     <Box borderWidth="1px" borderRadius="5px" mt={mt}>
