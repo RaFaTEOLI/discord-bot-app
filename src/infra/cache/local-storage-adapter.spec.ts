@@ -28,6 +28,7 @@ describe('LocalStorageAdapter', () => {
     const sut = makeSut();
     const key = faker.database.column();
     const value = faker.datatype.json();
+    // eslint-disable-next-line
     // @ts-ignore
     const getItemSpy = jest.spyOn(localStorage, 'getItem').mockReturnValueOnce(value);
     const obj = sut.get(key);

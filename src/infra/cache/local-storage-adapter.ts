@@ -11,6 +11,7 @@ export class LocalStorageAdapter implements SetStorage {
   }
 
   get(key: string): any {
+    // eslint-disable-next-line
     // @ts-ignore
     return JSON.parse(localStorage.getItem(key));
   }
