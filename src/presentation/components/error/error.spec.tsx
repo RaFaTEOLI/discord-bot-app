@@ -3,7 +3,7 @@ import { render, RenderResult } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Error from './error';
 
-const makeSut = (): { sut: RenderResult; error: string; reload: () => {} } => {
+const makeSut = (): { sut: RenderResult; error: string; reload: () => void } => {
   const reload = jest.fn();
   const error = faker.random.words();
   const sut = render(<Error error={error} reload={reload} />);

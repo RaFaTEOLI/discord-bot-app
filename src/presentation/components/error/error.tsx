@@ -6,7 +6,7 @@ type Props = {
   reload: () => void;
 };
 
-const Error = ({ error, reload }: Props) => {
+const Error = ({ error, reload }: Props): JSX.Element => {
   return (
     <Alert data-testid="error" status="error">
       <AlertIcon />
