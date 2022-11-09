@@ -5,11 +5,12 @@ type Props = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   state: any;
   icon?: JSX.Element | undefined;
+  isLoading?: boolean;
 };
 
-const SubmitButton = ({ state, text, icon }: Props) => {
+const SubmitButton = ({ text, icon, ...props }: Props): JSX.Element => {
   return (
-    <Button variant="solid" w="full" leftIcon={icon} data-testid="submit" isDisabled={state.isFormInvalid} type="submit">
+    <Button {...props} variant="solid" w="full" leftIcon={icon} data-testid="submit" type="submit">
       {text}
     </Button>
   );
