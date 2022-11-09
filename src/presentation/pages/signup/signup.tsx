@@ -1,49 +1,54 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
-import { loginState, Input, SubmitButton, FormStatus } from './components';
+import { signUpState, Input, SubmitButton, FormStatus } from './components';
 import { currentAccountState, Switcher } from '@/presentation/components';
-import { Authentication } from '@/domain/usecases';
+import { AddAccount } from '@/domain/usecases';
 import { useRecoilState, useRecoilValue, useResetRecoilState } from 'recoil';
 import { Flex, Heading, Box, Stack, Avatar, useColorModeValue, chakra } from '@chakra-ui/react';
-import { FiLock, FiMail, FiLogIn } from 'react-icons/fi';
+import { FiLock, FiMail, FiCheck, FiUser } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
+const CFiUser = chakra(FiUser);
 const CFiMail = chakra(FiMail);
 const CFiLock = chakra(FiLock);
-const CFiLogIn = chakra(FiLogIn);
+const CFiCheck = chakra(FiCheck);
 
 type Props = {
-  authentication: Authentication;
+  addAccount: AddAccount;
 };
 
 const schema = yupResolver(
   yup
     .object()
     .shape({
+      name: yup.string().required('Required field'),
       email: yup.string().email().required('Required field'),
-      password: yup.string().required('Required field')
+      password: yup.string().required('Required field'),
+      passwordConfirmation: yup
+        .string()
+        .required('Required field')
+        .oneOf([yup.ref('password'), null], 'Passwords must match')
     })
     .required()
 );
 
-const Login = ({ authentication }: Props): JSX.Element => {
+const SignUp: React.FC<Props> = ({ addAccount }: Props) => {
   const bgSide = useColorModeValue('gray.100', 'gray.900');
-  const resetLoginState = useResetRecoilState(loginState);
+  const resetSignUpState = useResetRecoilState(signUpState);
   const { setCurrentAccount } = useRecoilValue(currentAccountState);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [state, setState] = useRecoilState(loginState);
-
   const navigate = useNavigate();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [state, setState] = useRecoilState(signUpState);
 
   const {
     register,
     handleSubmit,
     formState: { errors }
-  } = useForm<Authentication.Params>({
+  } = useForm<AddAccount.Params>({
     defaultValues: {
       email: '',
       password: ''
@@ -51,7 +56,7 @@ const Login = ({ authentication }: Props): JSX.Element => {
     resolver: schema
   });
 
-  useEffect(() => resetLoginState(), []);
+  useEffect(() => resetSignUpState(), []);
   useEffect(() => {
     setState(prev => ({
       ...prev,
@@ -63,9 +68,11 @@ const Login = ({ authentication }: Props): JSX.Element => {
   const onSubmit = handleSubmit(async data => {
     try {
       setState(prev => ({ ...prev, isLoading: true }));
-      const account = await authentication.auth({
+      const account = await addAccount.add({
+        name: data.name,
         email: data.email,
-        password: data.password
+        password: data.password,
+        passwordConfirmation: data.passwordConfirmation
       });
       setCurrentAccount(account);
       navigate('/');
@@ -82,6 +89,47 @@ const Login = ({ authentication }: Props): JSX.Element => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <Flex width="100vw" height="100vh">
         <Flex width={{ base: '100vw' }} justifyContent={['center', 'center', 'center', 'space-between']} alignItems="center">
+          <Box
+            w={['100%', 'full', '100%', '50%']}
+            h={'full'}
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            flexDir="column"
+            zIndex={3}
+            p={8}
+          >
+            <Box w="full" px={8} display="flex" justifyContent="flex-start">
+              <Heading size="2xl">Sign Up</Heading>
+            </Box>
+
+            <form style={{ width: '100%' }} data-testid="form" onSubmit={onSubmit}>
+              <Box w="full" px="8" borderRadius="10px">
+                <Stack spacing={4} py="6">
+                  <Input type="text" name="name" placeholder="Name" icon={<CFiUser />} />
+                  <Input type="email" name="email" placeholder="E-mail" icon={<CFiMail />} />
+                  <Input type="password" name="password" placeholder="Password" icon={<CFiLock />} />
+                  <Input
+                    type="password"
+                    name="passwordConfirmation"
+                    placeholder="Password Confirmation"
+                    icon={<CFiLock />}
+                  />
+                  <SubmitButton text="Sign Up" icon={<CFiCheck />} />
+
+                  <FormStatus />
+                  <Flex justifyContent="space-between" alignItems="center">
+                    <Box display="flex" flexDir="column">
+                      <Link data-testid="login-link" to="/login">
+                        Back to Login
+                      </Link>
+                    </Box>
+                    <Switcher />
+                  </Flex>
+                </Stack>
+              </Box>
+            </form>
+          </Box>
           <Box
             bgColor={bgSide}
             h="100%"
@@ -102,44 +150,10 @@ const Login = ({ authentication }: Props): JSX.Element => {
               </Heading>
             </Flex>
           </Box>
-          <Box
-            w={['100%', 'full', '100%', '50%']}
-            h={'full'}
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            flexDir="column"
-            zIndex={3}
-            p={8}
-          >
-            <Box w="full" px={8} display="flex" justifyContent="flex-start">
-              <Heading size="2xl">Login</Heading>
-            </Box>
-
-            <form style={{ width: '100%' }} data-testid="form" onSubmit={onSubmit}>
-              <Box w="full" px="8" borderRadius="10px">
-                <Stack spacing={4} py="6">
-                  <Input type="email" name="email" placeholder="E-mail" icon={<CFiMail />} />
-                  <Input type="password" name="password" placeholder="Password" icon={<CFiLock />} />
-
-                  <SubmitButton text="Login" icon={<CFiLogIn />} />
-                  <Flex justifyContent="space-between" alignItems="center">
-                    <Box display="flex" flexDir="column">
-                      <Link data-testid="signup-link" to="/signup">
-                        Create account
-                      </Link>
-                    </Box>
-                    <Switcher />
-                  </Flex>
-                  <FormStatus />
-                </Stack>
-              </Box>
-            </form>
-          </Box>
         </Flex>
       </Flex>
     </motion.div>
   );
 };
 
-export default Login;
+export default SignUp;

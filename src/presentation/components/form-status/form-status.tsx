@@ -7,7 +7,6 @@ type Props = {
 
 const FormStatus = ({ state }: Props): JSX.Element => {
   const { mainError } = state;
-
   return (
     <Flex data-testid="error-wrap">
       {mainError && (

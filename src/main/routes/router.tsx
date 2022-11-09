@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { LoginFactory } from '@/main/factories/pages/';
+import { LoginFactory, SignUpFactory } from '@/main/factories/pages/';
 import { getCurrentAccountAdapter, setCurrentAccountAdapter } from '@/main/adapters/current-account-adapter';
 import { currentAccountState } from '@/presentation/components';
 import { RecoilRoot } from 'recoil';
@@ -14,7 +14,7 @@ const Router = (): JSX.Element => {
     <RecoilRoot initializeState={({ set }) => set(currentAccountState, state)}>
       <BrowserRouter>
         <Routes>
-          <Route path="/signup" element={<>Signup</>} />
+          <Route path="/signup" element={<SignUpFactory />} />
           <Route path="/login" element={<LoginFactory />} />
           <Route
             path="/"
