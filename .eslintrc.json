@@ -17,12 +17,10 @@
   ],
   "env": {
     "browser": true,
-    "es2021": true,
-    "cypress/globals": true
+    "es2021": true
   },
   "plugins": [
     "react",
-    "cypress",
     "@typescript-eslint",
     "react-hooks", 
     "prettier"
@@ -45,6 +43,9 @@
     "space-before-function-paren": "off",
     "react/jsx-uses-react": "error",
     "react/jsx-uses-vars": "error",
+    "react/react-in-jsx-scope": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-misused-promises": [
       "error",
       {

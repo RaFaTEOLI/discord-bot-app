@@ -3,4 +3,6 @@ coverage
 public
 *.json
 dist
-jest.config.js
+jest.config.ts
+vite.config.ts
+*.d.ts

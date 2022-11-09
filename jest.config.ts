@@ -3,9 +3,10 @@ export default {
   collectCoverageFrom: [
     '<rootDir>/src/**/*.{ts,tsx}',
     '!<rootDir>/src/main/**/*',
+    '!<rootDir>/src/domain/models/*',
+    '!<rootDir>/src/domain/usecases/*',
     '!<rootDir>/src/**/index.ts',
     '!<rootDir>/src/*/mocks/*',
-    '!<rootDir>/src/data/protocols/*',
     '!<rootDir>/src/**/index.ts',
     '!<rootDir>/src/presentation/components/index.tsx',
     '!<rootDir>/src/presentation/pages/index.tsx',
