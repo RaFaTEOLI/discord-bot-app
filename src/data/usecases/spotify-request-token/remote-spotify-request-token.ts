@@ -12,14 +12,11 @@ export class RemoteSpotifyRequestToken implements SpotifyRequestToken {
   ) {}
 
   async request(params: SpotifyRequestToken.Params): Promise<SpotifyRequestToken.Model> {
-    console.log({ params });
     const form = new FormData();
     form.append('code', params.code);
     form.append('state', params.state);
     form.append('grant_type', 'grant_type');
     form.append('redirect_uri', this.spotifySettings.redirectUri);
-
-    console.log({ form });
 
     const httpResponse = await this.httpClient.request({
       url: this.url,
