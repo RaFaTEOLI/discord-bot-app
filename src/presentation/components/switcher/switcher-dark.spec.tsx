@@ -8,6 +8,6 @@ const makeSut = (): RenderResult => {
 describe('Switch Component', () => {
   test('should change theme mode to dark', async () => {
     const sut = makeSut();
-    expect(sut.getByTestId('sun')).toBeInTheDocument();
+    expect(sut.getByTestId('moon')).toBeInTheDocument();
   });
 });

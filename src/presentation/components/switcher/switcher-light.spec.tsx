@@ -24,6 +24,6 @@ jest.mock('@chakra-ui/react', () => {
 describe('Switcher Component', () => {
   test('should change theme mode to light', async () => {
     const sut = makeSut();
-    expect(sut.getByTestId('moon')).toBeInTheDocument();
+    expect(sut.getByTestId('sun')).toBeInTheDocument();
   });
 });
