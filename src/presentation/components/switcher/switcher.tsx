@@ -3,7 +3,7 @@ import ThemeSwitcher from '../theme-switcher/theme-switcher';
 
 const Switcher = ({ mt = 0 }: BoxProps): JSX.Element => {
   return (
-    <Box borderWidth="1px" borderRadius="5px" mt={mt}>
+    <Box mt={mt}>
       <ThemeSwitcher />
     </Box>
   );
