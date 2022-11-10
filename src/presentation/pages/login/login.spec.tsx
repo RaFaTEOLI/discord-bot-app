@@ -4,7 +4,7 @@ import { fireEvent, waitFor, screen } from '@testing-library/react';
 import { Login } from '@/presentation/pages';
 import { Helper, renderWithHistory } from '@/presentation/mocks';
 import { InvalidCredentialsError } from '@/domain/errors';
-import { AuthenticationSpy } from '@/domain/mocks';
+import { AuthenticationSpy, SpotifyAuthorizeSpy } from '@/domain/mocks';
 import { Authentication } from '@/domain/usecases';
 import userEvent from '@testing-library/user-event';
 import { loginState } from './components';
@@ -12,15 +12,17 @@ import { loginState } from './components';
 type SutTypes = {
   authenticationSpy: AuthenticationSpy;
   setCurrentAccountMock: (account: Authentication.Model) => void;
+  spotifyAuthorizeSpy: SpotifyAuthorizeSpy;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/login'] });
 const makeSut = (invalidForm = false): SutTypes => {
   const authenticationSpy = new AuthenticationSpy();
+  const spotifyAuthorizeSpy = new SpotifyAuthorizeSpy();
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
-    Page: () => Login({ authentication: authenticationSpy }),
+    Page: () => Login({ authentication: authenticationSpy, spotifyAuthorize: spotifyAuthorizeSpy }),
     ...(invalidForm && {
       states: [
         {
@@ -41,7 +43,7 @@ const makeSut = (invalidForm = false): SutTypes => {
       ]
     })
   });
-  return { authenticationSpy, setCurrentAccountMock };
+  return { authenticationSpy, setCurrentAccountMock, spotifyAuthorizeSpy };
 };
 
 const simulateValidSubmit = async (email = faker.internet.email(), password = faker.internet.password()): Promise<void> => {
@@ -125,6 +127,13 @@ describe('Login Component', () => {
     await simulateValidSubmit();
     expect(setCurrentAccountMock).toHaveBeenCalledWith(authenticationSpy.account);
     expect(history.location.pathname).toBe('/');
+  });
+
+  test('should redirect user to spotify authorize login url on spotify login', async () => {
+    const { spotifyAuthorizeSpy } = makeSut();
+    const spotifyButton = screen.getByTestId('spotify-button');
+    await userEvent.click(spotifyButton);
+    expect(spotifyAuthorizeSpy.callsCount).toBe(1);
   });
 
   test('should go to signup page', () => {
