@@ -4,8 +4,8 @@ import { fireEvent, waitFor, screen } from '@testing-library/react';
 import { Login } from '@/presentation/pages';
 import { Helper, renderWithHistory } from '@/presentation/mocks';
 import { InvalidCredentialsError } from '@/domain/errors';
-import { AuthenticationSpy, SpotifyAuthorizeSpy } from '@/domain/mocks';
-import { Authentication } from '@/domain/usecases';
+import { AuthenticationSpy, SpotifyAuthorizeSpy, SpotifyRequestTokenSpy } from '@/domain/mocks';
+import { Authentication, SpotifyRequestToken } from '@/domain/usecases';
 import userEvent from '@testing-library/user-event';
 import { loginState } from './components';
 
@@ -13,16 +13,23 @@ type SutTypes = {
   authenticationSpy: AuthenticationSpy;
   setCurrentAccountMock: (account: Authentication.Model) => void;
   spotifyAuthorizeSpy: SpotifyAuthorizeSpy;
+  spotifyRequestTokenSpy: SpotifyRequestToken;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/login'] });
 const makeSut = (invalidForm = false): SutTypes => {
   const authenticationSpy = new AuthenticationSpy();
   const spotifyAuthorizeSpy = new SpotifyAuthorizeSpy();
+  const spotifyRequestTokenSpy = new SpotifyRequestTokenSpy();
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
-    Page: () => Login({ authentication: authenticationSpy, spotifyAuthorize: spotifyAuthorizeSpy }),
+    Page: () =>
+      Login({
+        authentication: authenticationSpy,
+        spotifyAuthorize: spotifyAuthorizeSpy,
+        spotifyRequestToken: spotifyRequestTokenSpy
+      }),
     ...(invalidForm && {
       states: [
         {
@@ -43,7 +50,7 @@ const makeSut = (invalidForm = false): SutTypes => {
       ]
     })
   });
-  return { authenticationSpy, setCurrentAccountMock, spotifyAuthorizeSpy };
+  return { authenticationSpy, setCurrentAccountMock, spotifyAuthorizeSpy, spotifyRequestTokenSpy };
 };
 
 const simulateValidSubmit = async (email = faker.internet.email(), password = faker.internet.password()): Promise<void> => {
