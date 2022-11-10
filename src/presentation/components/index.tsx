@@ -9,4 +9,5 @@ export { default as Loading } from './loading/loading';
 export { default as Switcher } from './switcher/switcher';
 export { default as Layout } from './layout/layout';
 export { default as ThemeSwitcher } from './theme-switcher/theme-switcher';
+export { default as SpotifyButton } from './spotify-button/spotify-button';
 export * from './atoms/atoms';

@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
-import { loginState, Input, SubmitButton, FormStatus } from './components';
+import { loginState, Input, SubmitButton, LoginSpotifyButton, FormStatus } from './components';
 import { currentAccountState, Switcher } from '@/presentation/components';
-import { Authentication } from '@/domain/usecases';
+import { Authentication, SpotifyAuthorize } from '@/domain/usecases';
 import { useRecoilState, useRecoilValue, useResetRecoilState } from 'recoil';
 import { Flex, Heading, Box, Stack, Avatar, useColorModeValue, chakra } from '@chakra-ui/react';
 import { FiLock, FiMail, FiLogIn } from 'react-icons/fi';
@@ -18,6 +18,7 @@ const CFiLogIn = chakra(FiLogIn);
 
 type Props = {
   authentication: Authentication;
+  spotifyAuthorize: SpotifyAuthorize;
 };
 
 const schema = yupResolver(
@@ -30,7 +31,7 @@ const schema = yupResolver(
     .required()
 );
 
-const Login = ({ authentication }: Props): JSX.Element => {
+const Login = ({ authentication, spotifyAuthorize }: Props): JSX.Element => {
   const bgSide = useColorModeValue('gray.100', 'gray.900');
   const resetLoginState = useResetRecoilState(loginState);
   const { setCurrentAccount } = useRecoilValue(currentAccountState);
@@ -78,6 +79,11 @@ const Login = ({ authentication }: Props): JSX.Element => {
     }
   });
 
+  const onSpotifyLogin = async (): Promise<void> => {
+    const url = await spotifyAuthorize.authorize();
+    window.location.href = url;
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <Flex width="100vw" height="100vh">
@@ -123,6 +129,7 @@ const Login = ({ authentication }: Props): JSX.Element => {
                   <Input type="password" name="password" placeholder="Password" icon={<CFiLock />} />
 
                   <SubmitButton text="Login" icon={<CFiLogIn />} />
+                  <LoginSpotifyButton onClick={onSpotifyLogin} text="Login with Spotify" />
                   <Flex justifyContent="space-between" alignItems="center">
                     <Box display="flex" flexDir="column">
                       <Link data-testid="signup-link" to="/signup">
