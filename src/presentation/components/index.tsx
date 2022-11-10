@@ -7,4 +7,6 @@ export { default as SubmitButtonBase } from './submit-button/submit-button';
 export { default as Header } from './header/header';
 export { default as Loading } from './loading/loading';
 export { default as Switcher } from './switcher/switcher';
+export { default as Layout } from './layout/layout';
+export { default as ThemeSwitcher } from './theme-switcher/theme-switcher';
 export * from './atoms/atoms';
