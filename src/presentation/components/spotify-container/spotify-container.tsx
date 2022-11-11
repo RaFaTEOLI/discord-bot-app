@@ -5,12 +5,14 @@ import { useRecoilValue } from 'recoil';
 import { currentAccountState } from '@/presentation/components';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@chakra-ui/react';
+import { AccountModel } from '@/domain/models';
 
 type Props = {
-  spotifyRequestToken: SpotifyRequestToken;
+  spotifyRequestTokenLogin: SpotifyRequestToken;
+  spotifyRequestTokenSignUp: SpotifyRequestToken;
 };
 
-export default function SpotifyContainer({ spotifyRequestToken }: Props): JSX.Element {
+export default function SpotifyContainer({ spotifyRequestTokenLogin, spotifyRequestTokenSignUp }: Props): JSX.Element {
   const [searchParams] = useSearchParams();
   const { setCurrentAccount } = useRecoilValue(currentAccountState);
   const location = useLocation();
@@ -28,7 +30,13 @@ export default function SpotifyContainer({ spotifyRequestToken }: Props): JSX.El
       const spotifyState = searchParams.get('state');
       if (code && spotifyState) {
         try {
-          const spotifyAccess = await spotifyRequestToken.request({ code, state: spotifyState });
+          let spotifyAccess: AccountModel;
+          if (currentRoute === 'signup') {
+            spotifyAccess = await spotifyRequestTokenSignUp.request({ code, state: spotifyState });
+          } else {
+            spotifyAccess = await spotifyRequestTokenLogin.request({ code, state: spotifyState });
+          }
+
           setCurrentAccount(spotifyAccess);
           if (currentRoute === 'login' || currentRoute === 'signup') {
             navigate('/');
