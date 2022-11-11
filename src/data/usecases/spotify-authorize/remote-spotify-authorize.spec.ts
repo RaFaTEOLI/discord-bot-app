@@ -20,7 +20,11 @@ describe('RemoteSpotifyAuthorize', () => {
     const { sut } = makeSut(url, spotifyAuthorizeParams);
     const generatedUrl = await sut.authorize();
     expect(generatedUrl).toBe(
-      `${url}?response_type=${spotifyAuthorizeParams.responseType}&client_id=${spotifyAuthorizeParams.clientId}&scope=${spotifyAuthorizeParams.scope}&redirect_uri=${spotifyAuthorizeParams.redirectUri}&state=${spotifyAuthorizeParams.state}`
+      `${url}?response_type=${spotifyAuthorizeParams.responseType}&client_id=${
+        spotifyAuthorizeParams.clientId
+      }&scope=${encodeURIComponent(spotifyAuthorizeParams.scope)}&redirect_uri=${encodeURIComponent(
+        spotifyAuthorizeParams.redirectUri
+      )}&state=${spotifyAuthorizeParams.state}`
     );
   });
 });
