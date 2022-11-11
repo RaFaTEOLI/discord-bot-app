@@ -4,14 +4,20 @@ import { screen } from '@testing-library/react';
 import { createMemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import Layout from './layout';
+import { Authentication } from '@/domain/usecases';
+
+type SutTypes = {
+  setCurrentAccountMock: (account: Authentication.Model) => void;
+};
 
 const history = createMemoryHistory({ initialEntries: ['/'] });
-const makeSut = (): void => {
-  renderWithHistory({
+const makeSut = (): SutTypes => {
+  const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
     Page: () => Layout()
   });
+  return { setCurrentAccountMock };
 };
 
 describe('Layout Component', () => {
