@@ -1,17 +1,17 @@
 import { HttpClient, HttpStatusCode } from '@/data/protocols/http';
 import { AccessDeniedError, InvalidCredentialsError, UnexpectedError } from '@/domain/errors';
-import { SpotifyAuthorize, SpotifyRequestToken } from '@/domain/usecases';
+import { SpotifyAuthorize, SpotifyAuthenticate } from '@/domain/usecases';
 import { Buffer } from 'buffer';
 
-export class RemoteSpotifyRequestToken implements SpotifyRequestToken {
+export class RemoteSpotifyAuthenticate implements SpotifyAuthenticate {
   constructor(
     private readonly url: string,
     private readonly spotifySettings: SpotifyAuthorize.Params,
     private readonly spotifyClientSecret: string,
-    private readonly httpClient: HttpClient<RemoteSpotifyRequestToken.Model>
+    private readonly httpClient: HttpClient<RemoteSpotifyAuthenticate.Model>
   ) {}
 
-  async request(params: SpotifyRequestToken.Params): Promise<SpotifyRequestToken.Model> {
+  async request(params: SpotifyAuthenticate.Params): Promise<SpotifyAuthenticate.Model> {
     const encodedAuthorization = Buffer.from(`${this.spotifySettings.clientId}:${this.spotifyClientSecret}`).toString(
       'base64'
     );
@@ -27,7 +27,7 @@ export class RemoteSpotifyRequestToken implements SpotifyRequestToken {
     });
     switch (httpResponse.statusCode) {
       case HttpStatusCode.success:
-        return httpResponse.body as SpotifyRequestToken.Model;
+        return httpResponse.body as SpotifyAuthenticate.Model;
       case HttpStatusCode.forbidden:
         throw new AccessDeniedError();
       case HttpStatusCode.unauthorized:
@@ -38,6 +38,6 @@ export class RemoteSpotifyRequestToken implements SpotifyRequestToken {
   }
 }
 
-export namespace RemoteSpotifyRequestToken {
-  export type Model = SpotifyRequestToken.Model;
+export namespace RemoteSpotifyAuthenticate {
+  export type Model = SpotifyAuthenticate.Model;
 }

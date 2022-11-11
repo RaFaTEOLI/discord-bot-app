@@ -1,4 +1,4 @@
-import { SpotifyRequestToken } from '@/domain/usecases';
+import { SpotifyAuthenticate } from '@/domain/usecases';
 import { useEffect, useMemo } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router';
 import { useRecoilValue } from 'recoil';
@@ -8,11 +8,11 @@ import { useToast } from '@chakra-ui/react';
 import { AccountModel } from '@/domain/models';
 
 type Props = {
-  spotifyRequestTokenLogin: SpotifyRequestToken;
-  spotifyRequestTokenSignUp: SpotifyRequestToken;
+  spotifyAuthenticateLogin: SpotifyAuthenticate;
+  spotifyAuthenticateSignUp: SpotifyAuthenticate;
 };
 
-export default function SpotifyContainer({ spotifyRequestTokenLogin, spotifyRequestTokenSignUp }: Props): JSX.Element {
+export default function SpotifyContainer({ spotifyAuthenticateLogin, spotifyAuthenticateSignUp }: Props): JSX.Element {
   const [searchParams] = useSearchParams();
   const { setCurrentAccount } = useRecoilValue(currentAccountState);
   const location = useLocation();
@@ -32,9 +32,9 @@ export default function SpotifyContainer({ spotifyRequestTokenLogin, spotifyRequ
         try {
           let spotifyAccess: AccountModel;
           if (currentRoute === 'signup') {
-            spotifyAccess = await spotifyRequestTokenSignUp.request({ code, state: spotifyState });
+            spotifyAccess = await spotifyAuthenticateSignUp.request({ code, state: spotifyState });
           } else {
-            spotifyAccess = await spotifyRequestTokenLogin.request({ code, state: spotifyState });
+            spotifyAccess = await spotifyAuthenticateLogin.request({ code, state: spotifyState });
           }
 
           setCurrentAccount(spotifyAccess);

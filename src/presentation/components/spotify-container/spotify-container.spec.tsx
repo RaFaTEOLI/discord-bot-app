@@ -2,14 +2,14 @@
 import { renderWithHistory } from '@/presentation/mocks';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import SpotifyContainer from './spotify-container';
-import { SpotifyRequestTokenSpy } from '@/domain/mocks';
+import { SpotifyAuthenticateSpy } from '@/domain/mocks';
 import { Authentication } from '@/domain/usecases';
 import { setTimeout } from 'timers/promises';
 
 type SutTypes = {
   setCurrentAccountMock: (account: Authentication.Model) => void;
-  spotifyRequestTokenLoginSpy: SpotifyRequestTokenSpy;
-  spotifyRequestTokenSignUpSpy: SpotifyRequestTokenSpy;
+  spotifyAuthenticateLoginSpy: SpotifyAuthenticateSpy;
+  spotifyAuthenticateSignUpSpy: SpotifyAuthenticateSpy;
 };
 
 const historyEmpty = createMemoryHistory({ initialEntries: ['/'] });
@@ -18,21 +18,21 @@ const historyWithSignUpSpotifyLogin = createMemoryHistory({ initialEntries: ['/s
 const historyWithSpotifyLogin = createMemoryHistory({ initialEntries: ['?code=any_code&state=any_state'] });
 
 const makeSut = (memoryHistory: MemoryHistory = historyWithLoginSpotifyLogin, error = false): SutTypes => {
-  const spotifyRequestTokenLoginSpy = new SpotifyRequestTokenSpy();
-  const spotifyRequestTokenSignUpSpy = new SpotifyRequestTokenSpy();
+  const spotifyAuthenticateLoginSpy = new SpotifyAuthenticateSpy();
+  const spotifyAuthenticateSignUpSpy = new SpotifyAuthenticateSpy();
   if (error) {
-    jest.spyOn(spotifyRequestTokenLoginSpy, 'request').mockRejectedValueOnce(new Error());
-    jest.spyOn(spotifyRequestTokenSignUpSpy, 'request').mockRejectedValueOnce(new Error());
+    jest.spyOn(spotifyAuthenticateLoginSpy, 'request').mockRejectedValueOnce(new Error());
+    jest.spyOn(spotifyAuthenticateSignUpSpy, 'request').mockRejectedValueOnce(new Error());
   }
   const { setCurrentAccountMock } = renderWithHistory({
     history: memoryHistory,
     Page: () =>
       SpotifyContainer({
-        spotifyRequestTokenLogin: spotifyRequestTokenLoginSpy,
-        spotifyRequestTokenSignUp: spotifyRequestTokenSignUpSpy
+        spotifyAuthenticateLogin: spotifyAuthenticateLoginSpy,
+        spotifyAuthenticateSignUp: spotifyAuthenticateSignUpSpy
       })
   });
-  return { setCurrentAccountMock, spotifyRequestTokenLoginSpy, spotifyRequestTokenSignUpSpy };
+  return { setCurrentAccountMock, spotifyAuthenticateLoginSpy, spotifyAuthenticateSignUpSpy };
 };
 
 const mockToast = jest.fn();
@@ -51,26 +51,26 @@ describe('Spotify Container Component', () => {
   });
 
   test('should login into spotify if redirect is received from login page', async () => {
-    const { setCurrentAccountMock, spotifyRequestTokenLoginSpy } = makeSut();
-    expect(spotifyRequestTokenLoginSpy.callsCount).toBe(1);
+    const { setCurrentAccountMock, spotifyAuthenticateLoginSpy } = makeSut();
+    expect(spotifyAuthenticateLoginSpy.callsCount).toBe(1);
     await setTimeout(3000);
-    expect(setCurrentAccountMock).toHaveBeenCalledWith(spotifyRequestTokenLoginSpy.access);
+    expect(setCurrentAccountMock).toHaveBeenCalledWith(spotifyAuthenticateLoginSpy.access);
     expect(historyWithLoginSpotifyLogin.location.pathname).toBe('/');
   });
 
   test('should login into spotify if redirect is received from signup page', async () => {
-    const { setCurrentAccountMock, spotifyRequestTokenSignUpSpy } = makeSut(historyWithSignUpSpotifyLogin);
-    expect(spotifyRequestTokenSignUpSpy.callsCount).toBe(1);
+    const { setCurrentAccountMock, spotifyAuthenticateSignUpSpy } = makeSut(historyWithSignUpSpotifyLogin);
+    expect(spotifyAuthenticateSignUpSpy.callsCount).toBe(1);
     await setTimeout(3000);
-    expect(setCurrentAccountMock).toHaveBeenCalledWith(spotifyRequestTokenSignUpSpy.access);
+    expect(setCurrentAccountMock).toHaveBeenCalledWith(spotifyAuthenticateSignUpSpy.access);
     expect(historyWithSignUpSpotifyLogin.location.pathname).toBe('/');
   });
 
   test('should login into spotify if redirect is received from any page', async () => {
-    const { setCurrentAccountMock, spotifyRequestTokenLoginSpy } = makeSut(historyWithSpotifyLogin);
-    expect(spotifyRequestTokenLoginSpy.callsCount).toBe(1);
+    const { setCurrentAccountMock, spotifyAuthenticateLoginSpy } = makeSut(historyWithSpotifyLogin);
+    expect(spotifyAuthenticateLoginSpy.callsCount).toBe(1);
     await setTimeout(3000);
-    expect(setCurrentAccountMock).toHaveBeenCalledWith(spotifyRequestTokenLoginSpy.access);
+    expect(setCurrentAccountMock).toHaveBeenCalledWith(spotifyAuthenticateLoginSpy.access);
   });
 
   test('should show toast error if spotify fails', async () => {
@@ -87,8 +87,8 @@ describe('Spotify Container Component', () => {
   });
 
   test('should not login into spotify if no redirect is received from any page', async () => {
-    const { setCurrentAccountMock, spotifyRequestTokenLoginSpy } = makeSut(historyEmpty);
-    expect(spotifyRequestTokenLoginSpy.callsCount).toBe(0);
+    const { setCurrentAccountMock, spotifyAuthenticateLoginSpy } = makeSut(historyEmpty);
+    expect(spotifyAuthenticateLoginSpy.callsCount).toBe(0);
     await setTimeout(3000);
     expect(setCurrentAccountMock).toHaveBeenCalledTimes(0);
   });
