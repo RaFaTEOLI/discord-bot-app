@@ -1,7 +1,7 @@
 import { HttpClient, HttpStatusCode } from '@/data/protocols/http';
 import { AccessDeniedError, InvalidCredentialsError, UnexpectedError } from '@/domain/errors';
 import { SpotifyAuthorize, SpotifyRequestToken } from '@/domain/usecases';
-import FormData from 'form-data';
+import { Buffer } from 'buffer';
 
 export class RemoteSpotifyRequestToken implements SpotifyRequestToken {
   constructor(
@@ -12,21 +12,17 @@ export class RemoteSpotifyRequestToken implements SpotifyRequestToken {
   ) {}
 
   async request(params: SpotifyRequestToken.Params): Promise<SpotifyRequestToken.Model> {
-    const form = new FormData();
-    form.append('code', params.code);
-    form.append('state', params.state);
-    form.append('grant_type', 'grant_type');
-    form.append('redirect_uri', this.spotifySettings.redirectUri);
+    const encodedAuthorization = Buffer.from(`${this.spotifySettings.clientId}:${this.spotifyClientSecret}`).toString(
+      'base64'
+    );
 
     const httpResponse = await this.httpClient.request({
       url: this.url,
       method: 'post',
-      body: form,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${Buffer.from(`${this.spotifySettings.clientId}:${this.spotifyClientSecret}`).toString(
-          'base64'
-        )}`
+      body: {
+        ...params,
+        redirectUri: this.spotifySettings.redirectUri,
+        encodedAuthorization
       }
     });
     switch (httpResponse.statusCode) {

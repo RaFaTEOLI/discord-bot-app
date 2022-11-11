@@ -2,8 +2,8 @@ import { Box, Flex, Text, useColorModeValue, chakra } from '@chakra-ui/react';
 import { useLayoutEffect, useMemo, useState } from 'react';
 import { HiHome, HiCommandLine } from 'react-icons/hi2';
 import { Outlet, useLocation } from 'react-router';
+import { ThemeSwitcher } from '@/presentation/components';
 import Logo from '../logo/logo';
-import ThemeSwitcher from '../theme-switcher/theme-switcher';
 import NavItem from './components/nav-item';
 
 const HomeIcon = chakra(HiHome);

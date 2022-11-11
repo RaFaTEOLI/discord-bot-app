@@ -1,4 +1,4 @@
-import { SpotifyAccessModel } from '@/domain/models';
+import { AccountModel } from '@/domain/models';
 
 export interface SpotifyRequestToken {
   request: (params: SpotifyRequestToken.Params) => Promise<SpotifyRequestToken.Model>;
@@ -9,5 +9,5 @@ export namespace SpotifyRequestToken {
     code: string;
     state: string;
   };
-  export type Model = SpotifyAccessModel;
+  export type Model = AccountModel;
 }

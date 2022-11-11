@@ -4,7 +4,7 @@ import { getCurrentAccountAdapter, setCurrentAccountAdapter } from '@/main/adapt
 import { currentAccountState } from '@/presentation/components';
 import { RecoilRoot } from 'recoil';
 import { PrivateRoute } from '../proxies';
-import Layout from '@/presentation/components/layout/layout';
+import { LayoutFactory, SpotifyContainerFactory } from '@/main/factories/components';
 
 const Router = (): JSX.Element => {
   const state = {
@@ -15,18 +15,20 @@ const Router = (): JSX.Element => {
     <RecoilRoot initializeState={({ set }) => set(currentAccountState, state)}>
       <BrowserRouter>
         <Routes>
-          <Route path="/signup" element={<SignUpFactory />} />
-          <Route path="/login" element={<LoginFactory />} />
-          <Route
-            path="/"
-            element={
-              <PrivateRoute>
-                <Layout />
-              </PrivateRoute>
-            }
-          >
-            <Route path="/" element={<HomeFactory />} />
-            <Route path="/commands" element={<CommandsFactory />} />
+          <Route path="/" element={<SpotifyContainerFactory />}>
+            <Route path="/signup" element={<SignUpFactory />} />
+            <Route path="/login" element={<LoginFactory />} />
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <LayoutFactory />
+                </PrivateRoute>
+              }
+            >
+              <Route path="/" element={<HomeFactory />} />
+              <Route path="/commands" element={<CommandsFactory />} />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

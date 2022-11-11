@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 import { loginState, Input, SubmitButton, LoginSpotifyButton, FormStatus } from './components';
 import { currentAccountState, Switcher } from '@/presentation/components';
-import { Authentication, SpotifyAuthorize, SpotifyRequestToken } from '@/domain/usecases';
+import { Authentication, SpotifyAuthorize } from '@/domain/usecases';
 import { useRecoilState, useRecoilValue, useResetRecoilState } from 'recoil';
 import { Flex, Heading, Box, Stack, Avatar, useColorModeValue, chakra } from '@chakra-ui/react';
 import { FiLock, FiMail, FiLogIn } from 'react-icons/fi';
@@ -19,7 +19,6 @@ const CFiLogIn = chakra(FiLogIn);
 type Props = {
   authentication: Authentication;
   spotifyAuthorize: SpotifyAuthorize;
-  spotifyRequestToken: SpotifyRequestToken;
 };
 
 const schema = yupResolver(
@@ -32,11 +31,11 @@ const schema = yupResolver(
     .required()
 );
 
-const Login = ({ authentication, spotifyAuthorize, spotifyRequestToken }: Props): JSX.Element => {
-  const [searchParams] = useSearchParams();
+const Login = ({ authentication, spotifyAuthorize }: Props): JSX.Element => {
   const bgSide = useColorModeValue('gray.100', 'gray.900');
   const resetLoginState = useResetRecoilState(loginState);
   const { setCurrentAccount } = useRecoilValue(currentAccountState);
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [state, setState] = useRecoilState(loginState);
 
@@ -62,14 +61,6 @@ const Login = ({ authentication, spotifyAuthorize, spotifyRequestToken }: Props)
       errors
     }));
   }, [register, errors]);
-
-  useEffect(() => {
-    const code = searchParams.get('code');
-    const state = searchParams.get('state');
-    if (code && state) {
-      spotifyRequestToken.request({ code, state });
-    }
-  }, [searchParams]);
 
   const onSubmit = handleSubmit(async data => {
     try {
