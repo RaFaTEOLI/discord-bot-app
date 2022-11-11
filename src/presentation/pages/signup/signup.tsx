@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
-import { signUpState, Input, SubmitButton, FormStatus } from './components';
+import { signUpState, Input, SubmitButton, FormStatus, SignUpSpotifyButton } from './components';
 import { currentAccountState, Switcher } from '@/presentation/components';
-import { AddAccount } from '@/domain/usecases';
+import { AddAccount, SpotifyAuthorize } from '@/domain/usecases';
 import { useRecoilState, useRecoilValue, useResetRecoilState } from 'recoil';
 import { Flex, Heading, Box, Stack, Avatar, useColorModeValue, chakra } from '@chakra-ui/react';
 import { FiLock, FiMail, FiCheck, FiUser } from 'react-icons/fi';
@@ -19,6 +19,7 @@ const CFiCheck = chakra(FiCheck);
 
 type Props = {
   addAccount: AddAccount;
+  spotifyAuthorize: SpotifyAuthorize;
 };
 
 const schema = yupResolver(
@@ -36,7 +37,7 @@ const schema = yupResolver(
     .required()
 );
 
-const SignUp: React.FC<Props> = ({ addAccount }: Props) => {
+const SignUp: React.FC<Props> = ({ addAccount, spotifyAuthorize }: Props) => {
   const bgSide = useColorModeValue('gray.100', 'gray.900');
   const resetSignUpState = useResetRecoilState(signUpState);
   const { setCurrentAccount } = useRecoilValue(currentAccountState);
@@ -85,6 +86,11 @@ const SignUp: React.FC<Props> = ({ addAccount }: Props) => {
     }
   });
 
+  const onSpotifySignUp = async (): Promise<void> => {
+    const url = await spotifyAuthorize.authorize();
+    window.location.href = url;
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <Flex width="100vw" height="100vh">
@@ -116,7 +122,7 @@ const SignUp: React.FC<Props> = ({ addAccount }: Props) => {
                     icon={<CFiLock />}
                   />
                   <SubmitButton text="Sign Up" icon={<CFiCheck />} />
-
+                  <SignUpSpotifyButton onClick={onSpotifySignUp} text="Sign Up with Spotify" />
                   <FormStatus />
                   <Flex justifyContent="space-between" alignItems="center">
                     <Box display="flex" flexDir="column">

@@ -4,7 +4,7 @@ import { SignUp } from '@/presentation/pages';
 import { Helper, renderWithHistory } from '@/presentation/mocks';
 import { EmailAlreadyBeingUsedError } from '@/domain/errors';
 import { createMemoryHistory } from 'history';
-import { AddAccountSpy } from '@/domain/mocks';
+import { AddAccountSpy, SpotifyAuthorizeSpy } from '@/domain/mocks';
 import { AddAccount } from '@/domain/usecases';
 import { signUpState } from './components';
 import userEvent from '@testing-library/user-event';
@@ -12,15 +12,17 @@ import userEvent from '@testing-library/user-event';
 type SutTypes = {
   addAccountSpy: AddAccountSpy;
   setCurrentAccountMock: (account: AddAccount.Model) => void;
+  spotifyAuthorizeSpy: SpotifyAuthorizeSpy;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/signup'] });
 const makeSut = (invalidForm = false): SutTypes => {
   const addAccountSpy = new AddAccountSpy();
+  const spotifyAuthorizeSpy = new SpotifyAuthorizeSpy();
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
-    Page: () => SignUp({ addAccount: addAccountSpy }),
+    Page: () => SignUp({ addAccount: addAccountSpy, spotifyAuthorize: spotifyAuthorizeSpy }),
     ...(invalidForm && {
       states: [
         {
@@ -47,7 +49,7 @@ const makeSut = (invalidForm = false): SutTypes => {
       ]
     })
   });
-  return { addAccountSpy, setCurrentAccountMock };
+  return { addAccountSpy, setCurrentAccountMock, spotifyAuthorizeSpy };
 };
 
 const simulateValidSubmit = async (
@@ -153,6 +155,13 @@ describe('SignUp Component', () => {
     await simulateValidSubmit();
     expect(setCurrentAccountMock).toHaveBeenCalledWith(addAccountSpy.account);
     expect(history.location.pathname).toBe('/');
+  });
+
+  test('should redirect user to spotify authorize signup url on spotify signup', async () => {
+    const { spotifyAuthorizeSpy } = makeSut();
+    const spotifyButton = screen.getByTestId('spotify-button');
+    await userEvent.click(spotifyButton);
+    expect(spotifyAuthorizeSpy.callsCount).toBe(1);
   });
 
   test('should go to login page', () => {
