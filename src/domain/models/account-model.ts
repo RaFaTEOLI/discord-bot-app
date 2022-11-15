@@ -1,6 +1,10 @@
 export type AccountModel = {
   accessToken: string;
-  name: string;
+  user: {
+    name: string;
+    email: string;
+    id: string;
+  };
   spotify?: {
     accessToken: string;
     refreshToken: string;

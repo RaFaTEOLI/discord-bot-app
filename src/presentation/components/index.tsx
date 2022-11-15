@@ -4,7 +4,6 @@ export { default as InputBase } from './input/input';
 export { default as Logo } from './logo/logo';
 export { default as Spinner } from './spinner/spinner';
 export { default as SubmitButtonBase } from './submit-button/submit-button';
-export { default as Header } from './header/header';
 export { default as Loading } from './loading/loading';
 export { default as Switcher } from './switcher/switcher';
 export { default as Layout } from './layout/layout';

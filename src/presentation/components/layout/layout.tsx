@@ -5,6 +5,7 @@ import { Outlet, useLocation } from 'react-router';
 import { ThemeSwitcher } from '@/presentation/components';
 import Logo from '../logo/logo';
 import NavItem from './components/nav-item';
+import UserMenu from './components/user-menu';
 
 const HomeIcon = chakra(HiHome);
 const CommandsIcon = chakra(HiCommandLine);
@@ -90,7 +91,10 @@ export default function Layout(): JSX.Element {
           borderBottomColor={borderColor}
           bg={useColorModeValue('white', 'gray.800')}
           data-testid="page-outlet"
+          position="relative"
+          overflowX="hidden"
         >
+          <UserMenu />
           <Outlet />
         </Box>
       </Flex>
