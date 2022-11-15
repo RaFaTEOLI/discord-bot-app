@@ -1,23 +1,26 @@
 /* eslint-disable no-global-assign */
 import { renderWithHistory } from '@/presentation/mocks';
 import { screen } from '@testing-library/react';
-import { createMemoryHistory } from 'history';
+import { createMemoryHistory, MemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import Layout from './layout';
 import { Authentication } from '@/domain/usecases';
+import { mockAccountModel } from '@/domain/mocks';
 
 type SutTypes = {
+  history: MemoryHistory;
   setCurrentAccountMock: (account: Authentication.Model) => void;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/'] });
-const makeSut = (): SutTypes => {
+const makeSut = (account = mockAccountModel()): SutTypes => {
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
-    Page: () => Layout()
+    Page: () => Layout(),
+    account
   });
-  return { setCurrentAccountMock };
+  return { history, setCurrentAccountMock };
 };
 
 describe('Layout Component', () => {
@@ -51,21 +54,49 @@ describe('Layout Component', () => {
     expect(pageOutlet).toBeInTheDocument();
   });
 
-  test('show toggle sidebar on bot name click', async () => {
+  test('should show toggle sidebar on bot name click', async () => {
     makeSut();
     const botName = screen.getByTestId('bot-name');
     await userEvent.click(botName);
     expect(screen.getByTestId('nav-flex')).toHaveAttribute('data-status', 'small');
   });
 
-  test('show toggle sidebar on bot logo click', async () => {
+  test('should show toggle sidebar on bot logo click', async () => {
     makeSut();
     const botName = screen.getByTestId('bot-logo');
     await userEvent.click(botName);
     expect(screen.getByTestId('nav-flex')).toHaveAttribute('data-status', 'small');
   });
 
-  test('show render small layout', () => {
+  test('should have user menu', () => {
+    const account = mockAccountModel();
+    makeSut(account);
+    const userMenu = screen.getByTestId('user-menu');
+    const iconChevronDown = screen.getByTestId('user-menu-down');
+    const userName = screen.getByTestId('user-name');
+    expect(userMenu).toBeInTheDocument();
+    expect(iconChevronDown).toBeInTheDocument();
+    expect(userName).toHaveTextContent(account.user.name.split(' ')[0]);
+  });
+
+  test('should show user menu items', async () => {
+    makeSut();
+    const userMenu = screen.getByTestId('user-menu');
+    await userEvent.click(userMenu);
+    const userMenuList = screen.getByTestId('user-menu-list');
+    const iconChevronUp = screen.getByTestId('user-menu-up');
+    expect(userMenuList).toBeInTheDocument();
+    expect(iconChevronUp).toBeInTheDocument();
+  });
+
+  test('should log user out', async () => {
+    const { history, setCurrentAccountMock } = makeSut();
+    await userEvent.click(screen.getByTestId('logout'));
+    expect(setCurrentAccountMock).toHaveBeenLastCalledWith(undefined);
+    expect(history.location.pathname).toBe('/login');
+  });
+
+  test('should show render small layout', () => {
     window = Object.assign(window, { innerWidth: 766 });
     makeSut();
     expect(screen.getByTestId('nav-flex')).toHaveAttribute('data-status', 'small');
@@ -73,7 +104,7 @@ describe('Layout Component', () => {
     expect(screen.getByTestId('home-text')).toHaveStyle('display: none');
   });
 
-  test('show render small layout then resize to a big one', async () => {
+  test('should show render small layout then resize to a big one', async () => {
     window = Object.assign(window, { innerWidth: 766 });
     makeSut();
     const botName = screen.getByTestId('bot-logo');
