@@ -89,6 +89,13 @@ describe('Layout Component', () => {
     expect(iconChevronUp).toBeInTheDocument();
   });
 
+  test('should navigate to user profile', async () => {
+    const { history } = makeSut();
+    await userEvent.click(screen.getByTestId('user-menu'));
+    await userEvent.click(screen.getByTestId('user-profile'));
+    expect(history.location.pathname).toBe('/profile');
+  });
+
   test('should log user out', async () => {
     const { history, setCurrentAccountMock } = makeSut();
     await userEvent.click(screen.getByTestId('logout'));
