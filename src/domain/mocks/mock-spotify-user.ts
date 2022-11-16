@@ -20,3 +20,13 @@ export const mockSpotifyUser = (): LoadUser.Model => ({
   ],
   product: 'premium'
 });
+
+export class LoadUserSpy implements LoadUser {
+  spotifyUser = mockSpotifyUser();
+  callsCount = 0;
+
+  async load(): Promise<LoadUser.Model> {
+    this.callsCount++;
+    return Promise.resolve(this.spotifyUser);
+  }
+}
