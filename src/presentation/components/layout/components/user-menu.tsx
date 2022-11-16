@@ -6,6 +6,7 @@ import { useLogout } from '@/presentation/hooks';
 import { currentAccountState } from '@/presentation/components';
 import { useRecoilValue } from 'recoil';
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router';
 
 const CFaSpotify = chakra(FaSpotify);
 const CFiChevronUp = chakra(FiChevronUp);
@@ -13,6 +14,7 @@ const CFiChevronDown = chakra(FiChevronDown);
 
 export default function UserMenu(): JSX.Element {
   const logout = useLogout();
+  const navigate = useNavigate();
   const { getCurrentAccount } = useRecoilValue(currentAccountState);
 
   const buttonClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
@@ -56,7 +58,9 @@ export default function UserMenu(): JSX.Element {
               </Flex>
             </MenuButton>
             <MenuList data-testid="user-menu-list">
-              <MenuItem icon={<HiUser />}>Profile</MenuItem>
+              <MenuItem icon={<HiUser />} data-testid="user-profile" onClick={() => navigate('/profile')}>
+                Profile
+              </MenuItem>
               <MenuItem icon={<CFaSpotify color="green" />} isDisabled>
                 Linked with Spotify
               </MenuItem>

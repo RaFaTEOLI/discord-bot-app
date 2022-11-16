@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { LoginFactory, SignUpFactory, HomeFactory, CommandsFactory } from '@/main/factories/pages/';
+import { LoginFactory, SignUpFactory, HomeFactory, CommandsFactory, ProfileFactory } from '@/main/factories/pages/';
 import { getCurrentAccountAdapter, setCurrentAccountAdapter } from '@/main/adapters/current-account-adapter';
 import { currentAccountState } from '@/presentation/components';
 import { RecoilRoot } from 'recoil';
@@ -28,6 +28,7 @@ const Router = (): JSX.Element => {
             >
               <Route path="/" element={<HomeFactory />} />
               <Route path="/commands" element={<CommandsFactory />} />
+              <Route path="/profile" element={<ProfileFactory />} />
             </Route>
           </Route>
         </Routes>
