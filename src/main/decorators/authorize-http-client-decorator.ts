@@ -10,8 +10,9 @@ export class AuthorizeHttpClientDecorator implements HttpClient {
     if (account?.accessToken) {
       Object.assign(data, {
         headers: Object.assign(data.headers || {}, {
-          'x-access-token': account.accessToken,
-          ...(account.user.spotify?.accessToken && { Authorization: `Bearer ${account.user.spotify.accessToken}` })
+          ...(!data.url.includes('api.spotify') && { 'x-access-token': account.accessToken }),
+          ...(account.user.spotify?.accessToken &&
+            data.url.includes('api.spotify') && { Authorization: `Bearer ${account.user.spotify.accessToken}` })
         })
       });
     }

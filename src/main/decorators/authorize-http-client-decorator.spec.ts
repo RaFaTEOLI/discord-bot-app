@@ -85,7 +85,7 @@ describe('AuthorizeHttpClientDecorator', () => {
     const storageValue: AccountModel = getStorageSpy.value;
     const field = faker.random.words();
     const httpRequest: HttpRequest = {
-      url: faker.internet.url(),
+      url: 'http://api.spotify.com/',
       method: faker.helpers.arrayElement(['get', 'post', 'put', 'delete']),
       headers: {
         field
@@ -96,7 +96,6 @@ describe('AuthorizeHttpClientDecorator', () => {
     expect(httpClientSpy.method).toBe(httpRequest.method);
     expect(httpClientSpy.headers).toEqual({
       field,
-      'x-access-token': storageValue.accessToken,
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       Authorization: `Bearer ${storageValue.user.spotify?.accessToken}`
     });
