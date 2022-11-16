@@ -12,7 +12,11 @@ const CFaSpotify = chakra(FaSpotify);
 const CFiChevronUp = chakra(FiChevronUp);
 const CFiChevronDown = chakra(FiChevronDown);
 
-export default function UserMenu(): JSX.Element {
+type Props = {
+  onSpotifySignUp: () => void;
+};
+
+export default function UserMenu({ onSpotifySignUp }: Props): JSX.Element {
   const logout = useLogout();
   const navigate = useNavigate();
   const { getCurrentAccount } = useRecoilValue(currentAccountState);
@@ -25,6 +29,8 @@ export default function UserMenu(): JSX.Element {
   const userName = useMemo(() => {
     return getCurrentAccount().user.name.split(' ')[0];
   }, [getCurrentAccount()]);
+
+  const isLinkedWithSpotify = useMemo(() => !!getCurrentAccount().user.spotify?.accessToken, [getCurrentAccount()]);
 
   return (
     <Box position="absolute" right={8}>
@@ -49,8 +55,8 @@ export default function UserMenu(): JSX.Element {
                 <Avatar
                   m={1}
                   size="sm"
-                  name="Dan Abrahmov"
-                  src="https://scontent-ams2-1.xx.fbcdn.net/v/t1.18169-1/18199154_1201124763332887_8123261132169986051_n.jpg?stp=dst-jpg_p320x320&_nc_cat=100&ccb=1-7&_nc_sid=0c64ff&_nc_ohc=Rn2c6enhA5QAX-7iBtg&_nc_ht=scontent-ams2-1.xx&edm=AP4hL3IEAAAA&oh=00_AfCaRC4YNSLmmYB9JjEoqeEp01EAPLCLTL2wFt_Le5nokQ&oe=63940E05"
+                  name={getCurrentAccount().user.name}
+                  src={getCurrentAccount().user.spotify?.avatarUrl}
                 />
                 <Text fontSize="sm" m={3} data-testid="user-name">
                   {userName}
@@ -58,11 +64,21 @@ export default function UserMenu(): JSX.Element {
               </Flex>
             </MenuButton>
             <MenuList data-testid="user-menu-list">
-              <MenuItem icon={<HiUser />} data-testid="user-profile" onClick={() => navigate('/profile')}>
+              <MenuItem
+                icon={<HiUser />}
+                data-testid="user-profile"
+                onClick={() => navigate('/profile')}
+                isDisabled={!isLinkedWithSpotify}
+              >
                 Profile
               </MenuItem>
-              <MenuItem icon={<CFaSpotify color="green" />} isDisabled>
-                Linked with Spotify
+              <MenuItem
+                data-testid="link-spotify"
+                onClick={onSpotifySignUp}
+                icon={<CFaSpotify color="#1DB954" />}
+                isDisabled={isLinkedWithSpotify}
+              >
+                {isLinkedWithSpotify ? 'Linked with Spotify' : 'Link with Spotify'}
               </MenuItem>
               <MenuItem data-testid="logout" icon={<FiLogOut />} onClick={buttonClick}>
                 Log Out

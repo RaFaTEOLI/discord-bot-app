@@ -1,20 +1,28 @@
 import { Box, Flex, Text, useColorModeValue, chakra } from '@chakra-ui/react';
-import { useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { HiHome, HiCommandLine } from 'react-icons/hi2';
 import { Outlet, useLocation } from 'react-router';
-import { ThemeSwitcher } from '@/presentation/components';
+import { ThemeSwitcher, currentAccountState } from '@/presentation/components';
 import Logo from '../logo/logo';
 import NavItem from './components/nav-item';
 import UserMenu from './components/user-menu';
+import { LoadUser, SpotifyAuthorize } from '@/domain/usecases';
+import { useRecoilValue } from 'recoil';
 
 const HomeIcon = chakra(HiHome);
 const CommandsIcon = chakra(HiCommandLine);
 
-export default function Layout(): JSX.Element {
+type Props = {
+  loadUser: LoadUser;
+  spotifyAuthorize: SpotifyAuthorize;
+};
+
+export default function Layout({ loadUser, spotifyAuthorize }: Props): JSX.Element {
   const sidebarColor = useColorModeValue('gray.100', 'gray.900');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const [navSize, setNavSize] = useState<string>('large');
   const location = useLocation();
+  const { setCurrentAccount, getCurrentAccount } = useRecoilValue(currentAccountState);
 
   useLayoutEffect(() => {
     function updateSize(): void {
@@ -29,6 +37,23 @@ export default function Layout(): JSX.Element {
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      const currentAccount = getCurrentAccount();
+      if (currentAccount.user.spotify?.accessToken && !currentAccount.user.spotify?.avatarUrl) {
+        const spotifyUser = await loadUser.load();
+        setCurrentAccount({
+          ...currentAccount,
+          user: {
+            ...currentAccount.user,
+            spotify: { ...currentAccount.user.spotify, avatarUrl: spotifyUser.images[0].url }
+          }
+        });
+        window.location.reload();
+      }
+    })();
+  }, [getCurrentAccount().user.spotify?.accessToken]);
+
   const currentRoute = useMemo(() => {
     const pathname = location.pathname.split('/');
     return `/${pathname[1]}`;
@@ -40,6 +65,11 @@ export default function Layout(): JSX.Element {
     } else {
       setNavSize('small');
     }
+  };
+
+  const onSpotifySignUp = async (): Promise<void> => {
+    const url = await spotifyAuthorize.authorize();
+    window.location.href = url;
   };
 
   return (
@@ -94,7 +124,7 @@ export default function Layout(): JSX.Element {
           position="relative"
           overflowX="hidden"
         >
-          <UserMenu />
+          <UserMenu onSpotifySignUp={onSpotifySignUp} />
           <Outlet />
         </Box>
       </Flex>
