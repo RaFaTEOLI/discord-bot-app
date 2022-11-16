@@ -1,8 +1,9 @@
 import { AuthorizeHttpClientDecorator } from '@/main/decorators';
 import { mockHttpRequest, GetStorageSpy, HttpClientSpy } from '@/data/mocks';
 import { HttpRequest } from '@/data/protocols/http';
-import { mockAccountModel } from '@/domain/mocks';
+import { mockAccountModel, mockAccountWithSpotifyModel } from '@/domain/mocks';
 import { faker } from '@faker-js/faker';
+import { AccountModel } from '@/domain/models';
 
 type SutTypes = {
   sut: AuthorizeHttpClientDecorator;
@@ -75,6 +76,29 @@ describe('AuthorizeHttpClientDecorator', () => {
     expect(httpClientSpy.headers).toEqual({
       field,
       'x-access-token': getStorageSpy.value.accessToken
+    });
+  });
+
+  test('should merge headers to HttpClient with SpotifyAccess', async () => {
+    const { sut, getStorageSpy, httpClientSpy } = makeSut();
+    getStorageSpy.value = mockAccountWithSpotifyModel();
+    const storageValue: AccountModel = getStorageSpy.value;
+    const field = faker.random.words();
+    const httpRequest: HttpRequest = {
+      url: faker.internet.url(),
+      method: faker.helpers.arrayElement(['get', 'post', 'put', 'delete']),
+      headers: {
+        field
+      }
+    };
+    await sut.request(httpRequest);
+    expect(httpClientSpy.url).toBe(httpRequest.url);
+    expect(httpClientSpy.method).toBe(httpRequest.method);
+    expect(httpClientSpy.headers).toEqual({
+      field,
+      'x-access-token': storageValue.accessToken,
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      Authorization: `Bearer ${storageValue.spotify?.accessToken}`
     });
   });
 
