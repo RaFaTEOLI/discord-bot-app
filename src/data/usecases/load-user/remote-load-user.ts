@@ -6,7 +6,11 @@ export class RemoteLoadUser implements LoadUser {
   constructor(private readonly url: string, private readonly httpGetClient: HttpClient<RemoteLoadUser.Model>) {}
 
   async load(): Promise<LoadUser.Model> {
-    const httpResponse = await this.httpGetClient.request({ url: this.url, method: 'get' });
+    const httpResponse = await this.httpGetClient.request({
+      url: this.url,
+      method: 'get',
+      headers: { 'Content-Type': 'application/json' }
+    });
     switch (httpResponse.statusCode) {
       case HttpStatusCode.success:
         return httpResponse.body as LoadUser.Model;

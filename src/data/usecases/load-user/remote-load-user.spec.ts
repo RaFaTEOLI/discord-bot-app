@@ -21,7 +21,7 @@ const makeSut = (url = faker.internet.url()): SutTypes => {
 };
 
 describe('RemoteLoadUser', () => {
-  test('should call HttpClient with correct URL and Method', async () => {
+  test('should call HttpClient with correct URL, Method and Headers', async () => {
     const url = faker.internet.url();
     const { sut, httpClientSpy } = makeSut(url);
     httpClientSpy.response = {
@@ -31,6 +31,7 @@ describe('RemoteLoadUser', () => {
     await sut.load();
     expect(httpClientSpy.url).toBe(url);
     expect(httpClientSpy.method).toBe('get');
+    expect(httpClientSpy.headers).toEqual({ 'Content-Type': 'application/json' });
   });
 
   test('should throw AccessDeniedError if HttpClient returns 403', async () => {
