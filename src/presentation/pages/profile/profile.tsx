@@ -47,7 +47,7 @@ export default function Profile({ loadUser }: Props): JSX.Element {
           <Loading />
         </Flex>
       ) : (
-        <Flex>
+        <Flex data-testid="info">
           <Avatar
             mr={5}
             size="2xl"

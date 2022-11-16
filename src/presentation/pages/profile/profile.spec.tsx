@@ -1,7 +1,7 @@
 import { AccessTokenExpiredError } from '@/domain/errors';
 import { LoadUserSpy } from '@/domain/mocks';
 import { renderWithHistory } from '@/presentation/mocks';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import { setTimeout } from 'timers/promises';
 import Profile from './profile';
@@ -43,17 +43,26 @@ describe('Profile Component', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  test('should have commands page content', () => {
+  test('should have profile page content', () => {
     makeSut();
     const pageContent = screen.getByRole('heading', {
       name: 'Profile'
     });
+    const loading = screen.getByTestId('loading');
     expect(pageContent).toBeInTheDocument();
+    expect(loading).toBeInTheDocument();
   });
 
   test('should call LoadUser on load', () => {
     const { loadUserSpy } = makeSut();
     expect(loadUserSpy.callsCount).toBe(1);
+  });
+
+  test('should show user info', async () => {
+    const { loadUserSpy } = makeSut();
+    await waitFor(() => screen.getByTestId('info'));
+    expect(screen.getByTestId('name')).toHaveTextContent(loadUserSpy.spotifyUser.display_name);
+    expect(screen.getByTestId('email')).toHaveTextContent(loadUserSpy.spotifyUser.email);
   });
 
   test('should show error if LoadUser fails', async () => {
