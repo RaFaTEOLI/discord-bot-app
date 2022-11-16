@@ -10,9 +10,9 @@ export type SpotifyUserModel = {
   id: string;
   images: [
     {
-      height: string;
+      height: string | null;
       url: string;
-      width: string;
+      width: string | null;
     }
   ];
   product: string;
