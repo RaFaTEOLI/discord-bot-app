@@ -1,5 +1,5 @@
 import { HttpClient, HttpStatusCode } from '@/data/protocols/http';
-import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
+import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
 import { LoadUser } from '@/domain/usecases';
 
 export class RemoteLoadUser implements LoadUser {
@@ -14,6 +14,8 @@ export class RemoteLoadUser implements LoadUser {
     switch (httpResponse.statusCode) {
       case HttpStatusCode.success:
         return httpResponse.body as LoadUser.Model;
+      case HttpStatusCode.unauthorized:
+        throw new AccessTokenExpiredError();
       case HttpStatusCode.forbidden:
         throw new AccessDeniedError();
       default:
