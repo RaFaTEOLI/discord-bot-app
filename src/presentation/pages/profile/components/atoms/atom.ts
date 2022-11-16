@@ -4,6 +4,7 @@ import { atom } from 'recoil';
 export const userProfileState = atom({
   key: 'userProfileState',
   default: {
+    loading: true,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     userProfile: {
       id: '',
