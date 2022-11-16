@@ -5,22 +5,27 @@ import { createMemoryHistory, MemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import Layout from './layout';
 import { Authentication } from '@/domain/usecases';
-import { mockAccountModel } from '@/domain/mocks';
+import { LoadUserSpy, mockAccountModel, mockAccountWithSpotifyModel, SpotifyAuthorizeSpy } from '@/domain/mocks';
+import { setTimeout } from 'timers/promises';
 
 type SutTypes = {
   history: MemoryHistory;
   setCurrentAccountMock: (account: Authentication.Model) => void;
+  spotifyAuthorizeSpy: SpotifyAuthorizeSpy;
+  loadUserSpy: LoadUserSpy;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/'] });
 const makeSut = (account = mockAccountModel()): SutTypes => {
+  const loadUserSpy = new LoadUserSpy();
+  const spotifyAuthorizeSpy = new SpotifyAuthorizeSpy();
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
-    Page: () => Layout(),
+    Page: () => Layout({ loadUser: loadUserSpy, spotifyAuthorize: spotifyAuthorizeSpy }),
     account
   });
-  return { history, setCurrentAccountMock };
+  return { history, setCurrentAccountMock, spotifyAuthorizeSpy, loadUserSpy };
 };
 
 describe('Layout Component', () => {
@@ -39,6 +44,20 @@ describe('Layout Component', () => {
     expect(homeNavText).toHaveTextContent('Home');
     expect(homeNavText).toHaveStyle('display: flex');
     expect(homeNavFlex).toHaveAttribute('data-status', 'large');
+  });
+
+  test('should load spotify user into currentAccount state', async () => {
+    const account = mockAccountWithSpotifyModel();
+    const { loadUserSpy, setCurrentAccountMock } = makeSut(account);
+    expect(loadUserSpy.callsCount).toBe(1);
+    await setTimeout(1000);
+    expect(setCurrentAccountMock).toHaveBeenCalledWith({
+      ...account,
+      user: {
+        ...account.user,
+        spotify: { ...account.user.spotify, avatarUrl: loadUserSpy.spotifyUser.images[0].url }
+      }
+    });
   });
 
   test('should navigate to commands page', async () => {
@@ -90,7 +109,7 @@ describe('Layout Component', () => {
   });
 
   test('should navigate to user profile', async () => {
-    const { history } = makeSut();
+    const { history } = makeSut(mockAccountWithSpotifyModel());
     await userEvent.click(screen.getByTestId('user-menu'));
     await userEvent.click(screen.getByTestId('user-profile'));
     expect(history.location.pathname).toBe('/profile');
@@ -109,6 +128,13 @@ describe('Layout Component', () => {
     expect(screen.getByTestId('nav-flex')).toHaveAttribute('data-status', 'small');
     expect(screen.getByTestId('home')).toHaveAttribute('data-size', 'small');
     expect(screen.getByTestId('home-text')).toHaveStyle('display: none');
+  });
+
+  test('should redirect user to spotify authorize login url on spotify link', async () => {
+    const { spotifyAuthorizeSpy } = makeSut();
+    const spotifyButton = screen.getByTestId('link-spotify');
+    await userEvent.click(spotifyButton);
+    expect(spotifyAuthorizeSpy.callsCount).toBe(1);
   });
 
   test('should show render small layout then resize to a big one', async () => {
