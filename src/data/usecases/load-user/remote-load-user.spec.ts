@@ -1,7 +1,7 @@
 import { HttpClientSpy } from '@/data/mocks';
 import { RemoteLoadUser } from '@/data/usecases';
 import { HttpStatusCode } from '@/data/protocols/http';
-import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
+import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
 import { faker } from '@faker-js/faker';
 import { mockSpotifyUser } from '@/domain/mocks';
 
@@ -41,6 +41,15 @@ describe('RemoteLoadUser', () => {
     };
     const promise = sut.load();
     await expect(promise).rejects.toThrow(new AccessDeniedError());
+  });
+
+  test('should throw AccessTokenExpiredError if HttpClient returns 401', async () => {
+    const { sut, httpClientSpy } = makeSut();
+    httpClientSpy.response = {
+      statusCode: HttpStatusCode.unauthorized
+    };
+    const promise = sut.load();
+    await expect(promise).rejects.toThrow(new AccessTokenExpiredError());
   });
 
   test('should throw UnexpectedError if HttpClient returns 404', async () => {
