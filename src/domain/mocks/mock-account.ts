@@ -15,10 +15,10 @@ export const mockAccountWithSpotifyModel = (): Authentication.Model => ({
   user: {
     name: faker.name.fullName(),
     email: faker.internet.email(),
-    id: faker.datatype.uuid()
-  },
-  spotify: {
-    accessToken: faker.datatype.uuid(),
-    refreshToken: faker.datatype.uuid()
+    id: faker.datatype.uuid(),
+    spotify: {
+      accessToken: faker.datatype.uuid(),
+      refreshToken: faker.datatype.uuid()
+    }
   }
 });

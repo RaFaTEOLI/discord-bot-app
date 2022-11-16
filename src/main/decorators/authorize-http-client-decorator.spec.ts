@@ -98,7 +98,7 @@ describe('AuthorizeHttpClientDecorator', () => {
       field,
       'x-access-token': storageValue.accessToken,
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      Authorization: `Bearer ${storageValue.spotify?.accessToken}`
+      Authorization: `Bearer ${storageValue.user.spotify?.accessToken}`
     });
   });
 
