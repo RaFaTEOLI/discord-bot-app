@@ -1,25 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DetailedHTMLProps, InputHTMLAttributes, useEffect, useState } from 'react';
-import {
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Input as ChakraInput,
-  InputGroup,
-  InputLeftElement
-} from '@chakra-ui/react';
+import { FormControl, FormErrorMessage, FormLabel, Select as ChakraSelect, InputGroup } from '@chakra-ui/react';
+
+export type Options = {
+  label: string;
+  value: string;
+};
 
 type Props = DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> & {
   state: any;
   setState: any;
   name: string;
   placeholder?: string;
-  icon?: JSX.Element | undefined;
   size?: string | undefined;
-  isDisabled?: boolean | undefined;
+  options: Options[];
 };
 
-const Input = ({ icon, name, state, setState, ...props }: Props): JSX.Element => {
+const Select = ({ name, state, options, setState, ...props }: Props): JSX.Element => {
   const register = state.register ? state.register : () => {};
   const [error, setError] = useState('');
 
@@ -39,9 +36,7 @@ const Input = ({ icon, name, state, setState, ...props }: Props): JSX.Element =>
         </FormLabel>
       )}
       <InputGroup>
-        {icon && <InputLeftElement>{icon}</InputLeftElement>}
-
-        <ChakraInput
+        <ChakraSelect
           variant="outline"
           {...register(name)}
           {...props}
@@ -49,11 +44,13 @@ const Input = ({ icon, name, state, setState, ...props }: Props): JSX.Element =>
           title={error}
           placeholder={props.placeholder}
           data-testid={name}
-          readOnly
-          onFocus={e => {
-            e.target.readOnly = false;
-          }}
-        />
+        >
+          {options.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </ChakraSelect>
       </InputGroup>
 
       <FormErrorMessage>{error}</FormErrorMessage>
@@ -61,4 +58,4 @@ const Input = ({ icon, name, state, setState, ...props }: Props): JSX.Element =>
   );
 };
 
-export default Input;
+export default Select;

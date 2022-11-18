@@ -114,6 +114,7 @@ export default function Layout({ loadUser, spotifyAuthorize }: Props): JSX.Eleme
         </Flex>
         <Box
           w="100%"
+          h="88vh"
           p={8}
           borderLeftWidth={1.5}
           borderLeftColor={borderColor}
@@ -123,6 +124,7 @@ export default function Layout({ loadUser, spotifyAuthorize }: Props): JSX.Eleme
           data-testid="page-outlet"
           position="relative"
           overflowX="hidden"
+          overflowY="hidden"
         >
           <UserMenu onSpotifySignUp={onSpotifySignUp} />
           <Outlet />
