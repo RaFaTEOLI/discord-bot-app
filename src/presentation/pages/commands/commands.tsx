@@ -110,7 +110,7 @@ export default function Commands({ loadCommands, saveCommand }: Props): JSX.Elem
       const { id, ...dataValues } = data;
       const params = state.selectedCommand.id ? Object.assign({}, dataValues, { id: state.selectedCommand.id }) : dataValues;
       await saveCommand.save(params);
-      setState(prev => ({ ...prev, isLoading: false }));
+      setState(prev => ({ ...prev, isLoading: false, reload: true }));
       onClose();
       toast({
         title: 'Saved Command',
