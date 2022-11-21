@@ -8,7 +8,7 @@ export class RemoteSaveCommand implements SaveCommand {
 
   async save(params: SaveCommand.Params): Promise<void> {
     const httpResponse = await this.httpClient.request({
-      url: this.url,
+      url: params.id ? `${this.url}/${params.id}` : this.url,
       method: params.id ? 'put' : 'post',
       body: params
     });
