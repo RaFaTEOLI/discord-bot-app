@@ -8,6 +8,16 @@ import { AccountModel, CommandModel } from '@/domain/models';
 import { LoadCommandsSpy, mockCommandModel, mockSaveCommandParams, SaveCommandSpy } from '@/domain/mocks';
 import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
 
+const mockToast = jest.fn();
+jest.mock('@chakra-ui/react', () => {
+  const originalModule = jest.requireActual('@chakra-ui/react');
+  return {
+    __esModule: true,
+    ...originalModule,
+    useToast: jest.fn().mockImplementation(() => mockToast)
+  };
+});
+
 const simulateInvalidSubmit = async (): Promise<void> => {
   const submitButton = screen.getByTestId('submit');
   await userEvent.click(submitButton);
@@ -200,6 +210,15 @@ describe('Commands Component', () => {
     await simulateValidSubmit(true);
     await waitFor(() => commandsList);
     expect(saveSpy).toHaveBeenCalledWith(saveCommandSpy.params);
+    await setTimeout(500);
+    expect(commandForm).not.toBeInTheDocument();
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Saved Command',
+      description: 'Your command was successfully saved',
+      status: 'success',
+      duration: 9000,
+      isClosable: true
+    });
   });
 
   test('should close CommandModal on close', async () => {
