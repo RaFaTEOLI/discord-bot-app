@@ -90,7 +90,7 @@ const CommandModal = ({ isOpen, onClose, onSubmit }: Props): JSX.Element => {
       register,
       errors
     }));
-  }, [register, errors]);
+  }, [register, errors, state.selectedCommand]);
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
