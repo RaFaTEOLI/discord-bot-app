@@ -1,4 +1,4 @@
-import { commandsState } from './atoms';
+import { commandsState } from '@/presentation/pages/commands/components';
 import { InputBase } from '@/presentation/components';
 import { useRecoilState } from 'recoil';
 

@@ -1,7 +1,7 @@
-import { Content, Error, Loading } from '@/presentation/components';
+import { Content, currentAccountState, Error, Loading } from '@/presentation/components';
 import { Flex, Box, Button, useDisclosure } from '@chakra-ui/react';
 import { commandsState, CommandListItem, CommandModal } from './components';
-import { useRecoilState, useResetRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue, useResetRecoilState } from 'recoil';
 import { CommandModel } from '@/domain/models';
 import { HiOutlinePlusCircle } from 'react-icons/hi2';
 import { LoadCommands, SaveCommand } from '@/domain/usecases';
@@ -30,6 +30,7 @@ const schema = yupResolver(
 );
 
 export default function Commands({ loadCommands, saveCommand }: Props): JSX.Element {
+  const { getCurrentAccount } = useRecoilValue(currentAccountState);
   const resetCommandsState = useResetRecoilState(commandsState);
   const [state, setState] = useRecoilState(commandsState);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -107,6 +108,7 @@ export default function Commands({ loadCommands, saveCommand }: Props): JSX.Elem
       const { id, ...dataValues } = data;
       const params = state.selectedCommand.id ? Object.assign({}, dataValues, { id: state.selectedCommand.id }) : dataValues;
       await saveCommand.save(params);
+      setState(prev => ({ ...prev, isLoading: false }));
     } catch (error: any) {
       handleError(error);
     }
@@ -121,17 +123,20 @@ export default function Commands({ loadCommands, saveCommand }: Props): JSX.Elem
           </Flex>
         ) : (
           <Flex flexDir="column">
-            <Flex justifyContent="flex-end" p={5}>
-              <Button
-                data-testid="new-command"
-                onClick={onOpen}
-                leftIcon={<HiOutlinePlusCircle />}
-                colorScheme="blue"
-                size="sm"
-              >
-                Add
-              </Button>
-            </Flex>
+            {getCurrentAccount().user.role === 'admin' && (
+              <Flex justifyContent="flex-end" p={5}>
+                <Button
+                  data-testid="new-command"
+                  onClick={onOpen}
+                  leftIcon={<HiOutlinePlusCircle />}
+                  colorScheme="blue"
+                  size="sm"
+                >
+                  Add
+                </Button>
+              </Flex>
+            )}
+
             {state.error ? (
               <Flex justifyContent="center" alignItems="center">
                 <Box w="md">

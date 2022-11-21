@@ -1,4 +1,4 @@
-import { commandsState } from './atoms';
+import { commandsState } from '@/presentation/pages/commands/components';
 import { SubmitButtonBase } from '@/presentation/components';
 import { useRecoilValue } from 'recoil';
 
@@ -9,7 +9,9 @@ type Props = {
 
 const SubmitButton = ({ text, icon }: Props): JSX.Element => {
   const state = useRecoilValue(commandsState);
-  return <SubmitButtonBase isLoading={state.isLoading} text={text} state={state} icon={icon} />;
+  return (
+    <SubmitButtonBase isDisabled={state.disabledForm} isLoading={state.isLoading} text={text} state={state} icon={icon} />
+  );
 };
 
 export default SubmitButton;

@@ -12,7 +12,7 @@ import {
 import { FiCheck } from 'react-icons/fi';
 import { HiCommandLine, HiEnvelopeOpen, HiInformationCircle } from 'react-icons/hi2';
 import { useRecoilState } from 'recoil';
-import { commandsState } from './atoms';
+import { commandsState } from '@/presentation/pages/commands/components';
 import Input from './input';
 import SubmitButton from './submit-button';
 import Select from './select';
