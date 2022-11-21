@@ -33,10 +33,15 @@ type SutTypes = {
 };
 
 const history = createMemoryHistory({ initialEntries: ['/commands'] });
-const makeSut = (loadCommandsSpy = new LoadCommandsSpy(), saveCommandSpy = new SaveCommandSpy()): SutTypes => {
+const makeSut = (
+  loadCommandsSpy = new LoadCommandsSpy(),
+  saveCommandSpy = new SaveCommandSpy(),
+  adminUser = false
+): SutTypes => {
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
+    adminUser,
     Page: () => Commands({ loadCommands: loadCommandsSpy, saveCommand: saveCommandSpy })
   });
   return {
@@ -83,7 +88,7 @@ describe('Commands Component', () => {
   });
 
   test('should show form errors', async () => {
-    makeSut();
+    makeSut(new LoadCommandsSpy(), new SaveCommandSpy(), true);
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
     userEvent.click(screen.getByTestId('new-command'));
@@ -104,7 +109,7 @@ describe('Commands Component', () => {
     expect(loadCommandsSpy.callsCount).toBe(1);
   });
 
-  test('should render error on UnexpectedError', async () => {
+  test('should render error on UnexpectedError on LoadCommands', async () => {
     const loadCommandsSpy = new LoadCommandsSpy();
     const error = new UnexpectedError();
     jest.spyOn(loadCommandsSpy, 'all').mockRejectedValueOnce(error);
@@ -115,7 +120,7 @@ describe('Commands Component', () => {
     expect(errorWrap).toHaveTextContent(error.message);
   });
 
-  test('should render error on AccessDeniedError', async () => {
+  test('should render error on AccessDeniedError on LoadCommands', async () => {
     const loadCommandsSpy = new LoadCommandsSpy();
     jest.spyOn(loadCommandsSpy, 'all').mockRejectedValueOnce(new AccessDeniedError());
     const { setCurrentAccountMock, history } = makeSut(loadCommandsSpy);
@@ -136,7 +141,7 @@ describe('Commands Component', () => {
   });
 
   test('should call SaveCommand with correct values on form submit', async () => {
-    const { saveCommandSpy } = makeSut();
+    const { saveCommandSpy } = makeSut(new LoadCommandsSpy(), new SaveCommandSpy(), true);
     const saveSpy = jest.spyOn(saveCommandSpy, 'save');
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
@@ -148,6 +153,26 @@ describe('Commands Component', () => {
     await setTimeout(500);
     expect(saveCommandSpy.callsCount).toBe(1);
     expect(saveSpy).toHaveBeenCalledWith(formValues);
+  });
+
+  test('should render error on UnexpectedError on SaveCommand', async () => {
+    const loadCommandsSpy = new LoadCommandsSpy();
+    const saveCommandSpy = new SaveCommandSpy();
+    const error = new UnexpectedError();
+    jest.spyOn(saveCommandSpy, 'save').mockRejectedValueOnce(error);
+    makeSut(loadCommandsSpy, saveCommandSpy, true);
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    userEvent.click(screen.getByTestId('new-command'));
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    expect(commandForm).toBeInTheDocument();
+    await simulateValidSubmit();
+    await setTimeout(500);
+    await waitFor(() => screen.getByTestId('error'));
+    expect(screen.queryByTestId('commands-list')).not.toBeInTheDocument();
+    const errorWrap = await screen.findByTestId('error');
+    expect(errorWrap).toHaveTextContent(error.message);
   });
 
   test('should close CommandModal on close', async () => {
