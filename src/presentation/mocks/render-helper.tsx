@@ -16,6 +16,7 @@ type Params = {
   legacyRoot?: boolean;
   useAct?: boolean;
   states?: Array<{ atom: RecoilState<any>; value: any }>;
+  adminUser?: boolean;
 };
 
 type Result = {
@@ -27,12 +28,13 @@ export const renderWithHistory = ({
   useAct = false,
   history,
   account = mockAccountModel(),
-  states = []
+  states = [],
+  adminUser = false
 }: Params): Result => {
   const setCurrentAccountMock = jest.fn();
   const mockedState = {
     setCurrentAccount: setCurrentAccountMock,
-    getCurrentAccount: () => account
+    getCurrentAccount: () => (adminUser ? { ...account, user: { ...account.user, role: 'admin' } } : account)
   };
 
   const initializeState = ({ set }: MutableSnapshot): void => {
