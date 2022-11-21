@@ -117,7 +117,8 @@ export default function Commands({ loadCommands, saveCommand }: Props): JSX.Elem
         description: 'Your command was successfully saved',
         status: 'success',
         duration: 9000,
-        isClosable: true
+        isClosable: true,
+        position: 'top'
       });
     } catch (error: any) {
       handleError(error);

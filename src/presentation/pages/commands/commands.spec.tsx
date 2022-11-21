@@ -217,7 +217,8 @@ describe('Commands Component', () => {
       description: 'Your command was successfully saved',
       status: 'success',
       duration: 9000,
-      isClosable: true
+      isClosable: true,
+      position: 'top'
     });
   });
 
