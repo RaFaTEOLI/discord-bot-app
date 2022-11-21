@@ -5,7 +5,7 @@ import { setTimeout } from 'timers/promises';
 import userEvent from '@testing-library/user-event';
 import Commands from './commands';
 import { AccountModel, CommandModel } from '@/domain/models';
-import { LoadCommandsSpy, mockSaveCommandParams, SaveCommandSpy } from '@/domain/mocks';
+import { LoadCommandsSpy, mockCommandModel, mockSaveCommandParams, SaveCommandSpy } from '@/domain/mocks';
 import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
 
 const simulateInvalidSubmit = async (): Promise<void> => {
@@ -13,8 +13,8 @@ const simulateInvalidSubmit = async (): Promise<void> => {
   await userEvent.click(submitButton);
 };
 
-const simulateValidSubmit = async (): Promise<Omit<CommandModel, 'id'>> => {
-  const formValues = mockSaveCommandParams();
+const simulateValidSubmit = async (withId = false): Promise<Omit<CommandModel, 'id'>> => {
+  const formValues = withId ? mockCommandModel() : mockSaveCommandParams();
   const submitButton = screen.getByTestId('submit');
   await Helper.asyncPopulateField('command', formValues.command);
   await Helper.asyncPopulateField('description', formValues.description);
@@ -173,6 +173,33 @@ describe('Commands Component', () => {
     expect(screen.queryByTestId('commands-list')).not.toBeInTheDocument();
     const errorWrap = await screen.findByTestId('error');
     expect(errorWrap).toHaveTextContent(error.message);
+  });
+
+  test('should not call SaveCommand when trying to save action command', async () => {
+    const { saveCommandSpy } = makeSut(new LoadCommandsSpy(), new SaveCommandSpy(), true);
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    userEvent.click(commandsList.querySelector('.command-view-button') as Element);
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    expect(commandForm).toBeInTheDocument();
+    await simulateValidSubmit(true);
+    await waitFor(() => commandsList);
+    expect(saveCommandSpy.callsCount).toBe(0);
+  });
+
+  test('should call SaveCommand with correct values and id', async () => {
+    const { saveCommandSpy } = makeSut(new LoadCommandsSpy(), new SaveCommandSpy(), true);
+    const saveSpy = jest.spyOn(saveCommandSpy, 'save');
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    userEvent.click(commandsList.querySelectorAll('.command-view-button')[1]);
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    expect(commandForm).toBeInTheDocument();
+    await simulateValidSubmit(true);
+    await waitFor(() => commandsList);
+    expect(saveSpy).toHaveBeenCalledWith(saveCommandSpy.params);
   });
 
   test('should close CommandModal on close', async () => {
