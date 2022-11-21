@@ -4,20 +4,49 @@ import { commandsState, CommandListItem, CommandModal } from './components';
 import { useRecoilState, useResetRecoilState } from 'recoil';
 import { CommandModel } from '@/domain/models';
 import { HiOutlinePlusCircle } from 'react-icons/hi2';
-import { LoadCommands } from '@/domain/usecases';
-import { useEffect } from 'react';
+import { LoadCommands, SaveCommand } from '@/domain/usecases';
 import { useErrorHandler } from '@/presentation/hooks';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 
 type Props = {
   loadCommands: LoadCommands;
+  saveCommand: SaveCommand;
 };
 
-export default function Commands({ loadCommands }: Props): JSX.Element {
+const schema = yupResolver(
+  yup
+    .object()
+    .shape({
+      command: yup.string().required('Required field'),
+      description: yup.string().required('Required field'),
+      dispatcher: yup.string().required('Required field'),
+      type: yup.string().required('Required field'),
+      response: yup.string()
+    })
+    .required()
+);
+
+export default function Commands({ loadCommands, saveCommand }: Props): JSX.Element {
   const resetCommandsState = useResetRecoilState(commandsState);
   const [state, setState] = useRecoilState(commandsState);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const handleError = useErrorHandler((error: Error) => {
     setState(prev => ({ ...prev, isLoading: false, error: error.message, reload: false }));
+    onClose();
+  });
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors }
+  } = useForm<CommandModel>({
+    defaultValues: state.selectedCommand,
+    resolver: schema
   });
 
   const handleView = (command: CommandModel): void => {
@@ -39,13 +68,49 @@ export default function Commands({ loadCommands }: Props): JSX.Element {
     })();
   }, [state.reload]);
 
-  const onSubmit = async (data: any): Promise<void> => {
+  useEffect(() => {
+    const { command, description, response, type, dispatcher } = state.selectedCommand;
+
+    setValue('command', command);
+    setValue('description', description);
+    setValue('response', response);
+    setValue('type', type);
+    setValue('dispatcher', dispatcher);
+
+    if (type === 'action') {
+      setState(prev => ({ ...prev, disabledForm: true }));
+    } else {
+      setState(prev => ({ ...prev, disabledForm: false }));
+    }
+  }, [state.selectedCommand]);
+
+  useEffect(() => {
+    setState(prev => ({
+      ...prev,
+      register,
+      errors
+    }));
+  }, [register, errors, state.selectedCommand]);
+
+  const handleClose = (): void => {
+    setState(prev => ({
+      ...prev,
+      selectedCommand: { id: '', command: '', description: '', type: '', dispatcher: '', response: '' }
+    }));
+    onClose();
+    reset();
+  };
+
+  const onSubmit = handleSubmit(async data => {
     try {
       setState(prev => ({ ...prev, isLoading: true }));
+      const { id, ...dataValues } = data;
+      const params = state.selectedCommand.id ? Object.assign({}, dataValues, { id: state.selectedCommand.id }) : dataValues;
+      await saveCommand.save(params);
     } catch (error: any) {
       handleError(error);
     }
-  };
+  });
 
   return (
     <>
@@ -79,7 +144,7 @@ export default function Commands({ loadCommands }: Props): JSX.Element {
           </Flex>
         )}
       </Content>
-      <CommandModal onSubmit={onSubmit} isOpen={isOpen} onClose={onClose} />
+      <CommandModal onSubmit={onSubmit} isOpen={isOpen} onClose={handleClose} />
     </>
   );
 }

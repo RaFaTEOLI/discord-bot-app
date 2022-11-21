@@ -34,6 +34,8 @@ export const commandsState = atom({
         value: 'message'
       }
     ],
-    disabledForm: false
+    disabledForm: false,
+    register: (() => {}) as any,
+    errors: {}
   }
 });

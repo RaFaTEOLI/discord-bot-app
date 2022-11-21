@@ -1,7 +1,7 @@
 import { HttpClient, HttpStatusCode } from '@/data/protocols/http';
 import { CommandModel } from '@/domain/models';
 import { SaveCommand } from '@/domain/usecases';
-import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
+import { ForbiddenError, UnexpectedError } from '@/domain/errors';
 
 export class RemoteSaveCommand implements SaveCommand {
   constructor(private readonly url: string, private readonly httpClient: HttpClient<RemoteSaveCommand.Model>) {}
@@ -16,7 +16,7 @@ export class RemoteSaveCommand implements SaveCommand {
       case HttpStatusCode.noContent:
         return;
       case HttpStatusCode.forbidden:
-        throw new AccessDeniedError();
+        throw new ForbiddenError();
       default:
         throw new UnexpectedError();
     }
