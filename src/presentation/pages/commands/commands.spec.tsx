@@ -4,8 +4,8 @@ import { createMemoryHistory, MemoryHistory } from 'history';
 import { setTimeout } from 'timers/promises';
 import userEvent from '@testing-library/user-event';
 import Commands from './commands';
-import { AccountModel } from '@/domain/models';
-import { LoadCommandsSpy } from '@/domain/mocks';
+import { AccountModel, CommandModel } from '@/domain/models';
+import { LoadCommandsSpy, mockSaveCommandParams, SaveCommandSpy } from '@/domain/mocks';
 import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
 
 const simulateInvalidSubmit = async (): Promise<void> => {
@@ -13,21 +13,35 @@ const simulateInvalidSubmit = async (): Promise<void> => {
   await userEvent.click(submitButton);
 };
 
+const simulateValidSubmit = async (): Promise<Omit<CommandModel, 'id'>> => {
+  const formValues = mockSaveCommandParams();
+  const submitButton = screen.getByTestId('submit');
+  await Helper.asyncPopulateField('command', formValues.command);
+  await Helper.asyncPopulateField('description', formValues.description);
+  await Helper.asyncPopulateField('dispatcher', formValues.dispatcher, true);
+  await Helper.asyncPopulateField('type', formValues.type, true);
+  await Helper.asyncPopulateField('response', formValues.response);
+  await userEvent.click(submitButton);
+  return formValues;
+};
+
 type SutTypes = {
   loadCommandsSpy: LoadCommandsSpy;
+  saveCommandSpy: SaveCommandSpy;
   history: MemoryHistory;
   setCurrentAccountMock: (account: AccountModel) => void;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/commands'] });
-const makeSut = (loadCommandsSpy = new LoadCommandsSpy()): SutTypes => {
+const makeSut = (loadCommandsSpy = new LoadCommandsSpy(), saveCommandSpy = new SaveCommandSpy()): SutTypes => {
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
-    Page: () => Commands({ loadCommands: loadCommandsSpy })
+    Page: () => Commands({ loadCommands: loadCommandsSpy, saveCommand: saveCommandSpy })
   });
   return {
     loadCommandsSpy,
+    saveCommandSpy,
     history,
     setCurrentAccountMock
   };
@@ -119,6 +133,21 @@ describe('Commands Component', () => {
     await userEvent.click(screen.getByTestId('reload'));
     await waitFor(() => screen.getByTestId('commands-list'));
     expect(loadCommandsSpy.callsCount).toBe(2);
+  });
+
+  test('should call SaveCommand with correct values on form submit', async () => {
+    const { saveCommandSpy } = makeSut();
+    const saveSpy = jest.spyOn(saveCommandSpy, 'save');
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    userEvent.click(screen.getByTestId('new-command'));
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    expect(commandForm).toBeInTheDocument();
+    const formValues = await simulateValidSubmit();
+    await setTimeout(500);
+    expect(saveCommandSpy.callsCount).toBe(1);
+    expect(saveSpy).toHaveBeenCalledWith(formValues);
   });
 
   test('should close CommandModal on close', async () => {

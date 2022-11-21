@@ -2,7 +2,7 @@ import { HttpClientSpy } from '@/data/mocks';
 import { RemoteSaveCommand } from '@/data/usecases';
 import { HttpStatusCode } from '@/data/protocols/http';
 import { mockSaveCommandParams } from '@/domain/mocks';
-import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
+import { ForbiddenError, UnexpectedError } from '@/domain/errors';
 import { faker } from '@faker-js/faker';
 
 type SutTypes = {
@@ -46,13 +46,13 @@ describe('RemoteSaveCommand', () => {
     expect(httpClientSpy.body).toEqual(saveCommandParams);
   });
 
-  test('should throw AccessDeniedError if HttpClient returns 403', async () => {
+  test('should throw ForbiddenError if HttpClient returns 403', async () => {
     const { sut, httpClientSpy } = makeSut();
     httpClientSpy.response = {
       statusCode: HttpStatusCode.forbidden
     };
     const promise = sut.save(mockSaveCommandParams());
-    await expect(promise).rejects.toThrow(new AccessDeniedError());
+    await expect(promise).rejects.toThrow(new ForbiddenError());
   });
 
   test('should throw UnexpectedError if HttpClient returns 404', async () => {
