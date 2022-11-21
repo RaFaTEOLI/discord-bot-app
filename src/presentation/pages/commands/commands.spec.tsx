@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event';
 import Commands from './commands';
 import { AccountModel } from '@/domain/models';
 import { LoadCommandsSpy } from '@/domain/mocks';
+import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
 
 const simulateInvalidSubmit = async (): Promise<void> => {
   const submitButton = screen.getByTestId('submit');
@@ -87,6 +88,37 @@ describe('Commands Component', () => {
     const { loadCommandsSpy } = makeSut();
     await waitFor(() => screen.getByTestId('commands-list'));
     expect(loadCommandsSpy.callsCount).toBe(1);
+  });
+
+  test('should render error on UnexpectedError', async () => {
+    const loadCommandsSpy = new LoadCommandsSpy();
+    const error = new UnexpectedError();
+    jest.spyOn(loadCommandsSpy, 'all').mockRejectedValueOnce(error);
+    makeSut(loadCommandsSpy);
+    await waitFor(() => screen.getByTestId('error'));
+    expect(screen.queryByTestId('commands-list')).not.toBeInTheDocument();
+    const errorWrap = await screen.findByTestId('error');
+    expect(errorWrap).toHaveTextContent(error.message);
+  });
+
+  test('should render error on AccessDeniedError', async () => {
+    const loadCommandsSpy = new LoadCommandsSpy();
+    jest.spyOn(loadCommandsSpy, 'all').mockRejectedValueOnce(new AccessDeniedError());
+    const { setCurrentAccountMock, history } = makeSut(loadCommandsSpy);
+    await waitFor(() => screen.getByRole('heading'));
+    await setTimeout(500);
+    expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
+    expect(history.location.pathname).toBe('/login');
+  });
+
+  test('should call LoadSurveyList on reload', async () => {
+    const loadCommandsSpy = new LoadCommandsSpy();
+    jest.spyOn(loadCommandsSpy, 'all').mockRejectedValueOnce(new UnexpectedError());
+    makeSut(loadCommandsSpy);
+    await waitFor(() => screen.getByTestId('error'));
+    await userEvent.click(screen.getByTestId('reload'));
+    await waitFor(() => screen.getByTestId('commands-list'));
+    expect(loadCommandsSpy.callsCount).toBe(2);
   });
 
   test('should close CommandModal on close', async () => {
