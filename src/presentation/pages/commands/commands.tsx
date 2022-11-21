@@ -25,6 +25,8 @@ export default function Commands({ loadCommands }: Props): JSX.Element {
     onOpen();
   };
 
+  const reload = (): void => setState(prev => ({ ...prev, commands: [], error: '', reload: !prev.reload }));
+
   useEffect(() => resetCommandsState(), []);
   useEffect(() => {
     (async () => {
@@ -68,7 +70,7 @@ export default function Commands({ loadCommands }: Props): JSX.Element {
             {state.error ? (
               <Flex justifyContent="center" alignItems="center">
                 <Box w="md">
-                  <Error error={state.error} reload={() => {}} />
+                  <Error error={state.error} reload={reload} />
                 </Box>
               </Flex>
             ) : (
