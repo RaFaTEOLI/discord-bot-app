@@ -1,5 +1,5 @@
 import { Content, currentAccountState, Error, Loading } from '@/presentation/components';
-import { Flex, Box, Button, useDisclosure } from '@chakra-ui/react';
+import { Flex, Box, Button, useDisclosure, useToast } from '@chakra-ui/react';
 import { commandsState, CommandListItem, CommandModal } from './components';
 import { useRecoilState, useRecoilValue, useResetRecoilState } from 'recoil';
 import { CommandModel } from '@/domain/models';
@@ -38,6 +38,8 @@ export default function Commands({ loadCommands, saveCommand }: Props): JSX.Elem
     setState(prev => ({ ...prev, isLoading: false, error: error.message, reload: false }));
     onClose();
   });
+
+  const toast = useToast();
 
   const {
     register,
@@ -109,6 +111,14 @@ export default function Commands({ loadCommands, saveCommand }: Props): JSX.Elem
       const params = state.selectedCommand.id ? Object.assign({}, dataValues, { id: state.selectedCommand.id }) : dataValues;
       await saveCommand.save(params);
       setState(prev => ({ ...prev, isLoading: false }));
+      onClose();
+      toast({
+        title: 'Saved Command',
+        description: 'Your command was successfully saved',
+        status: 'success',
+        duration: 9000,
+        isClosable: true
+      });
     } catch (error: any) {
       handleError(error);
     }
