@@ -54,11 +54,11 @@ export default function UserMenu({ onSpotifySignUp }: Props): JSX.Element {
               <Flex alignItems="center" justifyContent="center">
                 <Avatar
                   m={1}
-                  size="sm"
+                  size={['xs', 'sm']}
                   name={getCurrentAccount().user.name}
                   src={getCurrentAccount().user.spotify?.avatarUrl}
                 />
-                <Text fontSize="sm" m={3} data-testid="user-name">
+                <Text fontSize="sm" m={3} data-testid="user-name" display={['none', 'flex']}>
                   {userName}
                 </Text>
               </Flex>

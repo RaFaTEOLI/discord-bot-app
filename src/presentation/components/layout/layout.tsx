@@ -94,7 +94,14 @@ export default function Layout({ loadUser, spotifyAuthorize }: Props): JSX.Eleme
               <Logo data-testid="bot-logo" onClick={toggleSidebar} width="82px" height="82px" />
               {navSize !== 'small' && (
                 <Flex flexDir="column">
-                  <Text data-testid="bot-name" fontSize="4xl" fontWeight={700} color="green" onClick={toggleSidebar}>
+                  <Text
+                    data-testid="bot-name"
+                    fontSize="4xl"
+                    fontWeight={700}
+                    color="green"
+                    onClick={toggleSidebar}
+                    display={['none', 'flex']}
+                  >
                     {process.env.VITE_BOT_NAME}
                   </Text>
                   <ThemeSwitcher />

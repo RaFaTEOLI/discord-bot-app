@@ -11,7 +11,7 @@ export default function CommandListItem({ commands, handleView }: Props): JSX.El
   return (
     <Flex direction={['column', 'row']} flexWrap="wrap" gap={5} data-testid="commands-list">
       {commands.map(command => (
-        <Box key={command.id} w="285px" borderWidth="1px" borderRadius="lg" overflow="hidden">
+        <Box key={command.id} w={[230, 280]} borderWidth="1px" borderRadius="lg" overflow="hidden">
           <Box p="6">
             <Box mt="1" fontWeight="semibold" as="h4" lineHeight="tight" noOfLines={1}>
               !{command.command}
