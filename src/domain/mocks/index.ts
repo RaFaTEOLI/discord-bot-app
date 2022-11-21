@@ -5,4 +5,4 @@ export * from './mock-spotify-authorize';
 export * from './mock-spotify-access';
 export * from './mock-spotify-request-token';
 export * from './mock-spotify-user';
-export * from './mock-load-commands';
+export * from './mock-commands';
