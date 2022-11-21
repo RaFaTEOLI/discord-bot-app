@@ -4,8 +4,13 @@ import { commandsState, CommandListItem, CommandModal } from './components';
 import { useRecoilState } from 'recoil';
 import { CommandModel } from '@/domain/models';
 import { HiOutlinePlusCircle } from 'react-icons/hi2';
+import { LoadCommands } from '@/domain/usecases';
 
-export default function Commands(): JSX.Element {
+type Props = {
+  loadCommands: LoadCommands;
+};
+
+export default function Commands({ loadCommands }: Props): JSX.Element {
   const [state, setState] = useRecoilState(commandsState);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
