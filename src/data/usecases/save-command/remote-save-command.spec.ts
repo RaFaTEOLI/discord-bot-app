@@ -28,7 +28,7 @@ describe('RemoteSaveCommand', () => {
     };
     const saveCommandParams = Object.assign({}, mockSaveCommandParams(), { id: faker.datatype.uuid() });
     await sut.save(saveCommandParams);
-    expect(httpClientSpy.url).toBe(url);
+    expect(httpClientSpy.url).toBe(`${url}/${saveCommandParams.id}`);
     expect(httpClientSpy.method).toBe('put');
     expect(httpClientSpy.body).toEqual(saveCommandParams);
   });
