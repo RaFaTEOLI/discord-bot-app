@@ -10,7 +10,7 @@ type Props = {
 };
 
 const Input = ({ type, name, placeholder, icon, ...props }: Props): JSX.Element => {
-  const [state, setState] = useRecoilState(commandsState);
+  const [state] = useRecoilState(commandsState);
   return (
     <InputBase
       isDisabled={state.disabledForm}
@@ -18,7 +18,6 @@ const Input = ({ type, name, placeholder, icon, ...props }: Props): JSX.Element 
       name={name}
       placeholder={placeholder}
       state={state}
-      setState={setState}
       icon={icon}
       {...props}
     />

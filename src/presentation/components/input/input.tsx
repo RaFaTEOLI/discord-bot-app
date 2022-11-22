@@ -11,7 +11,6 @@ import {
 
 type Props = DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> & {
   state: any;
-  setState: any;
   name: string;
   placeholder?: string;
   icon?: JSX.Element | undefined;
@@ -19,7 +18,7 @@ type Props = DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputE
   isDisabled?: boolean | undefined;
 };
 
-const Input = ({ icon, name, state, setState, ...props }: Props): JSX.Element => {
+const Input = ({ icon, name, state, ...props }: Props): JSX.Element => {
   const register = state.register ? state.register : () => {};
   const [error, setError] = useState('');
 

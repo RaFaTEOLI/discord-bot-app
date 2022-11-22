@@ -10,10 +10,8 @@ type Props = {
 };
 
 const Input = ({ type, name, placeholder, icon, ...props }: Props): JSX.Element => {
-  const [state, setState] = useRecoilState(loginState);
-  return (
-    <InputBase type={type} name={name} placeholder={placeholder} state={state} setState={setState} icon={icon} {...props} />
-  );
+  const [state] = useRecoilState(loginState);
+  return <InputBase type={type} name={name} placeholder={placeholder} state={state} icon={icon} {...props} />;
 };
 
 export default Input;
