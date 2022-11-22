@@ -222,6 +222,46 @@ describe('Commands Component', () => {
     });
   });
 
+  test('should have only one command filtered from CommandList by command name', async () => {
+    const { loadCommandsSpy } = makeSut();
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    const inputFilter = screen.getByTestId('filter-command-input');
+    await userEvent.type(inputFilter, loadCommandsSpy.commands[1].command);
+    expect(commandsList.children).toHaveLength(1);
+    expect(commandsList.querySelector('.command-name')).toHaveTextContent(`!${loadCommandsSpy.commands[1].command}`);
+    expect(commandsList.querySelector('.command-description')).toHaveTextContent(loadCommandsSpy.commands[1].description);
+  });
+
+  test('should show all commands from CommandList if empty filter is provided', async () => {
+    makeSut();
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    const inputFilter = screen.getByTestId('filter-command-input');
+    await userEvent.type(inputFilter, ' ');
+    expect(commandsList.children).toHaveLength(3);
+  });
+
+  test('should show zero commands from CommandList if filter does not match with any command', async () => {
+    makeSut();
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    const inputFilter = screen.getByTestId('filter-command-input');
+    await userEvent.type(inputFilter, 'INVALID FILTER');
+    expect(commandsList.children).toHaveLength(0);
+  });
+
+  test('should only one command filtered from CommandList by command description', async () => {
+    const { loadCommandsSpy } = makeSut();
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    const inputFilter = screen.getByTestId('filter-command-input');
+    await userEvent.type(inputFilter, loadCommandsSpy.commands[2].description);
+    expect(commandsList.children).toHaveLength(1);
+    expect(commandsList.querySelector('.command-name')).toHaveTextContent(`!${loadCommandsSpy.commands[2].command}`);
+    expect(commandsList.querySelector('.command-description')).toHaveTextContent(loadCommandsSpy.commands[2].description);
+  });
+
   test('should close CommandModal on close', async () => {
     makeSut();
     const commandsList = await screen.findByTestId('commands-list');
