@@ -12,4 +12,5 @@ export { default as Content } from './content/content';
 export { default as ThemeSwitcher } from './theme-switcher/theme-switcher';
 export { default as SpotifyButton } from './spotify-button/spotify-button';
 export { default as SpotifyContainer } from './spotify-container/spotify-container';
+export { default as ConfirmationModal } from './confirmation-modal/confirmation-modal';
 export * from './atoms/atoms';
