@@ -1,6 +1,6 @@
 import { Content, currentAccountState, Error, Loading } from '@/presentation/components';
 import { Flex, Box, Button, useDisclosure, useToast } from '@chakra-ui/react';
-import { commandsState, CommandListItem, CommandModal } from './components';
+import { commandsState, CommandListItem, CommandModal, InputFilter } from './components';
 import { useRecoilState, useRecoilValue, useResetRecoilState } from 'recoil';
 import { CommandModel } from '@/domain/models';
 import { HiOutlinePlusCircle } from 'react-icons/hi2';
@@ -134,19 +134,21 @@ export default function Commands({ loadCommands, saveCommand }: Props): JSX.Elem
           </Flex>
         ) : (
           <Flex flexDir="column">
-            {getCurrentAccount().user.role === 'admin' && (
-              <Flex justifyContent="flex-end" p={5}>
+            <Flex justifyContent="space-between" p={0} pb={5} pr={9}>
+              <InputFilter borderRightRadius={getCurrentAccount().user.role === 'admin' ? 0 : 5} />
+              {getCurrentAccount().user.role === 'admin' && (
                 <Button
                   data-testid="new-command"
                   onClick={onOpen}
                   leftIcon={<HiOutlinePlusCircle />}
+                  borderLeftRadius={0}
                   colorScheme="blue"
                   size="sm"
                 >
                   Add
                 </Button>
-              </Flex>
-            )}
+              )}
+            </Flex>
 
             {state.error ? (
               <Flex justifyContent="center" alignItems="center">
@@ -155,7 +157,7 @@ export default function Commands({ loadCommands, saveCommand }: Props): JSX.Elem
                 </Box>
               </Flex>
             ) : (
-              <CommandListItem handleView={handleView} commands={state.commands} />
+              <CommandListItem handleView={handleView} commands={state.filteredCommands} />
             )}
           </Flex>
         )}

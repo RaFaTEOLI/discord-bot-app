@@ -13,11 +13,11 @@ export default function CommandListItem({ commands, handleView }: Props): JSX.El
       {commands.map(command => (
         <Box key={command.id} w={[230, 280]} borderWidth="1px" borderRadius="lg" overflow="hidden">
           <Box p="6">
-            <Box mt="1" fontWeight="semibold" as="h4" lineHeight="tight" noOfLines={1}>
+            <Box mt="1" fontWeight="semibold" as="h4" lineHeight="tight" noOfLines={1} className="command-name">
               !{command.command}
             </Box>
 
-            <Box>{command.description}</Box>
+            <Box className="command-description">{command.description}</Box>
 
             <Box display="flex" mt="2" alignItems="center" justifyContent="space-between">
               <Box display="flex" alignItems="center">
