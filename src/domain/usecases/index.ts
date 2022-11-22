@@ -5,3 +5,4 @@ export * from './spotify-request-token';
 export * from './load-user';
 export * from './load-commands';
 export * from './save-command';
+export * from './delete-command';
