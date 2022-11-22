@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker';
 import { InputBase } from '@/presentation/components';
 
 const makeSut = (fieldName: string, placeholder = ''): RenderResult => {
-  return render(<InputBase name={fieldName} state={{}} setState={null} placeholder={placeholder} />);
+  return render(<InputBase name={fieldName} state={{}} placeholder={placeholder} />);
 };
 
 describe('Input Component', () => {
