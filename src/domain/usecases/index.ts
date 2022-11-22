@@ -6,3 +6,4 @@ export * from './load-user';
 export * from './load-commands';
 export * from './save-command';
 export * from './delete-command';
+export * from './run-command';
