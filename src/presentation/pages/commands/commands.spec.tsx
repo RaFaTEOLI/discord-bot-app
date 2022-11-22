@@ -308,6 +308,28 @@ describe('Commands Component', () => {
     });
   });
 
+  test('should render error on UnexpectedError on DeleteCommand', async () => {
+    const deleteCommandSpy = new DeleteCommandSpy();
+    const error = new UnexpectedError();
+    jest.spyOn(deleteCommandSpy, 'delete').mockRejectedValueOnce(error);
+    makeSut(new LoadCommandsSpy(), new SaveCommandSpy(), deleteCommandSpy, true);
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    userEvent.click(commandsList.querySelectorAll('.command-view-button')[1]);
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    await userEvent.click(screen.getByTestId('delete-button'));
+    const confirmButton = await screen.findByTestId('confirmation-confirm-button');
+    await waitFor(() => confirmButton);
+    await userEvent.click(confirmButton);
+    await setTimeout(500);
+    expect(commandForm).not.toBeInTheDocument();
+    await waitFor(() => screen.getByTestId('error'));
+    expect(screen.queryByTestId('commands-list')).not.toBeInTheDocument();
+    const errorWrap = await screen.findByTestId('error');
+    expect(errorWrap).toHaveTextContent(error.message);
+  });
+
   test('should close CommandModal on close', async () => {
     makeSut();
     const commandsList = await screen.findByTestId('commands-list');
