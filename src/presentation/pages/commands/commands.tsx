@@ -20,11 +20,11 @@ const schema = yupResolver(
   yup
     .object()
     .shape({
-      command: yup.string().required('Required field'),
-      description: yup.string().required('Required field'),
+      command: yup.string().min(2).max(25).required('Required field'),
+      description: yup.string().min(2).max(50).required('Required field'),
       dispatcher: yup.string().required('Required field'),
       type: yup.string().required('Required field'),
-      response: yup.string()
+      response: yup.string().min(2).max(255)
     })
     .required()
 );

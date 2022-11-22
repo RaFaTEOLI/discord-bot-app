@@ -106,9 +106,9 @@ describe('Commands Component', () => {
     await waitFor(() => commandForm);
     expect(commandForm).toBeInTheDocument();
     await simulateInvalidSubmit();
-    await setTimeout(1000);
-    Helper.testStatusForField('command', 'Required field');
-    Helper.testStatusForField('description', 'Required field');
+    await setTimeout(500);
+    Helper.testStatusForField('command', 'command must be at least 2 characters');
+    Helper.testStatusForField('description', 'description must be at least 2 characters');
     Helper.testStatusForField('type', 'Required field');
     Helper.testStatusForField('dispatcher', 'Required field');
   });
