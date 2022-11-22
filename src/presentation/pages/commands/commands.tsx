@@ -4,7 +4,7 @@ import { commandsState, CommandListItem, CommandModal, InputFilter } from './com
 import { useRecoilState, useRecoilValue, useResetRecoilState } from 'recoil';
 import { CommandModel } from '@/domain/models';
 import { HiOutlinePlusCircle } from 'react-icons/hi2';
-import { LoadCommands, SaveCommand } from '@/domain/usecases';
+import { DeleteCommand, LoadCommands, SaveCommand } from '@/domain/usecases';
 import { useErrorHandler } from '@/presentation/hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -14,6 +14,7 @@ import { useForm } from 'react-hook-form';
 type Props = {
   loadCommands: LoadCommands;
   saveCommand: SaveCommand;
+  deleteCommand: DeleteCommand;
 };
 
 const schema = yupResolver(
@@ -24,12 +25,12 @@ const schema = yupResolver(
       description: yup.string().min(2).max(50).required('Required field'),
       dispatcher: yup.string().required('Required field'),
       type: yup.string().required('Required field'),
-      response: yup.string().min(2).max(255)
+      response: yup.string().max(255)
     })
     .required()
 );
 
-export default function Commands({ loadCommands, saveCommand }: Props): JSX.Element {
+export default function Commands({ loadCommands, saveCommand, deleteCommand }: Props): JSX.Element {
   const { getCurrentAccount } = useRecoilValue(currentAccountState);
   const resetCommandsState = useResetRecoilState(commandsState);
   const [state, setState] = useRecoilState(commandsState);
@@ -110,7 +111,7 @@ export default function Commands({ loadCommands, saveCommand }: Props): JSX.Elem
       const { id, ...dataValues } = data;
       const params = state.selectedCommand.id ? Object.assign({}, dataValues, { id: state.selectedCommand.id }) : dataValues;
       await saveCommand.save(params);
-      setState(prev => ({ ...prev, isLoading: false, reload: true }));
+      setState(prev => ({ ...prev, reload: true }));
       onClose();
       toast({
         title: 'Saved Command',
@@ -124,6 +125,25 @@ export default function Commands({ loadCommands, saveCommand }: Props): JSX.Elem
       handleError(error);
     }
   });
+
+  const onDelete = async (): Promise<void> => {
+    try {
+      setState(prev => ({ ...prev, isLoading: true }));
+      await deleteCommand.delete(state.selectedCommand.id);
+      setState(prev => ({ ...prev, reload: true }));
+      onClose();
+      toast({
+        title: 'Deleted Command',
+        description: 'Your command was successfully deleted',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
+    } catch (error: any) {
+      handleError(error);
+    }
+  };
 
   return (
     <>
@@ -162,7 +182,7 @@ export default function Commands({ loadCommands, saveCommand }: Props): JSX.Elem
           </Flex>
         )}
       </Content>
-      <CommandModal onSubmit={onSubmit} isOpen={isOpen} onClose={handleClose} />
+      <CommandModal onSubmit={onSubmit} isOpen={isOpen} onClose={handleClose} onDelete={onDelete} />
     </>
   );
 }

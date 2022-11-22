@@ -15,7 +15,7 @@ import {
 interface IProps {
   onClose: () => void;
   isOpen: boolean;
-  confirm: () => void;
+  confirm: () => any;
   loading: boolean;
 }
 
@@ -34,17 +34,17 @@ const ConfirmationModal = ({ onClose, isOpen, confirm, loading }: IProps): JSX.E
             </Flex>
           ) : (
             <>
-              <ModalHeader data-testid="modal-header">Are you sure?</ModalHeader>
+              <ModalHeader data-testid="confirmation-modal-header">Are you sure?</ModalHeader>
               <ModalCloseButton />
               <ModalBody>
                 <Text>{"Once it's done it can't be undone!"}</Text>
               </ModalBody>
 
               <ModalFooter>
-                <Button data-testid="cancel-button" size="sm" colorScheme="red" mr={3} onClick={onClose}>
+                <Button data-testid="confirmation-cancel-button" size="sm" colorScheme="red" mr={3} onClick={onClose}>
                   No
                 </Button>
-                <Button data-testid="confirm-button" size="sm" colorScheme="green" onClick={handleClick}>
+                <Button data-testid="confirmation-confirm-button" size="sm" colorScheme="green" onClick={handleClick}>
                   Yes
                 </Button>
               </ModalFooter>
