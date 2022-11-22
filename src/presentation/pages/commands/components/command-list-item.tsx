@@ -17,37 +17,41 @@ export default function CommandListItem({ commands, handleView }: Props): JSX.El
               !{command.command}
             </Box>
 
-            <Box className="command-description">{command.description}</Box>
+            <Flex flexDir="column" justifyContent="space-between">
+              <Box className="command-description" h="3rem">
+                {command.description}
+              </Box>
 
-            <Box display="flex" mt="2" alignItems="center" justifyContent="space-between">
-              <Box display="flex" alignItems="center">
-                <Badge borderRadius="full" px="2" colorScheme="teal">
-                  {command.type.toUpperCase()}
-                </Badge>
-                <Box
-                  color="gray.500"
-                  fontWeight="semibold"
-                  letterSpacing="wide"
-                  fontSize="xs"
-                  textTransform="uppercase"
-                  ml="2"
-                >
-                  {command.dispatcher.toUpperCase()}
+              <Box display="flex" mt="2" alignItems="center" justifyContent="space-between">
+                <Box display="flex" alignItems="center">
+                  <Badge borderRadius="full" px="2" colorScheme="teal">
+                    {command.type.toUpperCase()}
+                  </Badge>
+                  <Box
+                    color="gray.500"
+                    fontWeight="semibold"
+                    letterSpacing="wide"
+                    fontSize="xs"
+                    textTransform="uppercase"
+                    ml="2"
+                  >
+                    {command.dispatcher.toUpperCase()}
+                  </Box>
+                </Box>
+
+                <Box display="flex" alignItems="center">
+                  <IconButton
+                    className="command-view-button"
+                    variant="outline"
+                    size="sm"
+                    colorScheme="blue"
+                    aria-label="View command"
+                    icon={<HiEye />}
+                    onClick={() => handleView(command)}
+                  />
                 </Box>
               </Box>
-
-              <Box display="flex" alignItems="center">
-                <IconButton
-                  className="command-view-button"
-                  variant="outline"
-                  size="sm"
-                  colorScheme="blue"
-                  aria-label="View command"
-                  icon={<HiEye />}
-                  onClick={() => handleView(command)}
-                />
-              </Box>
-            </Box>
+            </Flex>
           </Box>
         </Box>
       ))}
