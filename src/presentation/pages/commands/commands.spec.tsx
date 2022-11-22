@@ -5,7 +5,7 @@ import { setTimeout } from 'timers/promises';
 import userEvent from '@testing-library/user-event';
 import Commands from './commands';
 import { AccountModel, CommandModel } from '@/domain/models';
-import { LoadCommandsSpy, mockCommandModel, mockSaveCommandParams, SaveCommandSpy } from '@/domain/mocks';
+import { DeleteCommandSpy, LoadCommandsSpy, mockCommandModel, mockSaveCommandParams, SaveCommandSpy } from '@/domain/mocks';
 import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
 
 const mockToast = jest.fn();
@@ -38,6 +38,7 @@ const simulateValidSubmit = async (withId = false): Promise<Omit<CommandModel, '
 type SutTypes = {
   loadCommandsSpy: LoadCommandsSpy;
   saveCommandSpy: SaveCommandSpy;
+  deleteCommandSpy: DeleteCommandSpy;
   history: MemoryHistory;
   setCurrentAccountMock: (account: AccountModel) => void;
 };
@@ -46,17 +47,19 @@ const history = createMemoryHistory({ initialEntries: ['/commands'] });
 const makeSut = (
   loadCommandsSpy = new LoadCommandsSpy(),
   saveCommandSpy = new SaveCommandSpy(),
+  deleteCommandSpy = new DeleteCommandSpy(),
   adminUser = false
 ): SutTypes => {
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
     adminUser,
-    Page: () => Commands({ loadCommands: loadCommandsSpy, saveCommand: saveCommandSpy })
+    Page: () => Commands({ loadCommands: loadCommandsSpy, saveCommand: saveCommandSpy, deleteCommand: deleteCommandSpy })
   });
   return {
     loadCommandsSpy,
     saveCommandSpy,
+    deleteCommandSpy,
     history,
     setCurrentAccountMock
   };
@@ -98,7 +101,7 @@ describe('Commands Component', () => {
   });
 
   test('should show form errors', async () => {
-    makeSut(new LoadCommandsSpy(), new SaveCommandSpy(), true);
+    makeSut(new LoadCommandsSpy(), new SaveCommandSpy(), new DeleteCommandSpy(), true);
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
     userEvent.click(screen.getByTestId('new-command'));
@@ -151,7 +154,7 @@ describe('Commands Component', () => {
   });
 
   test('should call SaveCommand with correct values on form submit', async () => {
-    const { saveCommandSpy } = makeSut(new LoadCommandsSpy(), new SaveCommandSpy(), true);
+    const { saveCommandSpy } = makeSut(new LoadCommandsSpy(), new SaveCommandSpy(), new DeleteCommandSpy(), true);
     const saveSpy = jest.spyOn(saveCommandSpy, 'save');
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
@@ -170,7 +173,7 @@ describe('Commands Component', () => {
     const saveCommandSpy = new SaveCommandSpy();
     const error = new UnexpectedError();
     jest.spyOn(saveCommandSpy, 'save').mockRejectedValueOnce(error);
-    makeSut(loadCommandsSpy, saveCommandSpy, true);
+    makeSut(loadCommandsSpy, saveCommandSpy, new DeleteCommandSpy(), true);
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
     userEvent.click(screen.getByTestId('new-command'));
@@ -186,7 +189,7 @@ describe('Commands Component', () => {
   });
 
   test('should not call SaveCommand when trying to save action command', async () => {
-    const { saveCommandSpy } = makeSut(new LoadCommandsSpy(), new SaveCommandSpy(), true);
+    const { saveCommandSpy } = makeSut(new LoadCommandsSpy(), new SaveCommandSpy(), new DeleteCommandSpy(), true);
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
     userEvent.click(commandsList.querySelector('.command-view-button') as Element);
@@ -199,7 +202,7 @@ describe('Commands Component', () => {
   });
 
   test('should call SaveCommand with correct values and id', async () => {
-    const { saveCommandSpy } = makeSut(new LoadCommandsSpy(), new SaveCommandSpy(), true);
+    const { saveCommandSpy } = makeSut(new LoadCommandsSpy(), new SaveCommandSpy(), new DeleteCommandSpy(), true);
     const saveSpy = jest.spyOn(saveCommandSpy, 'save');
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
@@ -209,8 +212,8 @@ describe('Commands Component', () => {
     expect(commandForm).toBeInTheDocument();
     await simulateValidSubmit(true);
     await waitFor(() => commandsList);
+    await setTimeout(1000);
     expect(saveSpy).toHaveBeenCalledWith(saveCommandSpy.params);
-    await setTimeout(500);
     expect(commandForm).not.toBeInTheDocument();
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Saved Command',
@@ -260,6 +263,49 @@ describe('Commands Component', () => {
     expect(commandsList.children).toHaveLength(1);
     expect(commandsList.querySelector('.command-name')).toHaveTextContent(`!${loadCommandsSpy.commands[2].command}`);
     expect(commandsList.querySelector('.command-description')).toHaveTextContent(loadCommandsSpy.commands[2].description);
+  });
+
+  test('should not show delete button if it is a new command modal', async () => {
+    makeSut(new LoadCommandsSpy(), new SaveCommandSpy(), new DeleteCommandSpy(), true);
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    userEvent.click(screen.getByTestId('new-command'));
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    expect(commandForm).toBeInTheDocument();
+    const deleteButton = screen.queryByTestId('delete-button');
+    expect(deleteButton).not.toBeInTheDocument();
+  });
+
+  test('should call DeleteCommand with correct values', async () => {
+    const { deleteCommandSpy, loadCommandsSpy } = makeSut(
+      new LoadCommandsSpy(),
+      new SaveCommandSpy(),
+      new DeleteCommandSpy(),
+      true
+    );
+    const deleteSpy = jest.spyOn(deleteCommandSpy, 'delete');
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    userEvent.click(commandsList.querySelectorAll('.command-view-button')[1]);
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    await userEvent.click(screen.getByTestId('delete-button'));
+    const confirmButton = await screen.findByTestId('confirmation-confirm-button');
+    await waitFor(() => confirmButton);
+    await userEvent.click(confirmButton);
+    await setTimeout(500);
+    expect(deleteCommandSpy.callsCount).toBe(1);
+    expect(deleteSpy).toHaveBeenCalledWith(loadCommandsSpy.commands[1].id);
+    expect(commandForm).not.toBeInTheDocument();
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Deleted Command',
+      description: 'Your command was successfully deleted',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
   });
 
   test('should close CommandModal on close', async () => {

@@ -1,4 +1,4 @@
-import { LoadCommands, SaveCommand } from '@/domain/usecases';
+import { DeleteCommand, LoadCommands, SaveCommand } from '@/domain/usecases';
 import { faker } from '@faker-js/faker';
 
 export const mockCommandModel = (type = faker.helpers.arrayElement(['music', 'action', 'message'])): LoadCommands.Model => ({
@@ -42,6 +42,17 @@ export class SaveCommandSpy implements SaveCommand {
   async save(params: SaveCommand.Params): Promise<void> {
     this.callsCount++;
     this.params = params;
+    return Promise.resolve();
+  }
+}
+
+export class DeleteCommandSpy implements DeleteCommand {
+  callsCount = 0;
+  commandId: string | undefined;
+
+  async delete(commandId: string): Promise<void> {
+    this.callsCount++;
+    this.commandId = commandId;
     return Promise.resolve();
   }
 }

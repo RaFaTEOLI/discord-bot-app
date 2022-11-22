@@ -26,21 +26,21 @@ const makeSut = (loading = false): SutTypes => {
 describe('ConfirmationModal', () => {
   test('should render ConfirmationModal component', () => {
     const { sut } = makeSut();
-    const modalHeader = sut.getByTestId('modal-header');
+    const modalHeader = sut.getByTestId('confirmation-modal-header');
     expect(modalHeader).toBeInTheDocument();
     expect(modalHeader.innerHTML).toBe('Are you sure?');
   });
 
   test('should confirm modal', async () => {
     const { sut, onConfirm } = makeSut();
-    const confirmButton = sut.getByTestId('confirm-button');
+    const confirmButton = sut.getByTestId('confirmation-confirm-button');
     await userEvent.click(confirmButton);
     expect(onConfirm).toHaveBeenCalled();
   });
 
   test('should close the modal', async () => {
     const { sut, onClose } = makeSut();
-    const cancelButton = sut.getByTestId('cancel-button');
+    const cancelButton = sut.getByTestId('confirmation-cancel-button');
     await userEvent.click(cancelButton);
     expect(onClose).toBeCalled();
   });
