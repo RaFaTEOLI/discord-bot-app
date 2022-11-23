@@ -400,7 +400,7 @@ describe('Commands Component', () => {
     await setTimeout(1000);
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Run Command',
-      description: 'There was an erro while trying to run your command!',
+      description: 'There was an error while trying to run your command!',
       status: 'error',
       duration: 9000,
       isClosable: true,

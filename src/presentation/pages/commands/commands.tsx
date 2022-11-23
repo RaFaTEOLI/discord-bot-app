@@ -162,7 +162,7 @@ export default function Commands({ loadCommands, saveCommand, deleteCommand, run
       setState(prev => ({ ...prev, isLoading: false }));
       toast({
         title: 'Run Command',
-        description: 'There was an erro while trying to run your command!',
+        description: 'There was an error while trying to run your command!',
         status: 'error',
         duration: 9000,
         isClosable: true,
