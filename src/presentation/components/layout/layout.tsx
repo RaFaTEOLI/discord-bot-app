@@ -8,6 +8,7 @@ import NavItem from './components/nav-item';
 import UserMenu from './components/user-menu';
 import { LoadUser, SpotifyAuthorize } from '@/domain/usecases';
 import { useRecoilValue } from 'recoil';
+import Player from './components/player';
 
 const HomeIcon = chakra(HiHome);
 const CommandsIcon = chakra(HiCommandLine);
@@ -139,7 +140,7 @@ export default function Layout({ loadUser, spotifyAuthorize }: Props): JSX.Eleme
       </Flex>
       <Flex h="full">
         <Box w="100%" h="100%" display="flex" justifyContent="center" alignItems="center">
-          Player
+          <Player />
         </Box>
       </Flex>
     </Flex>
