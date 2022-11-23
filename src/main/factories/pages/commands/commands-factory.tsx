@@ -1,5 +1,10 @@
 import { Commands } from '@/presentation/pages';
-import { makeRemoteLoadCommands, makeRemoteSaveCommand, makeRemoteDeleteCommand } from '@/main/factories/usecases';
+import {
+  makeRemoteLoadCommands,
+  makeRemoteSaveCommand,
+  makeRemoteDeleteCommand,
+  makeRemoteRunCommand
+} from '@/main/factories/usecases';
 
 export const CommandsFactory = (): JSX.Element => {
   return (
@@ -7,6 +12,7 @@ export const CommandsFactory = (): JSX.Element => {
       loadCommands={makeRemoteLoadCommands()}
       saveCommand={makeRemoteSaveCommand()}
       deleteCommand={makeRemoteDeleteCommand()}
+      runCommand={makeRemoteRunCommand()}
     />
   );
 };
