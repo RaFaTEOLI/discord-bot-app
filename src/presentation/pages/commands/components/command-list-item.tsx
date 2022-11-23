@@ -1,13 +1,14 @@
 import { CommandModel } from '@/domain/models';
-import { Box, Badge, Flex, IconButton } from '@chakra-ui/react';
-import { HiEye } from 'react-icons/hi2';
+import { Box, Badge, Flex, IconButton, Tooltip } from '@chakra-ui/react';
+import { HiCloudArrowUp, HiEye } from 'react-icons/hi2';
 
 type Props = {
   commands: CommandModel[];
   handleView: (command: CommandModel) => void;
+  handleRun: (command: string) => void;
 };
 
-export default function CommandListItem({ commands, handleView }: Props): JSX.Element {
+export default function CommandListItem({ commands, handleView, handleRun }: Props): JSX.Element {
   return (
     <Flex direction={['column', 'row']} flexWrap="wrap" gap={5} data-testid="commands-list">
       {commands.map(command => (
@@ -40,15 +41,28 @@ export default function CommandListItem({ commands, handleView }: Props): JSX.El
                 </Box>
 
                 <Box display="flex" alignItems="center">
-                  <IconButton
-                    className="command-view-button"
-                    variant="outline"
-                    size="sm"
-                    colorScheme="blue"
-                    aria-label="View command"
-                    icon={<HiEye />}
-                    onClick={() => handleView(command)}
-                  />
+                  <Tooltip label="View Command">
+                    <IconButton
+                      className="command-view-button"
+                      variant="outline"
+                      size="sm"
+                      colorScheme="blue"
+                      aria-label="View command"
+                      icon={<HiEye />}
+                      onClick={() => handleView(command)}
+                    />
+                  </Tooltip>
+                  <Tooltip label="Run Command">
+                    <IconButton
+                      className="command-run-button"
+                      variant="outline"
+                      size="sm"
+                      colorScheme="green"
+                      aria-label="Run command"
+                      icon={<HiCloudArrowUp />}
+                      onClick={() => handleRun(command.command)}
+                    />
+                  </Tooltip>
                 </Box>
               </Box>
             </Flex>

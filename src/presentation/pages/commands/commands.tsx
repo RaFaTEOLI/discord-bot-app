@@ -4,7 +4,7 @@ import { commandsState, CommandListItem, CommandModal, InputFilter } from './com
 import { useRecoilState, useRecoilValue, useResetRecoilState } from 'recoil';
 import { CommandModel } from '@/domain/models';
 import { HiOutlinePlusCircle } from 'react-icons/hi2';
-import { DeleteCommand, LoadCommands, SaveCommand } from '@/domain/usecases';
+import { DeleteCommand, LoadCommands, RunCommand, SaveCommand } from '@/domain/usecases';
 import { useErrorHandler } from '@/presentation/hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -15,6 +15,7 @@ type Props = {
   loadCommands: LoadCommands;
   saveCommand: SaveCommand;
   deleteCommand: DeleteCommand;
+  runCommand: RunCommand;
 };
 
 const schema = yupResolver(
@@ -30,7 +31,7 @@ const schema = yupResolver(
     .required()
 );
 
-export default function Commands({ loadCommands, saveCommand, deleteCommand }: Props): JSX.Element {
+export default function Commands({ loadCommands, saveCommand, deleteCommand, runCommand }: Props): JSX.Element {
   const { getCurrentAccount } = useRecoilValue(currentAccountState);
   const resetCommandsState = useResetRecoilState(commandsState);
   const [state, setState] = useRecoilState(commandsState);
@@ -145,6 +146,31 @@ export default function Commands({ loadCommands, saveCommand, deleteCommand }: P
     }
   };
 
+  const handleRun = async (command: string): Promise<void> => {
+    try {
+      setState(prev => ({ ...prev, isLoading: true }));
+      await runCommand.run(command);
+      toast({
+        title: 'Run Command',
+        description: 'Your command was successfully run',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
+    } catch (error: any) {
+      setState(prev => ({ ...prev, isLoading: false }));
+      toast({
+        title: 'Run Command',
+        description: 'There was an erro while trying to run your command!',
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
+    }
+  };
+
   return (
     <>
       <Content title="Commands">
@@ -177,7 +203,7 @@ export default function Commands({ loadCommands, saveCommand, deleteCommand }: P
                 </Box>
               </Flex>
             ) : (
-              <CommandListItem handleView={handleView} commands={state.filteredCommands} />
+              <CommandListItem handleView={handleView} handleRun={handleRun} commands={state.filteredCommands} />
             )}
           </Flex>
         )}
