@@ -159,7 +159,6 @@ export default function Commands({ loadCommands, saveCommand, deleteCommand, run
         position: 'top'
       });
     } catch (error: any) {
-      setState(prev => ({ ...prev, isLoading: false }));
       toast({
         title: 'Run Command',
         description: 'There was an error while trying to run your command!',
@@ -168,6 +167,8 @@ export default function Commands({ loadCommands, saveCommand, deleteCommand, run
         isClosable: true,
         position: 'top'
       });
+    } finally {
+      setState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
