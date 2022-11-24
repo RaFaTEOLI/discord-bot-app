@@ -1,31 +1,40 @@
 /* eslint-disable no-global-assign */
 import { renderWithHistory } from '@/presentation/mocks';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import Layout from './layout';
 import { Authentication } from '@/domain/usecases';
-import { LoadUserSpy, mockAccountModel, mockAccountWithSpotifyModel, SpotifyAuthorizeSpy } from '@/domain/mocks';
+import {
+  LoadMusicSpy,
+  LoadUserSpy,
+  mockAccountModel,
+  mockAccountWithSpotifyModel,
+  mockMusicModel,
+  SpotifyAuthorizeSpy
+} from '@/domain/mocks';
 import { setTimeout } from 'timers/promises';
+import { faker } from '@faker-js/faker';
 
 type SutTypes = {
   history: MemoryHistory;
   setCurrentAccountMock: (account: Authentication.Model) => void;
   spotifyAuthorizeSpy: SpotifyAuthorizeSpy;
   loadUserSpy: LoadUserSpy;
+  loadMusicSpy: LoadMusicSpy;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/'] });
-const makeSut = (account = mockAccountModel()): SutTypes => {
+const makeSut = (account = mockAccountModel(), loadMusicSpy = new LoadMusicSpy()): SutTypes => {
   const loadUserSpy = new LoadUserSpy();
   const spotifyAuthorizeSpy = new SpotifyAuthorizeSpy();
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
-    Page: () => Layout({ loadUser: loadUserSpy, spotifyAuthorize: spotifyAuthorizeSpy }),
+    Page: () => Layout({ loadUser: loadUserSpy, spotifyAuthorize: spotifyAuthorizeSpy, loadMusic: loadMusicSpy }),
     account
   });
-  return { history, setCurrentAccountMock, spotifyAuthorizeSpy, loadUserSpy };
+  return { history, setCurrentAccountMock, spotifyAuthorizeSpy, loadUserSpy, loadMusicSpy };
 };
 
 describe('Layout Component', () => {
@@ -135,6 +144,41 @@ describe('Layout Component', () => {
     const spotifyButton = screen.getByTestId('link-spotify');
     await userEvent.click(spotifyButton);
     expect(spotifyAuthorizeSpy.callsCount).toBe(1);
+  });
+
+  test('should call load music and render music with name and author', async () => {
+    const { loadMusicSpy } = makeSut();
+    expect(loadMusicSpy.callsCount).toBe(1);
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    const song = loadMusicSpy.music?.name.split('-') as string[];
+    expect(screen.getByTestId('music-name')).toHaveTextContent(song[1].trim());
+    expect(screen.getByTestId('music-author')).toHaveTextContent(song[0].trim());
+  });
+
+  test('should render music with name and author unknown if no - is found', async () => {
+    const loadMusicSpy = new LoadMusicSpy();
+    const songName = faker.name.firstName();
+    jest.spyOn(loadMusicSpy, 'load').mockResolvedValueOnce(
+      Object.assign({}, mockMusicModel(), {
+        name: songName
+      })
+    );
+    makeSut(mockAccountModel(), loadMusicSpy);
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    expect(screen.getByTestId('music-name')).toHaveTextContent(songName);
+    expect(screen.getByTestId('music-author')).toHaveTextContent('Unknown');
+  });
+
+  test('should not set music with name and author if load music returns null', async () => {
+    const loadMusicSpy = new LoadMusicSpy();
+    jest.spyOn(loadMusicSpy, 'load').mockResolvedValueOnce(null);
+    makeSut(mockAccountModel(), loadMusicSpy);
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    expect(screen.getByTestId('music-name')).toHaveTextContent('Not Playing');
+    expect(screen.getByTestId('music-author')).toHaveTextContent('-');
   });
 
   test('should show render small layout then resize to a big one', async () => {
