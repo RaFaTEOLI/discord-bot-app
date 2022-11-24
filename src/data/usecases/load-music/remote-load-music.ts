@@ -7,6 +7,7 @@ export class RemoteLoadMusic implements LoadMusic {
   constructor(private readonly url: string, private readonly httpClient: HttpClient<RemoteLoadMusic.Model>) {}
 
   async load(): Promise<LoadMusic.Model> {
+    // TODO: integrate with spotify, when music is fetched from our db, search it on spotify to obtain thumbnail and song duration
     const httpResponse = await this.httpClient.request({ url: this.url, method: 'get' });
     switch (httpResponse.statusCode) {
       case HttpStatusCode.success:
