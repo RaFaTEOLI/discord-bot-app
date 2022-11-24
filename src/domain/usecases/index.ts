@@ -7,3 +7,4 @@ export * from './load-commands';
 export * from './save-command';
 export * from './delete-command';
 export * from './run-command';
+export * from './load-music';
