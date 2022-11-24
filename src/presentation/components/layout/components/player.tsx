@@ -63,7 +63,7 @@ export default function Player(): JSX.Element {
                 {music.name}
               </Text>
               <Text fontSize="xs" data-testid="music-author">
-                {music?.author ?? '-'}
+                {music.author}
               </Text>
             </Flex>
           </>
