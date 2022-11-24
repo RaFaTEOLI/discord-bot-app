@@ -146,7 +146,7 @@ describe('Layout Component', () => {
     expect(spotifyAuthorizeSpy.callsCount).toBe(1);
   });
 
-  test('should call load music and render music with name and author', async () => {
+  test('should call load music and render music with name, author and thumbnail', async () => {
     const { loadMusicSpy } = makeSut();
     expect(loadMusicSpy.callsCount).toBe(1);
     const player = await screen.findByTestId('player');
@@ -154,6 +154,21 @@ describe('Layout Component', () => {
     const song = loadMusicSpy.music?.name.split('-') as string[];
     expect(screen.getByTestId('music-name')).toHaveTextContent(song[1].trim());
     expect(screen.getByTestId('music-author')).toHaveTextContent(song[0].trim());
+    expect(screen.getByTestId('music-thumbnail')).toHaveAttribute('src', loadMusicSpy.music?.thumbnail as string);
+  });
+
+  test('should call load music and render music with name, author and fallback thumbnail', async () => {
+    const loadMusicSpy = new LoadMusicSpy();
+    const musicModel = mockMusicModel();
+    delete musicModel?.thumbnail;
+    jest.spyOn(loadMusicSpy, 'load').mockResolvedValueOnce(musicModel);
+    makeSut(mockAccountModel(), loadMusicSpy);
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    const song = musicModel?.name.split('-') as string[];
+    expect(screen.getByTestId('music-name')).toHaveTextContent(song[1].trim());
+    expect(screen.getByTestId('music-author')).toHaveTextContent(song[0].trim());
+    expect(screen.getByTestId('music-thumbnail')).toHaveAttribute('src', 'https://via.placeholder.com/150');
   });
 
   test('should render music with name and author unknown if no - is found', async () => {
