@@ -24,6 +24,7 @@ export class HttpClientSpy<R = any> implements HttpClient<R> {
   method?: string;
   body?: any;
   headers?: any;
+  params?: any;
   response: HttpResponse<R> = {
     statusCode: HttpStatusCode.success
   };
@@ -33,6 +34,7 @@ export class HttpClientSpy<R = any> implements HttpClient<R> {
     this.method = data.method;
     this.body = data.body;
     this.headers = data.headers;
+    this.params = data.params;
     return Promise.resolve(this.response);
   }
 }

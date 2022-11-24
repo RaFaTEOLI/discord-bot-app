@@ -1,20 +1,24 @@
-import { HttpClientSpy, mockRemoteMusicModel } from '@/data/mocks';
+import { HttpClientSpy, mockRemoteMusicModel, mockRemoteSpotifySearchModel } from '@/data/mocks';
 import { RemoteLoadMusic } from '@/data/usecases';
 import { HttpStatusCode } from '@/data/protocols/http';
 import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
 import { faker } from '@faker-js/faker';
+import { SpotifySearchModel } from '@/domain/models';
 
 type SutTypes = {
   sut: RemoteLoadMusic;
   httpClientSpy: HttpClientSpy<RemoteLoadMusic.Model>;
+  spotifyHttpClientSpy: HttpClientSpy<SpotifySearchModel>;
 };
 
-const makeSut = (url = faker.internet.url()): SutTypes => {
+const makeSut = (url = faker.internet.url(), spotifyUrl = faker.internet.url()): SutTypes => {
   const httpClientSpy = new HttpClientSpy<RemoteLoadMusic.Model>();
-  const sut = new RemoteLoadMusic(url, httpClientSpy);
+  const spotifyHttpClientSpy = new HttpClientSpy<SpotifySearchModel>();
+  const sut = new RemoteLoadMusic(url, httpClientSpy, spotifyUrl, spotifyHttpClientSpy);
   return {
     sut,
-    httpClientSpy
+    httpClientSpy,
+    spotifyHttpClientSpy
   };
 };
 
@@ -76,5 +80,46 @@ describe('RemoteLoadMusic', () => {
     };
     const music = await sut.load();
     expect(music).toBeNull();
+  });
+
+  test('should call SpotifyHttpClient with correct URL, Method and Params', async () => {
+    const url = faker.internet.url();
+    const httpResult = mockRemoteMusicModel();
+    const { sut, httpClientSpy, spotifyHttpClientSpy } = makeSut(faker.internet.url(), url);
+    httpClientSpy.response = {
+      statusCode: HttpStatusCode.success,
+      body: httpResult
+    };
+    await sut.load();
+    expect(spotifyHttpClientSpy.url).toBe(url);
+    expect(spotifyHttpClientSpy.method).toBe('get');
+    expect(spotifyHttpClientSpy.params).toEqual({
+      q: httpResult.name,
+      type: 'track,artist',
+      market: 'US',
+      limit: 1
+    });
+  });
+
+  test('should return a MusicModel with thumbnail if HttpClient returns 200', async () => {
+    const url = faker.internet.url();
+    const httpResult = mockRemoteMusicModel();
+    const spotifyHttpResult = mockRemoteSpotifySearchModel();
+    const { sut, httpClientSpy, spotifyHttpClientSpy } = makeSut(faker.internet.url(), url);
+    httpClientSpy.response = {
+      statusCode: HttpStatusCode.success,
+      body: httpResult
+    };
+    spotifyHttpClientSpy.response = {
+      statusCode: HttpStatusCode.success,
+      body: spotifyHttpResult
+    };
+    const music = await sut.load();
+    expect(music).toEqual({
+      id: httpResult.id,
+      name: httpResult.name,
+      startedAt: httpResult.startedAt,
+      thumbnail: spotifyHttpResult.tracks.items[0].album.images[0].url
+    });
   });
 });
