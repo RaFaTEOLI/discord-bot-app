@@ -50,9 +50,10 @@ export default function Player(): JSX.Element {
     <Flex w="100vw" justifyContent="space-between" alignItems="center" p={4} data-testid="player">
       <Flex gap={3}>
         <Image
+          data-testid="music-thumbnail"
           boxSize="56px"
           objectFit="cover"
-          src="https://i.scdn.co/image/ab67616d00004851b4ad7ebaf4575f120eb3f193"
+          src={state.thumbnail ?? 'https://via.placeholder.com/150'}
           alt="Song Album"
         />
         <Flex flexDir="column" justifyContent="center">
