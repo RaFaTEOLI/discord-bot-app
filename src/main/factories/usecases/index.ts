@@ -7,3 +7,4 @@ export * from './load-commands/remote-load-commands-factory';
 export * from './save-command/remote-save-command-factory';
 export * from './delete-command/remote-delete-command-factory';
 export * from './run-command/remote-run-command-factory';
+export * from './load-music/remote-load-music-factory';
