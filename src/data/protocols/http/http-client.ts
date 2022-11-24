@@ -4,6 +4,7 @@ export type HttpRequest = {
   method: HttpMethod;
   body?: any;
   headers?: any;
+  params?: any;
 };
 
 export interface HttpClient<R = any> {

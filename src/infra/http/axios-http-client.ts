@@ -9,7 +9,8 @@ export class AxiosHttpClient implements HttpClient {
         url: data.url,
         method: data.method,
         data: data.body,
-        headers: data.headers
+        headers: data.headers,
+        params: data.params
       });
     } catch (error: any) {
       console.error(error);

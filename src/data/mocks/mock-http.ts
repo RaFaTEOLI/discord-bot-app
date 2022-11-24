@@ -9,6 +9,16 @@ export const mockHttpRequest = (): HttpRequest => ({
   headers: faker.datatype.json()
 });
 
+export const mockHttpRequestWithParams = (): HttpRequest => ({
+  url: faker.internet.url(),
+  method: faker.helpers.arrayElement(['get', 'post', 'put', 'delete']),
+  body: faker.datatype.json(),
+  headers: faker.datatype.json(),
+  params: {
+    [faker.database.column()]: faker.random.word()
+  }
+});
+
 export class HttpClientSpy<R = any> implements HttpClient<R> {
   url?: string;
   method?: string;

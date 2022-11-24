@@ -1,6 +1,6 @@
 import { AxiosHttpClient } from './axios-http-client';
 import { mockAxios, mockHttpResponse } from '@/infra/mocks';
-import { mockHttpRequest } from '@/data/mocks';
+import { mockHttpRequest, mockHttpRequestWithParams } from '@/data/mocks';
 import axios from 'axios';
 
 jest.mock('axios');
@@ -29,6 +29,19 @@ describe('AxiosHttpClient', () => {
       data: request.body,
       headers: request.headers,
       method: request.method
+    });
+  });
+
+  test('should call axios with correct values and query params', async () => {
+    const request = mockHttpRequestWithParams();
+    const { sut, mockedAxios } = makeSut();
+    await sut.request(request);
+    expect(mockedAxios.request).toHaveBeenCalledWith({
+      url: request.url,
+      data: request.body,
+      headers: request.headers,
+      method: request.method,
+      params: request.params
     });
   });
 
