@@ -49,21 +49,27 @@ export default function Player(): JSX.Element {
   return (
     <Flex w="100vw" justifyContent="space-between" alignItems="center" p={4} data-testid="player">
       <Flex gap={3}>
-        <Image
-          data-testid="music-thumbnail"
-          boxSize="56px"
-          objectFit="cover"
-          src={state.thumbnail ?? 'https://via.placeholder.com/150'}
-          alt="Song Album"
-        />
-        <Flex flexDir="column" justifyContent="center">
-          <Text as="b" fontSize="sm" data-testid="music-name">
-            {music?.name ?? 'Not Playing'}
-          </Text>
-          <Text fontSize="xs" data-testid="music-author">
-            {music?.author ?? '-'}
-          </Text>
-        </Flex>
+        {music?.name ? (
+          <>
+            <Image
+              data-testid="music-thumbnail"
+              boxSize="56px"
+              objectFit="cover"
+              src={state.thumbnail ?? 'https://via.placeholder.com/150'}
+              alt="Song Album"
+            />
+            <Flex flexDir="column" justifyContent="center">
+              <Text as="b" fontSize="sm" data-testid="music-name">
+                {music.name}
+              </Text>
+              <Text fontSize="xs" data-testid="music-author">
+                {music?.author ?? '-'}
+              </Text>
+            </Flex>
+          </>
+        ) : (
+          <Box w="8vw" data-testid="empty-song"></Box>
+        )}
       </Flex>
       <Flex flexDir="column" alignItems="center" gap={3}>
         <HStack spacing={5}>
@@ -72,9 +78,9 @@ export default function Player(): JSX.Element {
           <NextIcon size={15} color={secondaryIconColor} />
         </HStack>
         <HStack>
-          <Text fontSize="xs">2:49</Text>
+          <Text fontSize="xs">{music?.name ? '2:49' : '0:00'}</Text>
           <Progress value={20} size="xs" colorScheme="gray" w="40vw" />
-          <Text fontSize="xs">3:06</Text>
+          <Text fontSize="xs">{music?.name ? '3:06' : '0:00'}</Text>
         </HStack>
       </Flex>
       <HStack gap={3}>

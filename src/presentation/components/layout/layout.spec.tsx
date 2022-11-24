@@ -192,8 +192,7 @@ describe('Layout Component', () => {
     makeSut(mockAccountModel(), loadMusicSpy);
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
-    expect(screen.getByTestId('music-name')).toHaveTextContent('Not Playing');
-    expect(screen.getByTestId('music-author')).toHaveTextContent('-');
+    expect(screen.getByTestId('empty-song')).toBeInTheDocument();
   });
 
   test('should show render small layout then resize to a big one', async () => {
