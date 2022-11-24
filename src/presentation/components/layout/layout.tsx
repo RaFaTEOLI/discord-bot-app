@@ -4,11 +4,9 @@ import { HiHome, HiCommandLine } from 'react-icons/hi2';
 import { Outlet, useLocation } from 'react-router';
 import { ThemeSwitcher, currentAccountState } from '@/presentation/components';
 import Logo from '../logo/logo';
-import NavItem from './components/nav-item';
-import UserMenu from './components/user-menu';
-import { LoadUser, SpotifyAuthorize } from '@/domain/usecases';
-import { useRecoilValue } from 'recoil';
-import Player from './components/player';
+import { NavItem, UserMenu, Player, musicState } from './components';
+import { LoadMusic, LoadUser, SpotifyAuthorize } from '@/domain/usecases';
+import { useRecoilState, useRecoilValue } from 'recoil';
 
 const HomeIcon = chakra(HiHome);
 const CommandsIcon = chakra(HiCommandLine);
@@ -16,14 +14,17 @@ const CommandsIcon = chakra(HiCommandLine);
 type Props = {
   loadUser: LoadUser;
   spotifyAuthorize: SpotifyAuthorize;
+  loadMusic: LoadMusic;
 };
 
-export default function Layout({ loadUser, spotifyAuthorize }: Props): JSX.Element {
+export default function Layout({ loadUser, spotifyAuthorize, loadMusic }: Props): JSX.Element {
   const sidebarColor = useColorModeValue('gray.100', 'gray.900');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const [navSize, setNavSize] = useState<string>('large');
   const location = useLocation();
   const { setCurrentAccount, getCurrentAccount } = useRecoilValue(currentAccountState);
+  // eslint-disable-next-line
+  const [_, setState] = useRecoilState(musicState);
 
   useLayoutEffect(() => {
     function updateSize(): void {
@@ -36,6 +37,15 @@ export default function Layout({ loadUser, spotifyAuthorize }: Props): JSX.Eleme
     window.addEventListener('resize', updateSize);
     updateSize();
     return () => window.removeEventListener('resize', updateSize);
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const music = await loadMusic.load();
+      if (music) {
+        setState(music);
+      }
+    })();
   }, []);
 
   useEffect(() => {

@@ -12,7 +12,10 @@ import {
   useColorModeValue,
   Box
 } from '@chakra-ui/react';
+import { useMemo } from 'react';
 import { BsPlayCircleFill, BsShuffle, BsChevronRight, BsCircleFill, BsFillVolumeUpFill, BsJustify } from 'react-icons/bs';
+import { useRecoilValue } from 'recoil';
+import { musicState } from './atom';
 
 const PlayIcon = chakra(BsPlayCircleFill);
 const ShuffleIcon = chakra(BsShuffle);
@@ -24,8 +27,27 @@ const CircleIcon = chakra(BsCircleFill);
 export default function Player(): JSX.Element {
   const iconColor = useColorModeValue('gray.700', 'gray.300');
   const secondaryIconColor = useColorModeValue('gray', 'gray.300');
+  const state = useRecoilValue(musicState);
+
+  const music = useMemo(() => {
+    if (state.name) {
+      const song = state.name.split('-');
+      console.log({ song });
+      if (song.length > 1) {
+        return {
+          author: song[0].trim(),
+          name: song[1].trim()
+        };
+      }
+      return {
+        author: 'Unknown',
+        name: song
+      };
+    }
+  }, [state]);
+
   return (
-    <Flex w="100vw" justifyContent="space-between" alignItems="center" p={4}>
+    <Flex w="100vw" justifyContent="space-between" alignItems="center" p={4} data-testid="player">
       <Flex gap={3}>
         <Image
           boxSize="56px"
@@ -34,10 +56,12 @@ export default function Player(): JSX.Element {
           alt="Song Album"
         />
         <Flex flexDir="column" justifyContent="center">
-          <Text as="b" fontSize="sm">
-            Numb
+          <Text as="b" fontSize="sm" data-testid="music-name">
+            {music?.name ?? 'Not Playing'}
           </Text>
-          <Text fontSize="xs">Linkin Park</Text>
+          <Text fontSize="xs" data-testid="music-author">
+            {music?.author ?? '-'}
+          </Text>
         </Flex>
       </Flex>
       <Flex flexDir="column" alignItems="center" gap={3}>
