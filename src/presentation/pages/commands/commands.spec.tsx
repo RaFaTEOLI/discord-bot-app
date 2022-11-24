@@ -357,7 +357,7 @@ describe('Commands Component', () => {
     const confirmButton = await screen.findByTestId('confirmation-confirm-button');
     await waitFor(() => confirmButton);
     await userEvent.click(confirmButton);
-    await setTimeout(500);
+    await setTimeout(1000);
     expect(commandForm).not.toBeInTheDocument();
     await waitFor(() => screen.getByTestId('error'));
     expect(screen.queryByTestId('commands-list')).not.toBeInTheDocument();
