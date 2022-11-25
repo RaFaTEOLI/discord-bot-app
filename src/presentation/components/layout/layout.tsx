@@ -8,7 +8,7 @@ import { NavItem, UserMenu, Player, musicState } from './components';
 import { LoadMusic, LoadUser, SpotifyAuthorize } from '@/domain/usecases';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { useErrorHandler } from '@/presentation/hooks';
-import { AccessDeniedError, AccessTokenExpiredError } from '@/domain/errors';
+import { AccessTokenExpiredError } from '@/domain/errors';
 
 const HomeIcon = chakra(HiHome);
 const CommandsIcon = chakra(HiCommandLine);
@@ -28,9 +28,8 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic }: Props)
   // eslint-disable-next-line
   const [_, setState] = useRecoilState(musicState);
   const toast = useToast();
-  const handleError = useErrorHandler((error: Error) => {
-    setState(prev => ({ ...prev, isLoading: false, error: error.message, reload: false }));
-  });
+  // eslint-disable-next-line n/handle-callback-err
+  const handleError = useErrorHandler((error: Error) => {});
 
   useLayoutEffect(() => {
     function updateSize(): void {
@@ -53,7 +52,7 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic }: Props)
           setState(music);
         }
       } catch (error: any) {
-        if (error instanceof AccessDeniedError || error instanceof AccessTokenExpiredError) {
+        if (error instanceof AccessTokenExpiredError) {
           toast({
             title: 'Access Denied',
             description: 'Your login with spotify either expired or is invalid, please log in with spotify again!',
