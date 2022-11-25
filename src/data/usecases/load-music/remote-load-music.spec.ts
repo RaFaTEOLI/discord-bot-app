@@ -1,7 +1,7 @@
 import { HttpClientSpy, mockRemoteMusicModel, mockRemoteSpotifySearchModel } from '@/data/mocks';
 import { RemoteLoadMusic } from '@/data/usecases';
 import { HttpStatusCode } from '@/data/protocols/http';
-import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
+import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
 import { faker } from '@faker-js/faker';
 import { SpotifySearchModel } from '@/domain/models';
 
@@ -38,6 +38,19 @@ describe('RemoteLoadMusic', () => {
     };
     const promise = sut.load();
     await expect(promise).rejects.toThrow(new AccessDeniedError());
+  });
+
+  test('should throw AccessTokenExpiredError if SpotifyHttpClient returns 401', async () => {
+    const { sut, httpClientSpy, spotifyHttpClientSpy } = makeSut();
+    httpClientSpy.response = {
+      statusCode: HttpStatusCode.success,
+      body: mockRemoteMusicModel()
+    };
+    spotifyHttpClientSpy.response = {
+      statusCode: HttpStatusCode.unauthorized
+    };
+    const promise = sut.load();
+    await expect(promise).rejects.toThrow(new AccessTokenExpiredError());
   });
 
   test('should throw UnexpectedError if HttpClient returns 404', async () => {
