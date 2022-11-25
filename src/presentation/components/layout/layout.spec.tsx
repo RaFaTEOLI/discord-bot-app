@@ -197,6 +197,21 @@ describe('Layout Component', () => {
     expect(screen.getByTestId('music-author')).toHaveTextContent('Unknown');
   });
 
+  test('should render music with long name with only 40 characters', async () => {
+    const loadMusicSpy = new LoadMusicSpy();
+    const songName = faker.random.alphaNumeric(41);
+    jest.spyOn(loadMusicSpy, 'load').mockResolvedValueOnce(
+      Object.assign({}, mockMusicModel(), {
+        name: songName
+      })
+    );
+    makeSut(mockAccountModel(), loadMusicSpy);
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    expect(screen.getByTestId('music-name')).toHaveTextContent(`${songName.substring(0, 40)}...`);
+    expect(screen.getByTestId('music-author')).toHaveTextContent('Unknown');
+  });
+
   test('should not set music with name and author if load music returns null', async () => {
     const loadMusicSpy = new LoadMusicSpy();
     jest.spyOn(loadMusicSpy, 'load').mockResolvedValueOnce(null);
