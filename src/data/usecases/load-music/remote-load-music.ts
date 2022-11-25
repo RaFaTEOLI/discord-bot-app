@@ -1,5 +1,5 @@
 import { HttpClient, HttpStatusCode } from '@/data/protocols/http';
-import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
+import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
 import { MusicModel, SpotifySearchModel } from '@/domain/models';
 import { LoadMusic } from '@/domain/usecases';
 
@@ -27,6 +27,11 @@ export class RemoteLoadMusic implements LoadMusic {
           limit: 1
         }
       });
+
+      switch (searchResult.statusCode) {
+        case HttpStatusCode.unauthorized:
+          throw new AccessTokenExpiredError();
+      }
 
       music = {
         ...music,

@@ -1,4 +1,4 @@
-import { Box, Flex, Text, useColorModeValue, chakra } from '@chakra-ui/react';
+import { Box, Flex, Text, useColorModeValue, chakra, useToast } from '@chakra-ui/react';
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { HiHome, HiCommandLine } from 'react-icons/hi2';
 import { Outlet, useLocation } from 'react-router';
@@ -7,6 +7,8 @@ import Logo from '../logo/logo';
 import { NavItem, UserMenu, Player, musicState } from './components';
 import { LoadMusic, LoadUser, SpotifyAuthorize } from '@/domain/usecases';
 import { useRecoilState, useRecoilValue } from 'recoil';
+import { useErrorHandler } from '@/presentation/hooks';
+import { AccessDeniedError, AccessTokenExpiredError } from '@/domain/errors';
 
 const HomeIcon = chakra(HiHome);
 const CommandsIcon = chakra(HiCommandLine);
@@ -25,6 +27,10 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic }: Props)
   const { setCurrentAccount, getCurrentAccount } = useRecoilValue(currentAccountState);
   // eslint-disable-next-line
   const [_, setState] = useRecoilState(musicState);
+  const toast = useToast();
+  const handleError = useErrorHandler((error: Error) => {
+    setState(prev => ({ ...prev, isLoading: false, error: error.message, reload: false }));
+  });
 
   useLayoutEffect(() => {
     function updateSize(): void {
@@ -41,9 +47,22 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic }: Props)
 
   useEffect(() => {
     (async () => {
-      const music = await loadMusic.load();
-      if (music) {
-        setState(music);
+      try {
+        const music = await loadMusic.load();
+        if (music) {
+          setState(music);
+        }
+      } catch (error: any) {
+        if (error instanceof AccessDeniedError || error instanceof AccessTokenExpiredError) {
+          toast({
+            title: 'Access Denied',
+            description: 'Your login with spotify either expired or is invalid, please log in with spotify again!',
+            status: 'error',
+            duration: 9000,
+            isClosable: true
+          });
+        }
+        handleError(error);
       }
     })();
   }, []);

@@ -15,6 +15,7 @@ import {
 } from '@/domain/mocks';
 import { setTimeout } from 'timers/promises';
 import { faker } from '@faker-js/faker';
+import { AccessTokenExpiredError } from '@/domain/errors';
 
 type SutTypes = {
   history: MemoryHistory;
@@ -36,6 +37,16 @@ const makeSut = (account = mockAccountModel(), loadMusicSpy = new LoadMusicSpy()
   });
   return { history, setCurrentAccountMock, spotifyAuthorizeSpy, loadUserSpy, loadMusicSpy };
 };
+
+const mockToast = jest.fn();
+jest.mock('@chakra-ui/react', () => {
+  const originalModule = jest.requireActual('@chakra-ui/react');
+  return {
+    __esModule: true,
+    ...originalModule,
+    useToast: jest.fn().mockImplementation(() => mockToast)
+  };
+});
 
 describe('Layout Component', () => {
   beforeEach(() => {
@@ -193,6 +204,24 @@ describe('Layout Component', () => {
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
     expect(screen.getByTestId('empty-song')).toBeInTheDocument();
+  });
+
+  test('should show toast and redirect user to login if spotify access token is expired', async () => {
+    const loadMusicSpy = new LoadMusicSpy();
+    jest.spyOn(loadMusicSpy, 'load').mockRejectedValueOnce(new AccessTokenExpiredError());
+    const { setCurrentAccountMock } = makeSut(mockAccountModel(), loadMusicSpy);
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    await setTimeout(1000);
+    expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
+    expect(history.location.pathname).toBe('/login');
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Access Denied',
+      description: 'Your login with spotify either expired or is invalid, please log in with spotify again!',
+      status: 'error',
+      duration: 9000,
+      isClosable: true
+    });
   });
 
   test('should show render small layout then resize to a big one', async () => {
