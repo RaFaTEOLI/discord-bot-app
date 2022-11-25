@@ -118,13 +118,13 @@ export default function Player({ onResume, onPause, onShuffle, onSkip }: Props):
       </GridItem>
       <GridItem mt={[5, 0]} display="flex" flexDir="column" alignItems="center" gap={3}>
         <HStack spacing={5}>
-          <IconButton onClick={handleShuffle} data-testid="shuffle-music">
+          <IconButton aria-label="Shuffle Music" onClick={handleShuffle} data-testid="shuffle-music">
             <ShuffleIcon size={15} color={secondaryIconColor} />
           </IconButton>
-          <IconButton onClick={handlePlayPause} data-testid="play-pause-music">
+          <IconButton aria-label="Play/Pause Music" onClick={handlePlayPause} data-testid="play-pause-music">
             {paused ? <PlayIcon size={25} color={iconColor} /> : <PauseIcon size={25} color={iconColor} />}
           </IconButton>
-          <IconButton onClick={handleSkip} data-testid="skip-music">
+          <IconButton aria-label="Skip Music" onClick={handleSkip} data-testid="skip-music">
             <NextIcon size={15} color={secondaryIconColor} />
           </IconButton>
         </HStack>
@@ -135,10 +135,10 @@ export default function Player({ onResume, onPause, onShuffle, onSkip }: Props):
       </GridItem>
       <GridItem mt={[5, 0]} display="flex" justifyContent={['center', 'flex-end']}>
         <HStack gap={3}>
-          <IconButton>
+          <IconButton aria-label="Queue">
             <QueueIcon size={15} color={secondaryIconColor} />
           </IconButton>
-          <IconButton>
+          <IconButton aria-label="Volume">
             <VolumeIcon size={15} color={secondaryIconColor} />
           </IconButton>
           <Slider aria-label="slider" colorScheme="gray" defaultValue={50} w={['60vw', '5vw']}>

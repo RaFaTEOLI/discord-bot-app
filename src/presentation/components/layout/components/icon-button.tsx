@@ -1,24 +1,8 @@
-import { IconButton as ChakraIconButton } from '@chakra-ui/react';
+import { IconButton as ChakraIconButton, IconButtonProps } from '@chakra-ui/react';
 
-export default function IconButton({
-  onClick = () => {},
-  children,
-  ...props
-}: {
-  onClick?: any;
-  children: JSX.Element;
-}): JSX.Element {
+export default function IconButton({ children, ...props }: IconButtonProps): JSX.Element {
   return (
-    <ChakraIconButton
-      onClick={onClick}
-      size="xs"
-      aria-label="Shuffle"
-      p={0}
-      m={0}
-      borderColor="transparent"
-      variant="outline"
-      {...props}
-    >
+    <ChakraIconButton size="xs" p={0} m={0} borderColor="transparent" variant="outline" {...props}>
       {children}
     </ChakraIconButton>
   );
