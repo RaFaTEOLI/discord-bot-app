@@ -55,7 +55,7 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic }: Props)
         if (error instanceof AccessTokenExpiredError) {
           toast({
             title: 'Access Denied',
-            description: 'Your login with spotify either expired or is invalid, please log in with spotify again!',
+            description: 'Your login with spotify is either expired or invalid, please log in with spotify again!',
             status: 'error',
             duration: 9000,
             isClosable: true
