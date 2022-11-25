@@ -379,6 +379,42 @@ describe('Layout Component', () => {
     });
   });
 
+  test('should call RunCommand with skip when skip is clicked', async () => {
+    const { runCommandSpy } = makeSut();
+    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    await userEvent.click(screen.getByTestId('skip-music'));
+    await setTimeout(500);
+    expect(runCommandSpy.callsCount).toBe(1);
+    expect(runSpy).toHaveBeenCalledWith('skip');
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Song Skipped',
+      description: 'Your song was successfully skipped',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
+  });
+
+  test('should show toast if RunCommand with skip fails', async () => {
+    const { runCommandSpy } = makeSut();
+    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    await userEvent.click(screen.getByTestId('skip-music'));
+    await setTimeout(500);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Skip Error',
+      description: 'There was an error while trying to skip',
+      status: 'error',
+      duration: 9000,
+      position: 'top',
+      isClosable: true
+    });
+  });
+
   test('should show render small layout then resize to a big one', async () => {
     window = Object.assign(window, { innerWidth: 766 });
     makeSut();
