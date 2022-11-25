@@ -14,27 +14,41 @@ import {
   Grid,
   GridItem
 } from '@chakra-ui/react';
-import { useMemo } from 'react';
-import { BsPlayCircleFill, BsShuffle, BsChevronRight, BsCircleFill, BsFillVolumeUpFill, BsJustify } from 'react-icons/bs';
+import { useMemo, useState } from 'react';
+import {
+  BsPlayCircleFill,
+  BsPauseCircleFill,
+  BsShuffle,
+  BsChevronRight,
+  BsCircleFill,
+  BsFillVolumeUpFill,
+  BsJustify
+} from 'react-icons/bs';
 import { useRecoilValue } from 'recoil';
 import { musicState } from './atom';
+import IconButton from './icon-button';
 
 const PlayIcon = chakra(BsPlayCircleFill);
+const PauseIcon = chakra(BsPauseCircleFill);
 const ShuffleIcon = chakra(BsShuffle);
 const NextIcon = chakra(BsChevronRight);
 const VolumeIcon = chakra(BsFillVolumeUpFill);
 const QueueIcon = chakra(BsJustify);
 const CircleIcon = chakra(BsCircleFill);
 
-export default function Player(): JSX.Element {
+type Props = {
+  onPause: () => Promise<void>;
+};
+
+export default function Player({ onPause }: Props): JSX.Element {
   const iconColor = useColorModeValue('gray.700', 'gray.300');
   const secondaryIconColor = useColorModeValue('gray', 'gray.300');
   const state = useRecoilValue(musicState);
+  const [paused, setPaused] = useState<boolean>(false);
 
   const music = useMemo(() => {
     if (state.name) {
       const song = state.name.split('-');
-      console.log({ song });
       if (song.length > 1) {
         return {
           author: song[0].trim(),
@@ -47,6 +61,11 @@ export default function Player(): JSX.Element {
       };
     }
   }, [state]);
+
+  const handlePlayPause = (): void => {
+    setPaused(prev => !prev);
+    onPause();
+  };
 
   return (
     <Grid
@@ -82,20 +101,29 @@ export default function Player(): JSX.Element {
       </GridItem>
       <GridItem mt={[5, 0]} display="flex" flexDir="column" alignItems="center" gap={3}>
         <HStack spacing={5}>
-          <ShuffleIcon size={15} color={secondaryIconColor} />
-          <PlayIcon size={25} color={iconColor} />
-          <NextIcon size={15} color={secondaryIconColor} />
+          <IconButton>
+            <ShuffleIcon size={15} color={secondaryIconColor} />
+          </IconButton>
+          <IconButton onClick={handlePlayPause} data-testid="play-pause-music">
+            {paused ? <PlayIcon size={25} color={iconColor} /> : <PauseIcon size={25} color={iconColor} />}
+          </IconButton>
+          <IconButton>
+            <NextIcon size={15} color={secondaryIconColor} />
+          </IconButton>
         </HStack>
         <HStack>
-          <Text fontSize="xs">{music?.name ? '2:49' : '0:00'}</Text>
-          <Progress value={20} size="xs" colorScheme="gray" w="40vw" />
-          <Text fontSize="xs">{music?.name ? '3:06' : '0:00'}</Text>
+          <Progress value={0} size="xs" colorScheme="gray" w="40vw" />
+          <Text fontSize="xs">{music?.name ? state.duration : '0:00'}</Text>
         </HStack>
       </GridItem>
       <GridItem mt={[5, 0]} display="flex" justifyContent={['center', 'flex-end']}>
         <HStack gap={3}>
-          <QueueIcon size={15} color={secondaryIconColor} />
-          <VolumeIcon size={15} color={secondaryIconColor} />
+          <IconButton>
+            <QueueIcon size={15} color={secondaryIconColor} />
+          </IconButton>
+          <IconButton>
+            <VolumeIcon size={15} color={secondaryIconColor} />
+          </IconButton>
           <Slider aria-label="slider" colorScheme="gray" defaultValue={50} w={['60vw', '5vw']}>
             <SliderTrack>
               <SliderFilledTrack />

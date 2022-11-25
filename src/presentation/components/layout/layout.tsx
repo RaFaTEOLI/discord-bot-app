@@ -5,7 +5,7 @@ import { Outlet, useLocation } from 'react-router';
 import { ThemeSwitcher, currentAccountState } from '@/presentation/components';
 import Logo from '../logo/logo';
 import { NavItem, UserMenu, Player, musicState } from './components';
-import { LoadMusic, LoadUser, SpotifyAuthorize } from '@/domain/usecases';
+import { LoadMusic, LoadUser, RunCommand, SpotifyAuthorize } from '@/domain/usecases';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { useErrorHandler } from '@/presentation/hooks';
 import { AccessTokenExpiredError } from '@/domain/errors';
@@ -17,9 +17,10 @@ type Props = {
   loadUser: LoadUser;
   spotifyAuthorize: SpotifyAuthorize;
   loadMusic: LoadMusic;
+  runCommand: RunCommand;
 };
 
-export default function Layout({ loadUser, spotifyAuthorize, loadMusic }: Props): JSX.Element {
+export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runCommand }: Props): JSX.Element {
   const sidebarColor = useColorModeValue('gray.100', 'gray.900');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const [navSize, setNavSize] = useState<string>('large');
@@ -109,6 +110,30 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic }: Props)
     window.location.href = url;
   };
 
+  const onPause = async (): Promise<void> => {
+    try {
+      await runCommand.run('pause');
+      toast({
+        title: 'Song Paused',
+        description: 'Your song was successfully paused',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
+    } catch (error: any) {
+      handleError(error);
+      toast({
+        title: 'Pause Error',
+        description: 'There was an error while trying to pause',
+        status: 'error',
+        duration: 9000,
+        position: 'top',
+        isClosable: true
+      });
+    }
+  };
+
   return (
     <Flex flexDir="column">
       <Flex justifyContent="space-between" bg={borderColor}>
@@ -176,7 +201,7 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic }: Props)
       </Flex>
       <Flex h="full">
         <Box w="100%" h="100%" display="flex" justifyContent="center" alignItems="center">
-          <Player />
+          <Player onPause={onPause} />
         </Box>
       </Flex>
     </Flex>
