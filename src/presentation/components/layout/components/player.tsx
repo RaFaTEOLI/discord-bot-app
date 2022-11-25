@@ -68,7 +68,8 @@ export default function Player(): JSX.Element {
             />
             <Flex flexDir="column" justifyContent="center">
               <Text as="b" fontSize="sm" data-testid="music-name">
-                {music.name.substring(0, 40)}...
+                {music.name.substring(0, 40)}
+                {music.name.length > 40 && '...'}
               </Text>
               <Text fontSize="xs" data-testid="music-author">
                 {music.author}
