@@ -1,6 +1,7 @@
 export type MusicModel = {
   id: string;
   name: string;
+  duration: string | null;
   startedAt: number;
   thumbnail?: string | null;
 };
