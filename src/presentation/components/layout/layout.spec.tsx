@@ -303,6 +303,46 @@ describe('Layout Component', () => {
     });
   });
 
+  test('should call RunCommand with resume when play is clicked', async () => {
+    const { runCommandSpy } = makeSut();
+    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    await userEvent.click(screen.getByTestId('play-pause-music'));
+    await setTimeout(500);
+    await userEvent.click(screen.getByTestId('play-pause-music'));
+    await setTimeout(500);
+    expect(runCommandSpy.callsCount).toBe(2);
+    expect(runSpy).toHaveBeenCalledWith('resume');
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Song Resumed',
+      description: 'Your song was successfully resumed',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
+  });
+
+  test('should show toast if RunCommand with resume fails', async () => {
+    const { runCommandSpy } = makeSut();
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    await userEvent.click(screen.getByTestId('play-pause-music'));
+    await setTimeout(500);
+    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    await userEvent.click(screen.getByTestId('play-pause-music'));
+    await setTimeout(500);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Resume Error',
+      description: 'There was an error while trying to resume',
+      status: 'error',
+      duration: 9000,
+      position: 'top',
+      isClosable: true
+    });
+  });
+
   test('should call RunCommand with shuffle when shuffle is clicked', async () => {
     const { runCommandSpy } = makeSut();
     const runSpy = jest.spyOn(runCommandSpy, 'run');
