@@ -60,6 +60,14 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic }: Props)
             duration: 9000,
             isClosable: true
           });
+        } else {
+          toast({
+            title: 'Server Error',
+            description: 'Something went wrong while trying to load music',
+            status: 'error',
+            duration: 9000,
+            isClosable: true
+          });
         }
         handleError(error);
       }
