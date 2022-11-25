@@ -182,6 +182,30 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
     }
   };
 
+  const onSkip = async (): Promise<void> => {
+    try {
+      await runCommand.run('skip');
+      toast({
+        title: 'Song Skipped',
+        description: 'Your song was successfully skipped',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
+    } catch (error: any) {
+      handleError(error);
+      toast({
+        title: 'Skip Error',
+        description: 'There was an error while trying to skip',
+        status: 'error',
+        duration: 9000,
+        position: 'top',
+        isClosable: true
+      });
+    }
+  };
+
   return (
     <Flex flexDir="column">
       <Flex justifyContent="space-between" bg={borderColor}>
@@ -249,7 +273,7 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
       </Flex>
       <Flex h="full">
         <Box w="100%" h="100%" display="flex" justifyContent="center" alignItems="center">
-          <Player onResume={onResume} onPause={onPause} onShuffle={onShuffle} />
+          <Player onResume={onResume} onPause={onPause} onShuffle={onShuffle} onSkip={onSkip} />
         </Box>
       </Flex>
     </Flex>

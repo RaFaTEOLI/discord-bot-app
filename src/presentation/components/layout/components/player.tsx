@@ -40,9 +40,10 @@ type Props = {
   onResume: () => Promise<void>;
   onPause: () => Promise<void>;
   onShuffle: () => Promise<void>;
+  onSkip: () => Promise<void>;
 };
 
-export default function Player({ onResume, onPause, onShuffle }: Props): JSX.Element {
+export default function Player({ onResume, onPause, onShuffle, onSkip }: Props): JSX.Element {
   const iconColor = useColorModeValue('gray.700', 'gray.300');
   const secondaryIconColor = useColorModeValue('gray', 'gray.300');
   const state = useRecoilValue(musicState);
@@ -77,6 +78,10 @@ export default function Player({ onResume, onPause, onShuffle }: Props): JSX.Ele
 
   const handleShuffle = (): void => {
     onShuffle();
+  };
+
+  const handleSkip = (): void => {
+    onSkip();
   };
 
   return (
@@ -119,7 +124,7 @@ export default function Player({ onResume, onPause, onShuffle }: Props): JSX.Ele
           <IconButton onClick={handlePlayPause} data-testid="play-pause-music">
             {paused ? <PlayIcon size={25} color={iconColor} /> : <PauseIcon size={25} color={iconColor} />}
           </IconButton>
-          <IconButton>
+          <IconButton onClick={handleSkip} data-testid="skip-music">
             <NextIcon size={15} color={secondaryIconColor} />
           </IconButton>
         </HStack>
