@@ -15,7 +15,7 @@ import {
 } from '@/domain/mocks';
 import { setTimeout } from 'timers/promises';
 import { faker } from '@faker-js/faker';
-import { AccessTokenExpiredError } from '@/domain/errors';
+import { AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
 
 type SutTypes = {
   history: MemoryHistory;
@@ -233,6 +233,22 @@ describe('Layout Component', () => {
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Access Denied',
       description: 'Your login with spotify either expired or is invalid, please log in with spotify again!',
+      status: 'error',
+      duration: 9000,
+      isClosable: true
+    });
+  });
+
+  test('should show toast when LoadMusic throws UnexpectedError', async () => {
+    const loadMusicSpy = new LoadMusicSpy();
+    jest.spyOn(loadMusicSpy, 'load').mockRejectedValueOnce(new UnexpectedError());
+    makeSut(mockAccountModel(), loadMusicSpy);
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    await setTimeout(1000);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Server Error',
+      description: 'Something went wrong while trying to load music',
       status: 'error',
       duration: 9000,
       isClosable: true
