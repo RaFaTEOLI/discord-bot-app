@@ -110,6 +110,30 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
     window.location.href = url;
   };
 
+  const onResume = async (): Promise<void> => {
+    try {
+      await runCommand.run('resume');
+      toast({
+        title: 'Song Resumed',
+        description: 'Your song was successfully resumed',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
+    } catch (error: any) {
+      handleError(error);
+      toast({
+        title: 'Resume Error',
+        description: 'There was an error while trying to resume',
+        status: 'error',
+        duration: 9000,
+        position: 'top',
+        isClosable: true
+      });
+    }
+  };
+
   const onPause = async (): Promise<void> => {
     try {
       await runCommand.run('pause');
@@ -225,7 +249,7 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
       </Flex>
       <Flex h="full">
         <Box w="100%" h="100%" display="flex" justifyContent="center" alignItems="center">
-          <Player onPause={onPause} onShuffle={onShuffle} />
+          <Player onResume={onResume} onPause={onPause} onShuffle={onShuffle} />
         </Box>
       </Flex>
     </Flex>

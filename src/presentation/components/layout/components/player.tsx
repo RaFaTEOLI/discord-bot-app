@@ -37,11 +37,12 @@ const QueueIcon = chakra(BsJustify);
 const CircleIcon = chakra(BsCircleFill);
 
 type Props = {
+  onResume: () => Promise<void>;
   onPause: () => Promise<void>;
   onShuffle: () => Promise<void>;
 };
 
-export default function Player({ onPause, onShuffle }: Props): JSX.Element {
+export default function Player({ onResume, onPause, onShuffle }: Props): JSX.Element {
   const iconColor = useColorModeValue('gray.700', 'gray.300');
   const secondaryIconColor = useColorModeValue('gray', 'gray.300');
   const state = useRecoilValue(musicState);
@@ -64,8 +65,14 @@ export default function Player({ onPause, onShuffle }: Props): JSX.Element {
   }, [state]);
 
   const handlePlayPause = (): void => {
-    setPaused(prev => !prev);
-    onPause();
+    setPaused(prev => {
+      if (prev) {
+        onResume();
+      } else {
+        onPause();
+      }
+      return !prev;
+    });
   };
 
   const handleShuffle = (): void => {
