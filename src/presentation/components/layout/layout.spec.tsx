@@ -267,7 +267,7 @@ describe('Layout Component', () => {
     });
   });
 
-  test('should call RunCommand with correct values', async () => {
+  test('should call RunCommand with pause when pause is clicked', async () => {
     const { runCommandSpy } = makeSut();
     const runSpy = jest.spyOn(runCommandSpy, 'run');
     const player = await screen.findByTestId('player');
@@ -286,7 +286,7 @@ describe('Layout Component', () => {
     });
   });
 
-  test('should show toast if RunCommand fails', async () => {
+  test('should show toast if RunCommand with pause fails', async () => {
     const { runCommandSpy } = makeSut();
     jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
     const player = await screen.findByTestId('player');
@@ -296,6 +296,42 @@ describe('Layout Component', () => {
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Pause Error',
       description: 'There was an error while trying to pause',
+      status: 'error',
+      duration: 9000,
+      position: 'top',
+      isClosable: true
+    });
+  });
+
+  test('should call RunCommand with shuffle when shuffle is clicked', async () => {
+    const { runCommandSpy } = makeSut();
+    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    await userEvent.click(screen.getByTestId('shuffle-music'));
+    await setTimeout(500);
+    expect(runCommandSpy.callsCount).toBe(1);
+    expect(runSpy).toHaveBeenCalledWith('shuffle');
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Queue Shuffled',
+      description: 'Your queue was successfully shuffled',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
+  });
+
+  test('should show toast if RunCommand with shuffle fails', async () => {
+    const { runCommandSpy } = makeSut();
+    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    await userEvent.click(screen.getByTestId('shuffle-music'));
+    await setTimeout(500);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Shuffle Error',
+      description: 'There was an error while trying to shuffle',
       status: 'error',
       duration: 9000,
       position: 'top',
