@@ -134,6 +134,30 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
     }
   };
 
+  const onShuffle = async (): Promise<void> => {
+    try {
+      await runCommand.run('shuffle');
+      toast({
+        title: 'Queue Shuffled',
+        description: 'Your queue was successfully shuffled',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
+    } catch (error: any) {
+      handleError(error);
+      toast({
+        title: 'Shuffle Error',
+        description: 'There was an error while trying to shuffle',
+        status: 'error',
+        duration: 9000,
+        position: 'top',
+        isClosable: true
+      });
+    }
+  };
+
   return (
     <Flex flexDir="column">
       <Flex justifyContent="space-between" bg={borderColor}>
@@ -201,7 +225,7 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
       </Flex>
       <Flex h="full">
         <Box w="100%" h="100%" display="flex" justifyContent="center" alignItems="center">
-          <Player onPause={onPause} />
+          <Player onPause={onPause} onShuffle={onShuffle} />
         </Box>
       </Flex>
     </Flex>

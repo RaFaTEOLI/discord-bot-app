@@ -38,9 +38,10 @@ const CircleIcon = chakra(BsCircleFill);
 
 type Props = {
   onPause: () => Promise<void>;
+  onShuffle: () => Promise<void>;
 };
 
-export default function Player({ onPause }: Props): JSX.Element {
+export default function Player({ onPause, onShuffle }: Props): JSX.Element {
   const iconColor = useColorModeValue('gray.700', 'gray.300');
   const secondaryIconColor = useColorModeValue('gray', 'gray.300');
   const state = useRecoilValue(musicState);
@@ -65,6 +66,10 @@ export default function Player({ onPause }: Props): JSX.Element {
   const handlePlayPause = (): void => {
     setPaused(prev => !prev);
     onPause();
+  };
+
+  const handleShuffle = (): void => {
+    onShuffle();
   };
 
   return (
@@ -101,7 +106,7 @@ export default function Player({ onPause }: Props): JSX.Element {
       </GridItem>
       <GridItem mt={[5, 0]} display="flex" flexDir="column" alignItems="center" gap={3}>
         <HStack spacing={5}>
-          <IconButton>
+          <IconButton onClick={handleShuffle} data-testid="shuffle-music">
             <ShuffleIcon size={15} color={secondaryIconColor} />
           </IconButton>
           <IconButton onClick={handlePlayPause} data-testid="play-pause-music">
