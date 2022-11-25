@@ -10,7 +10,9 @@ import {
   SliderFilledTrack,
   SliderThumb,
   useColorModeValue,
-  Box
+  Box,
+  Grid,
+  GridItem
 } from '@chakra-ui/react';
 import { useMemo } from 'react';
 import { BsPlayCircleFill, BsShuffle, BsChevronRight, BsCircleFill, BsFillVolumeUpFill, BsJustify } from 'react-icons/bs';
@@ -41,14 +43,20 @@ export default function Player(): JSX.Element {
       }
       return {
         author: 'Unknown',
-        name: song
+        name: state.name
       };
     }
   }, [state]);
 
   return (
-    <Flex w="100vw" justifyContent="space-between" alignItems="center" p={4} data-testid="player">
-      <Flex gap={3}>
+    <Grid
+      templateColumns={['repeat(1, 1fr)', 'repeat(3, 1fr)']}
+      p={4}
+      justifyContent="space-between"
+      alignItems="center"
+      data-testid="player"
+    >
+      <GridItem gap={3} display="flex">
         {music?.name ? (
           <>
             <Image
@@ -60,7 +68,7 @@ export default function Player(): JSX.Element {
             />
             <Flex flexDir="column" justifyContent="center">
               <Text as="b" fontSize="sm" data-testid="music-name">
-                {music.name}
+                {music.name.substring(0, 40)}...
               </Text>
               <Text fontSize="xs" data-testid="music-author">
                 {music.author}
@@ -70,8 +78,8 @@ export default function Player(): JSX.Element {
         ) : (
           <Box w="8vw" data-testid="empty-song"></Box>
         )}
-      </Flex>
-      <Flex flexDir="column" alignItems="center" gap={3}>
+      </GridItem>
+      <GridItem mt={[5, 0]} display="flex" flexDir="column" alignItems="center" gap={3}>
         <HStack spacing={5}>
           <ShuffleIcon size={15} color={secondaryIconColor} />
           <PlayIcon size={25} color={iconColor} />
@@ -82,19 +90,21 @@ export default function Player(): JSX.Element {
           <Progress value={20} size="xs" colorScheme="gray" w="40vw" />
           <Text fontSize="xs">{music?.name ? '3:06' : '0:00'}</Text>
         </HStack>
-      </Flex>
-      <HStack gap={3}>
-        <QueueIcon size={15} color={secondaryIconColor} />
-        <VolumeIcon size={15} color={secondaryIconColor} />
-        <Slider aria-label="slider" colorScheme="gray" defaultValue={50} w="5vw">
-          <SliderTrack>
-            <SliderFilledTrack />
-          </SliderTrack>
-          <SliderThumb boxSize={2}>
-            <Box color={secondaryIconColor} as={CircleIcon} />
-          </SliderThumb>
-        </Slider>
-      </HStack>
-    </Flex>
+      </GridItem>
+      <GridItem mt={[5, 0]} display="flex" justifyContent={['center', 'flex-end']}>
+        <HStack gap={3}>
+          <QueueIcon size={15} color={secondaryIconColor} />
+          <VolumeIcon size={15} color={secondaryIconColor} />
+          <Slider aria-label="slider" colorScheme="gray" defaultValue={50} w={['60vw', '5vw']}>
+            <SliderTrack>
+              <SliderFilledTrack />
+            </SliderTrack>
+            <SliderThumb boxSize={2}>
+              <Box color={secondaryIconColor} as={CircleIcon} />
+            </SliderThumb>
+          </Slider>
+        </HStack>
+      </GridItem>
+    </Grid>
   );
 }
