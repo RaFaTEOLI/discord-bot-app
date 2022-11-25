@@ -11,6 +11,7 @@ import {
   mockAccountModel,
   mockAccountWithSpotifyModel,
   mockMusicModel,
+  RunCommandSpy,
   SpotifyAuthorizeSpy
 } from '@/domain/mocks';
 import { setTimeout } from 'timers/promises';
@@ -23,19 +24,30 @@ type SutTypes = {
   spotifyAuthorizeSpy: SpotifyAuthorizeSpy;
   loadUserSpy: LoadUserSpy;
   loadMusicSpy: LoadMusicSpy;
+  runCommandSpy: RunCommandSpy;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/'] });
-const makeSut = (account = mockAccountModel(), loadMusicSpy = new LoadMusicSpy()): SutTypes => {
+const makeSut = (
+  account = mockAccountModel(),
+  loadMusicSpy = new LoadMusicSpy(),
+  runCommandSpy = new RunCommandSpy()
+): SutTypes => {
   const loadUserSpy = new LoadUserSpy();
   const spotifyAuthorizeSpy = new SpotifyAuthorizeSpy();
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
-    Page: () => Layout({ loadUser: loadUserSpy, spotifyAuthorize: spotifyAuthorizeSpy, loadMusic: loadMusicSpy }),
+    Page: () =>
+      Layout({
+        loadUser: loadUserSpy,
+        spotifyAuthorize: spotifyAuthorizeSpy,
+        loadMusic: loadMusicSpy,
+        runCommand: runCommandSpy
+      }),
     account
   });
-  return { history, setCurrentAccountMock, spotifyAuthorizeSpy, loadUserSpy, loadMusicSpy };
+  return { history, setCurrentAccountMock, spotifyAuthorizeSpy, loadUserSpy, loadMusicSpy, runCommandSpy };
 };
 
 const mockToast = jest.fn();
@@ -251,6 +263,42 @@ describe('Layout Component', () => {
       description: 'Something went wrong while trying to load music',
       status: 'error',
       duration: 9000,
+      isClosable: true
+    });
+  });
+
+  test('should call RunCommand with correct values', async () => {
+    const { runCommandSpy } = makeSut();
+    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    await userEvent.click(screen.getByTestId('play-pause-music'));
+    await setTimeout(500);
+    expect(runCommandSpy.callsCount).toBe(1);
+    expect(runSpy).toHaveBeenCalledWith('pause');
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Song Paused',
+      description: 'Your song was successfully paused',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
+  });
+
+  test('should show toast if RunCommand fails', async () => {
+    const { runCommandSpy } = makeSut();
+    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    await userEvent.click(screen.getByTestId('play-pause-music'));
+    await setTimeout(500);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Pause Error',
+      description: 'There was an error while trying to pause',
+      status: 'error',
+      duration: 9000,
+      position: 'top',
       isClosable: true
     });
   });
