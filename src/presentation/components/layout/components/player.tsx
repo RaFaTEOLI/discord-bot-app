@@ -14,7 +14,7 @@ import {
   Grid,
   GridItem
 } from '@chakra-ui/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   BsPlayCircleFill,
   BsPauseCircleFill,
@@ -22,6 +22,7 @@ import {
   BsChevronRight,
   BsCircleFill,
   BsFillVolumeUpFill,
+  BsFillVolumeMuteFill,
   BsJustify
 } from 'react-icons/bs';
 import { useRecoilValue } from 'recoil';
@@ -33,6 +34,7 @@ const PauseIcon = chakra(BsPauseCircleFill);
 const ShuffleIcon = chakra(BsShuffle);
 const NextIcon = chakra(BsChevronRight);
 const VolumeIcon = chakra(BsFillVolumeUpFill);
+const VolumeMuteIcon = chakra(BsFillVolumeMuteFill);
 const QueueIcon = chakra(BsJustify);
 const CircleIcon = chakra(BsCircleFill);
 
@@ -41,13 +43,15 @@ type Props = {
   onPause: () => Promise<void>;
   onShuffle: () => Promise<void>;
   onSkip: () => Promise<void>;
+  onVolumeChange: (volume: number) => Promise<void>;
 };
 
-export default function Player({ onResume, onPause, onShuffle, onSkip }: Props): JSX.Element {
+export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeChange }: Props): JSX.Element {
   const iconColor = useColorModeValue('gray.700', 'gray.300');
   const secondaryIconColor = useColorModeValue('gray', 'gray.300');
   const state = useRecoilValue(musicState);
   const [paused, setPaused] = useState<boolean>(false);
+  const [volume, setVolume] = useState<number>(-1);
 
   const music = useMemo(() => {
     if (state.name) {
@@ -83,6 +87,16 @@ export default function Player({ onResume, onPause, onShuffle, onSkip }: Props):
   const handleSkip = (): void => {
     onSkip();
   };
+
+  const handleVolumeClick = (): void => {
+    setVolume(prev => (prev === 0 ? 50 : 0));
+  };
+
+  useEffect(() => {
+    if (volume >= 0) {
+      onVolumeChange(volume);
+    }
+  }, [volume]);
 
   return (
     <Grid
@@ -138,10 +152,22 @@ export default function Player({ onResume, onPause, onShuffle, onSkip }: Props):
           <IconButton aria-label="Queue">
             <QueueIcon size={15} color={secondaryIconColor} />
           </IconButton>
-          <IconButton aria-label="Volume">
-            <VolumeIcon size={15} color={secondaryIconColor} />
+          <IconButton onClick={handleVolumeClick} aria-label="Volume" data-testid="music-volume">
+            {volume === 0 ? (
+              <VolumeMuteIcon size={15} color={secondaryIconColor} />
+            ) : (
+              <VolumeIcon size={15} color={secondaryIconColor} />
+            )}
           </IconButton>
-          <Slider aria-label="slider" colorScheme="gray" defaultValue={50} w={['60vw', '5vw']}>
+          <Slider
+            onChangeEnd={val => setVolume(val)}
+            aria-label="slider"
+            colorScheme="gray"
+            defaultValue={50}
+            value={volume === -1 ? 50 : volume}
+            w={['60vw', '5vw']}
+            data-testid="volume-slider"
+          >
             <SliderTrack>
               <SliderFilledTrack />
             </SliderTrack>

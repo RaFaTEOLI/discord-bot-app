@@ -206,6 +206,30 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
     }
   };
 
+  const onVolumeChange = async (volume: number): Promise<void> => {
+    try {
+      await runCommand.run(`setVolume ${volume}`);
+      toast({
+        title: 'Song Volume',
+        description: 'The song volume was successfully changed',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
+    } catch (error: any) {
+      handleError(error);
+      toast({
+        title: 'Song Volume',
+        description: 'There was an error while trying to change the song volume',
+        status: 'error',
+        duration: 9000,
+        position: 'top',
+        isClosable: true
+      });
+    }
+  };
+
   return (
     <Flex flexDir="column">
       <Flex justifyContent="space-between" bg={borderColor}>
@@ -273,7 +297,13 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
       </Flex>
       <Flex h="full">
         <Box w="100%" h="100%" display="flex" justifyContent="center" alignItems="center">
-          <Player onResume={onResume} onPause={onPause} onShuffle={onShuffle} onSkip={onSkip} />
+          <Player
+            onResume={onResume}
+            onPause={onPause}
+            onShuffle={onShuffle}
+            onSkip={onSkip}
+            onVolumeChange={onVolumeChange}
+          />
         </Box>
       </Flex>
     </Flex>
