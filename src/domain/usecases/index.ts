@@ -8,3 +8,4 @@ export * from './save-command';
 export * from './delete-command';
 export * from './run-command';
 export * from './load-music';
+export * from './load-queue';
