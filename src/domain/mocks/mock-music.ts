@@ -4,6 +4,7 @@ import { faker } from '@faker-js/faker';
 export const mockMusicModel = (): LoadMusic.Model => ({
   id: faker.datatype.uuid(),
   name: `${faker.name.firstName()} - ${faker.name.firstName()}`,
+  duration: faker.date.recent().toString(),
   startedAt: Math.floor(Date.now() / 1000),
   thumbnail: faker.internet.avatar()
 });

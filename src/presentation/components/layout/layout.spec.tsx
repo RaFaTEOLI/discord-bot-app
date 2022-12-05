@@ -8,6 +8,7 @@ import { Authentication } from '@/domain/usecases';
 import {
   LoadMusicSpy,
   LoadUserSpy,
+  LoadQueueSpy,
   mockAccountModel,
   mockAccountWithSpotifyModel,
   mockMusicModel,
@@ -25,13 +26,15 @@ type SutTypes = {
   loadUserSpy: LoadUserSpy;
   loadMusicSpy: LoadMusicSpy;
   runCommandSpy: RunCommandSpy;
+  loadQueueSpy: LoadQueueSpy;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/'] });
 const makeSut = (
   account = mockAccountModel(),
   loadMusicSpy = new LoadMusicSpy(),
-  runCommandSpy = new RunCommandSpy()
+  runCommandSpy = new RunCommandSpy(),
+  loadQueueSpy = new LoadQueueSpy()
 ): SutTypes => {
   const loadUserSpy = new LoadUserSpy();
   const spotifyAuthorizeSpy = new SpotifyAuthorizeSpy();
@@ -43,11 +46,12 @@ const makeSut = (
         loadUser: loadUserSpy,
         spotifyAuthorize: spotifyAuthorizeSpy,
         loadMusic: loadMusicSpy,
-        runCommand: runCommandSpy
+        runCommand: runCommandSpy,
+        loadQueue: loadQueueSpy
       }),
     account
   });
-  return { history, setCurrentAccountMock, spotifyAuthorizeSpy, loadUserSpy, loadMusicSpy, runCommandSpy };
+  return { history, setCurrentAccountMock, spotifyAuthorizeSpy, loadUserSpy, loadMusicSpy, runCommandSpy, loadQueueSpy };
 };
 
 const mockToast = jest.fn();
@@ -174,6 +178,8 @@ describe('Layout Component', () => {
     expect(loadMusicSpy.callsCount).toBe(1);
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
+    const musicThumbnail = await screen.findByTestId('music-thumbnail');
+    await waitFor(() => musicThumbnail);
     const song = loadMusicSpy.music?.name.split('-') as string[];
     expect(screen.getByTestId('music-name')).toHaveTextContent(song[1].trim());
     expect(screen.getByTestId('music-author')).toHaveTextContent(song[0].trim());
@@ -188,6 +194,8 @@ describe('Layout Component', () => {
     makeSut(mockAccountModel(), loadMusicSpy);
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
+    const musicThumbnail = await screen.findByTestId('music-thumbnail');
+    await waitFor(() => musicThumbnail);
     const song = musicModel?.name.split('-') as string[];
     expect(screen.getByTestId('music-name')).toHaveTextContent(song[1].trim());
     expect(screen.getByTestId('music-author')).toHaveTextContent(song[0].trim());
@@ -205,6 +213,8 @@ describe('Layout Component', () => {
     makeSut(mockAccountModel(), loadMusicSpy);
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
+    const musicThumbnail = await screen.findByTestId('music-thumbnail');
+    await waitFor(() => musicThumbnail);
     expect(screen.getByTestId('music-name')).toHaveTextContent(songName);
     expect(screen.getByTestId('music-author')).toHaveTextContent('Unknown');
   });
@@ -220,6 +230,8 @@ describe('Layout Component', () => {
     makeSut(mockAccountModel(), loadMusicSpy);
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
+    const musicThumbnail = await screen.findByTestId('music-thumbnail');
+    await waitFor(() => musicThumbnail);
     expect(screen.getByTestId('music-name')).toHaveTextContent(`${songName.substring(0, 40)}...`);
     expect(screen.getByTestId('music-author')).toHaveTextContent('Unknown');
   });
@@ -468,6 +480,15 @@ describe('Layout Component', () => {
       position: 'top',
       isClosable: true
     });
+  });
+
+  test('should render 8 songs on the queue', async () => {
+    const { loadQueueSpy } = makeSut();
+    await userEvent.click(screen.getByTestId('show-queue'));
+    const queueList = await screen.findByTestId('queue-list');
+    await waitFor(() => queueList);
+    expect(queueList.children).toHaveLength(8);
+    expect(queueList.querySelector('.queue-song-name')).toHaveTextContent(loadQueueSpy.queue[1].name);
   });
 
   test('should show render small layout then resize to a big one', async () => {
