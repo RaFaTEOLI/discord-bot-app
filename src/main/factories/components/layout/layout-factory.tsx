@@ -1,6 +1,7 @@
 import { Layout } from '@/presentation/components';
 import {
   makeRemoteLoadMusic,
+  makeRemoteLoadQueue,
   makeRemoteLoadUser,
   makeRemoteRunCommand,
   makeRemoteSpotifyAuthorize
@@ -13,6 +14,7 @@ export const LayoutFactory = (): JSX.Element => {
       spotifyAuthorize={makeRemoteSpotifyAuthorize(process.env.VITE_SPOTIFY_LOGIN_REDIRECT_URI as string)}
       loadMusic={makeRemoteLoadMusic()}
       runCommand={makeRemoteRunCommand()}
+      loadQueue={makeRemoteLoadQueue()}
     />
   );
 };

@@ -4,8 +4,8 @@ import { HiHome, HiCommandLine } from 'react-icons/hi2';
 import { Outlet, useLocation } from 'react-router';
 import { ThemeSwitcher, currentAccountState } from '@/presentation/components';
 import Logo from '../logo/logo';
-import { NavItem, UserMenu, Player, musicState } from './components';
-import { LoadMusic, LoadUser, RunCommand, SpotifyAuthorize } from '@/domain/usecases';
+import { NavItem, UserMenu, Player, playerState } from './components';
+import { LoadMusic, LoadQueue, LoadUser, RunCommand, SpotifyAuthorize } from '@/domain/usecases';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { useErrorHandler } from '@/presentation/hooks';
 import { AccessTokenExpiredError } from '@/domain/errors';
@@ -18,16 +18,17 @@ type Props = {
   spotifyAuthorize: SpotifyAuthorize;
   loadMusic: LoadMusic;
   runCommand: RunCommand;
+  loadQueue: LoadQueue;
 };
 
-export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runCommand }: Props): JSX.Element {
+export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runCommand, loadQueue }: Props): JSX.Element {
   const sidebarColor = useColorModeValue('gray.100', 'gray.900');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const [navSize, setNavSize] = useState<string>('large');
   const location = useLocation();
   const { setCurrentAccount, getCurrentAccount } = useRecoilValue(currentAccountState);
   // eslint-disable-next-line
-  const [_, setState] = useRecoilState(musicState);
+  const [state, setState] = useRecoilState(playerState);
   const toast = useToast();
   // eslint-disable-next-line n/handle-callback-err
   const handleError = useErrorHandler((error: Error) => {});
@@ -49,8 +50,18 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
     (async () => {
       try {
         const music = await loadMusic.load();
+        const queue = await loadQueue.all();
         if (music) {
-          setState(music);
+          setState(prev => ({
+            ...prev,
+            music
+          }));
+        }
+        if (queue.length) {
+          setState(prev => ({
+            ...prev,
+            queue
+          }));
         }
       } catch (error: any) {
         if (error instanceof AccessTokenExpiredError) {

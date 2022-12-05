@@ -1,11 +1,14 @@
-import { MusicModel } from '@/domain/models';
+import { MusicModel, QueueModel } from '@/domain/models';
 import { atom } from 'recoil';
 
-export const musicState = atom({
-  key: 'musicState',
+export const playerState = atom({
+  key: 'playerState',
   default: {
-    id: '',
-    name: null,
-    startedAt: 1667828719
-  } as unknown as MusicModel
+    music: {
+      id: '',
+      name: null,
+      startedAt: 1667828719
+    } as unknown as MusicModel,
+    queue: [] as unknown as QueueModel[]
+  }
 });

@@ -12,7 +12,17 @@ import {
   useColorModeValue,
   Box,
   Grid,
-  GridItem
+  GridItem,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverArrow,
+  PopoverCloseButton,
+  PopoverHeader,
+  PopoverBody,
+  IconButton as ChakraIconButton,
+  VStack,
+  Divider
 } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -25,8 +35,9 @@ import {
   BsFillVolumeMuteFill,
   BsJustify
 } from 'react-icons/bs';
+import { HiMusicalNote } from 'react-icons/hi2';
 import { useRecoilValue } from 'recoil';
-import { musicState } from './atom';
+import { playerState } from './atom';
 import IconButton from './icon-button';
 
 const PlayIcon = chakra(BsPlayCircleFill);
@@ -37,6 +48,7 @@ const VolumeIcon = chakra(BsFillVolumeUpFill);
 const VolumeMuteIcon = chakra(BsFillVolumeMuteFill);
 const QueueIcon = chakra(BsJustify);
 const CircleIcon = chakra(BsCircleFill);
+const MusicIcon = chakra(HiMusicalNote);
 
 type Props = {
   onResume: () => Promise<void>;
@@ -49,13 +61,13 @@ type Props = {
 export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeChange }: Props): JSX.Element {
   const iconColor = useColorModeValue('gray.700', 'gray.300');
   const secondaryIconColor = useColorModeValue('gray', 'gray.300');
-  const state = useRecoilValue(musicState);
+  const state = useRecoilValue(playerState);
   const [paused, setPaused] = useState<boolean>(false);
   const [volume, setVolume] = useState<number>(-1);
 
   const music = useMemo(() => {
-    if (state.name) {
-      const song = state.name.split('-');
+    if (state.music.name) {
+      const song = state.music.name.split('-');
       if (song.length > 1) {
         return {
           author: song[0].trim(),
@@ -64,10 +76,19 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
       }
       return {
         author: 'Unknown',
-        name: state.name
+        name: state.music.name
       };
     }
-  }, [state]);
+  }, [state.music]);
+
+  const queue = useMemo(() => {
+    if (state.queue.length) {
+      const queueList = [...state.queue];
+      return queueList.splice(1, 8);
+    } else {
+      return state.queue;
+    }
+  }, [state.queue]);
 
   const handlePlayPause = (): void => {
     setPaused(prev => {
@@ -113,7 +134,7 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
               data-testid="music-thumbnail"
               boxSize="56px"
               objectFit="cover"
-              src={state.thumbnail ?? 'https://via.placeholder.com/150'}
+              src={state.music.thumbnail ?? 'https://via.placeholder.com/150'}
               alt="Song Album"
             />
             <Flex flexDir="column" justifyContent="center">
@@ -144,14 +165,47 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
         </HStack>
         <HStack>
           <Progress value={0} size="xs" colorScheme="gray" w="40vw" />
-          <Text fontSize="xs">{music?.name ? state.duration : '0:00'}</Text>
+          <Text fontSize="xs">{music?.name ? state.music.duration : '0:00'}</Text>
         </HStack>
       </GridItem>
       <GridItem mt={[5, 0]} display="flex" justifyContent={['center', 'flex-end']}>
         <HStack gap={3}>
-          <IconButton aria-label="Queue">
-            <QueueIcon size={15} color={secondaryIconColor} />
-          </IconButton>
+          <Popover data-testid="queue-container">
+            <PopoverTrigger>
+              <ChakraIconButton
+                data-testid="show-queue"
+                aria-label="Queue"
+                size="xs"
+                p={0}
+                m={0}
+                borderColor="transparent"
+                variant="outline"
+              >
+                <QueueIcon size={15} color={secondaryIconColor} />
+              </ChakraIconButton>
+            </PopoverTrigger>
+            <PopoverContent>
+              <PopoverArrow />
+              <PopoverCloseButton />
+              <PopoverHeader>Queue</PopoverHeader>
+              <PopoverBody>
+                <VStack gap={2} data-testid="queue-list">
+                  {queue.map((song, index) => (
+                    <Box w="100%" key={song.id} className="music-queue">
+                      <Box gap={3} w="100%" display="flex" alignItems="center">
+                        <MusicIcon color="blue.400" size={20} />
+                        <Text className="queue-song-name" fontSize="sm" noOfLines={1} w="90%">
+                          {song.name}
+                        </Text>
+                      </Box>
+                      {index < queue.length - 1 && <Divider mt={1} />}
+                    </Box>
+                  ))}
+                </VStack>
+              </PopoverBody>
+            </PopoverContent>
+          </Popover>
+
           <IconButton onClick={handleVolumeClick} aria-label="Volume" data-testid="music-volume">
             {volume === 0 ? (
               <VolumeMuteIcon size={15} color={secondaryIconColor} />
