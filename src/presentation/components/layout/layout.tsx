@@ -46,23 +46,31 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
+  const fetchMusic = async (): Promise<void> => {
+    const music = await loadMusic.load();
+    if (music) {
+      setState(prev => ({
+        ...prev,
+        music
+      }));
+    }
+  };
+
+  const fetchQueue = async (): Promise<void> => {
+    const queue = await loadQueue.all();
+    if (queue.length) {
+      setState(prev => ({
+        ...prev,
+        queue
+      }));
+    }
+  };
+
   useEffect(() => {
     (async () => {
       try {
-        const music = await loadMusic.load();
-        const queue = await loadQueue.all();
-        if (music) {
-          setState(prev => ({
-            ...prev,
-            music
-          }));
-        }
-        if (queue.length) {
-          setState(prev => ({
-            ...prev,
-            queue
-          }));
-        }
+        await fetchMusic();
+        await fetchQueue();
       } catch (error: any) {
         if (error instanceof AccessTokenExpiredError) {
           toast({
@@ -84,6 +92,19 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
         handleError(error);
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    // TODO: replace this with a websocket
+    const musicCheckInterval = setInterval(async () => {
+      await fetchMusic();
+      await fetchQueue();
+      // fetches new music and queue every 3 minutes
+    }, 180000);
+
+    return () => {
+      clearInterval(musicCheckInterval);
+    };
   }, []);
 
   useEffect(() => {
@@ -180,6 +201,9 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
         isClosable: true,
         position: 'top'
       });
+      setTimeout(() => {
+        fetchQueue();
+      }, 1500);
     } catch (error: any) {
       handleError(error);
       toast({
@@ -204,6 +228,9 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
         isClosable: true,
         position: 'top'
       });
+      setTimeout(() => {
+        fetchMusic();
+      }, 1500);
     } catch (error: any) {
       handleError(error);
       toast({

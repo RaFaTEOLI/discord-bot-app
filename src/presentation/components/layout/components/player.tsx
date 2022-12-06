@@ -192,17 +192,23 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
               <PopoverHeader>Queue</PopoverHeader>
               <PopoverBody>
                 <VStack gap={2} data-testid="queue-list">
-                  {queue.map((song, index) => (
-                    <Box w="100%" key={song.id} className="music-queue">
-                      <Box gap={3} w="100%" display="flex" alignItems="center">
-                        <MusicIcon color="blue.400" size={20} />
-                        <Text className="queue-song-name" fontSize="sm" noOfLines={1} w="90%">
-                          {song.name}
-                        </Text>
+                  {queue.length ? (
+                    queue.map((song, index) => (
+                      <Box w="100%" key={song.id} className="music-queue">
+                        <Box gap={3} w="100%" display="flex" alignItems="center">
+                          <MusicIcon color="blue.400" size={20} />
+                          <Text className="queue-song-name" fontSize="sm" noOfLines={1} w="90%">
+                            {song.name}
+                          </Text>
+                        </Box>
+                        {index < queue.length - 1 && <Divider mt={1} />}
                       </Box>
-                      {index < queue.length - 1 && <Divider mt={1} />}
-                    </Box>
-                  ))}
+                    ))
+                  ) : (
+                    <Text fontSize="sm" noOfLines={1} w="90%" data-testid="empty-queue">
+                      Queue is empty
+                    </Text>
+                  )}
                 </VStack>
               </PopoverBody>
             </PopoverContent>
