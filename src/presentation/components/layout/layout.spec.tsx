@@ -64,9 +64,11 @@ jest.mock('@chakra-ui/react', () => {
   };
 });
 
+jest.setTimeout(60000);
 describe('Layout Component', () => {
   beforeEach(() => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.clearAllMocks();
   });
 
   test('should have home page as active on initial state', () => {
@@ -356,7 +358,7 @@ describe('Layout Component', () => {
   });
 
   test('should call RunCommand with shuffle when shuffle is clicked', async () => {
-    const { runCommandSpy } = makeSut();
+    const { runCommandSpy, loadQueueSpy } = makeSut();
     const runSpy = jest.spyOn(runCommandSpy, 'run');
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
@@ -372,6 +374,8 @@ describe('Layout Component', () => {
       isClosable: true,
       position: 'top'
     });
+    await setTimeout(1550);
+    expect(loadQueueSpy.callsCount).toBe(2);
   });
 
   test('should show toast if RunCommand with shuffle fails', async () => {
@@ -392,7 +396,7 @@ describe('Layout Component', () => {
   });
 
   test('should call RunCommand with skip when skip is clicked', async () => {
-    const { runCommandSpy } = makeSut();
+    const { runCommandSpy, loadMusicSpy } = makeSut();
     const runSpy = jest.spyOn(runCommandSpy, 'run');
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
@@ -408,6 +412,8 @@ describe('Layout Component', () => {
       isClosable: true,
       position: 'top'
     });
+    await setTimeout(1550);
+    expect(loadMusicSpy.callsCount).toBe(2);
   });
 
   test('should show toast if RunCommand with skip fails', async () => {
@@ -444,6 +450,28 @@ describe('Layout Component', () => {
       isClosable: true,
       position: 'top'
     });
+  });
+
+  test('should call RunCommand with setVolume with correct volume when mute is clicked again', async () => {
+    const { runCommandSpy } = makeSut();
+    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    await userEvent.click(screen.getByTestId('music-volume'));
+    await setTimeout(500);
+    expect(runCommandSpy.callsCount).toBe(1);
+    expect(runSpy).toHaveBeenCalledWith('setVolume 0');
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Song Volume',
+      description: 'The song volume was successfully changed',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
+    await userEvent.click(screen.getByTestId('music-volume'));
+    await setTimeout(500);
+    expect(runSpy).toHaveBeenCalledWith('setVolume 50');
   });
 
   test('should call RunCommand with setVolume with correct volume when volume slider is changed', async () => {
@@ -489,6 +517,28 @@ describe('Layout Component', () => {
     await waitFor(() => queueList);
     expect(queueList.children).toHaveLength(8);
     expect(queueList.querySelector('.queue-song-name')).toHaveTextContent(loadQueueSpy.queue[1].name);
+  });
+
+  test('should not set queue if load queue returns empty array', async () => {
+    const loadQueueSpy = new LoadQueueSpy();
+    jest.spyOn(loadQueueSpy, 'all').mockResolvedValueOnce([]);
+    makeSut(mockAccountModel(), new LoadMusicSpy(), new RunCommandSpy(), loadQueueSpy);
+    await userEvent.click(screen.getByTestId('show-queue'));
+    const queueList = await screen.findByTestId('queue-list');
+    await waitFor(() => queueList);
+    expect(queueList.children).toHaveLength(1);
+    expect(screen.getByTestId('empty-queue')).toHaveTextContent('Queue is empty');
+  });
+
+  test('should fetch music and queue every 3 minutes', async () => {
+    jest.useFakeTimers();
+    const { loadMusicSpy, loadQueueSpy } = makeSut();
+    await setTimeout(500);
+    jest.advanceTimersByTime(200000);
+    await setTimeout(1000);
+    expect(loadMusicSpy.callsCount).toBe(2);
+    expect(loadQueueSpy.callsCount).toBe(2);
+    jest.useRealTimers();
   });
 
   test('should show render small layout then resize to a big one', async () => {
