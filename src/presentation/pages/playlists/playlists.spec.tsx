@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import { createMemoryHistory } from 'history';
 import Playlists from './playlists';
 
-const history = createMemoryHistory({ initialEntries: ['/'] });
+const history = createMemoryHistory({ initialEntries: ['/playlists'] });
 const makeSut = (): void => {
   renderWithHistory({
     history,
