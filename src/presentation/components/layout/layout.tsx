@@ -1,6 +1,6 @@
 import { Box, Flex, Text, useColorModeValue, chakra, useToast } from '@chakra-ui/react';
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { HiHome, HiCommandLine } from 'react-icons/hi2';
+import { HiHome, HiCommandLine, HiMusicalNote } from 'react-icons/hi2';
 import { Outlet, useLocation } from 'react-router';
 import { ThemeSwitcher, currentAccountState } from '@/presentation/components';
 import Logo from '../logo/logo';
@@ -12,6 +12,7 @@ import { AccessTokenExpiredError } from '@/domain/errors';
 
 const HomeIcon = chakra(HiHome);
 const CommandsIcon = chakra(HiCommandLine);
+const PlaylistsIcon = chakra(HiMusicalNote);
 
 type Props = {
   loadUser: LoadUser;
@@ -311,6 +312,14 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
               to="/commands"
               title="Commands"
               icon={CommandsIcon}
+              navSize={navSize}
+            />
+            <NavItem
+              testName="playlists"
+              active={currentRoute === '/playlists'}
+              to="/playlists"
+              title="Playlists"
+              icon={PlaylistsIcon}
               navSize={navSize}
             />
           </Flex>
