@@ -49,7 +49,7 @@ export const mockSpotifyPlaylistList = (): LoadUserPlaylists.Model => ({
   total: 5
 });
 
-export class LoadUserPlaylistSpy implements LoadUserPlaylists {
+export class LoadUserPlaylistsSpy implements LoadUserPlaylists {
   spotifyUserPlaylists = mockSpotifyPlaylistList();
   callsCount = 0;
 
