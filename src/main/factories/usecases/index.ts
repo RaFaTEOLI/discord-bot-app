@@ -9,3 +9,4 @@ export * from './delete-command/remote-delete-command-factory';
 export * from './run-command/remote-run-command-factory';
 export * from './load-music/remote-load-music-factory';
 export * from './load-queue/remote-load-queue-factory';
+export * from './load-user-playlists/remote-load-user-playlists-factory';
