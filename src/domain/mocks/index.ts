@@ -8,3 +8,4 @@ export * from './mock-spotify-user';
 export * from './mock-commands';
 export * from './mock-music';
 export * from './mock-queue';
+export * from './mock-spotify-playlist';
