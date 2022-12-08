@@ -154,7 +154,6 @@ describe('Playlists Component', () => {
     await waitFor(() => playlistsList);
     await userEvent.click(playlistsList.querySelectorAll('.playlist-play-button')[1]);
     await setTimeout(1000);
-    await userEvent.click(screen.getByTestId('filter-playlist-input'));
     expect(runCommandSpy.callsCount).toBe(1);
     expect(runSpy).toHaveBeenCalledWith(
       `playlist ${loadUserPlaylistsSpy.spotifyUserPlaylists.items[1].external_urls.spotify}`
@@ -193,5 +192,25 @@ describe('Playlists Component', () => {
     await waitFor(() => playlistsList);
     await userEvent.click(playlistsList.querySelectorAll('.playlist-view-button')[0]);
     expect(history.location.pathname).toBe(`/playlists/${loadUserPlaylistsSpy.spotifyUserPlaylists.items[0].id}`);
+  });
+
+  test('should show play icon when hovering playlist card', async () => {
+    makeSut();
+    const playlistsList = await screen.findByTestId('playlists-list');
+    await waitFor(() => playlistsList);
+    await userEvent.hover(playlistsList.querySelectorAll('.playlist-play-button')[0]);
+    await setTimeout(1000);
+    expect(playlistsList.querySelectorAll('.playlist-play-button')[0]).toBeVisible();
+  });
+
+  test('should show play icon then hide after unhovering playlist card', async () => {
+    makeSut();
+    const playlistsList = await screen.findByTestId('playlists-list');
+    await waitFor(() => playlistsList);
+    await userEvent.hover(playlistsList.querySelectorAll('.playlist-play-button')[0]);
+    await setTimeout(1000);
+    expect(playlistsList.querySelectorAll('.playlist-play-button')[0]).toBeVisible();
+    await userEvent.unhover(playlistsList.querySelectorAll('.playlist-play-button')[0]);
+    expect(playlistsList.querySelectorAll('.playlist-play-button')[0]).not.toBeVisible();
   });
 });
