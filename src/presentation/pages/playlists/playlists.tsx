@@ -54,8 +54,11 @@ export default function Playlists({ loadUserPlaylists, runCommand }: Props): JSX
     })();
   }, [state.reload]);
 
-  const onPlay = async (url: string): Promise<void> => {
+  const onPlay = async (url: string, clearQueue = false): Promise<void> => {
     try {
+      if (clearQueue) {
+        await runCommand.run('stop');
+      }
       await runCommand.run(`playlist ${url}`);
       toast({
         title: 'Playlist Added',

@@ -1,19 +1,25 @@
 import { SpotifyPlaylistModel } from '@/domain/models';
-import { Box, Flex, IconButton, Image, useColorModeValue } from '@chakra-ui/react';
+import { Box, Flex, IconButton, Image, useColorModeValue, useDisclosure } from '@chakra-ui/react';
 import { MouseEvent, useState } from 'react';
 import { HiPlay } from 'react-icons/hi2';
 import { motion } from 'framer-motion';
+import { ConfirmationModal } from '@/presentation/components';
+import { useRecoilValue } from 'recoil';
+import { userPlaylistsState } from './atom';
 
 type Props = {
   playlists: SpotifyPlaylistModel[];
   handleView: (id: string) => void;
-  handlePlay: (url: string) => void;
+  handlePlay: (url: string, clearQueue?: boolean) => void;
 };
 
 export default function PlaylistListItem({ playlists, handleView, handlePlay }: Props): JSX.Element {
   const color = useColorModeValue('gray.50', 'gray.900');
   const hoverColor = useColorModeValue('gray.100', 'gray.700');
   const [currentHover, setCurrentHover] = useState<string | null>(null);
+  const [url, setUrl] = useState<string | null>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const state = useRecoilValue(userPlaylistsState);
 
   const handleMouseEnter = (playlistId: string): void => {
     setCurrentHover(playlistId);
@@ -23,9 +29,24 @@ export default function PlaylistListItem({ playlists, handleView, handlePlay }: 
     setCurrentHover(null);
   };
 
-  const handleClickPlay = (event: MouseEvent<HTMLButtonElement>, url: string): void => {
+  const handlePrePlay = (event: MouseEvent<HTMLButtonElement>, url: string): void => {
     event.stopPropagation();
-    handlePlay(url);
+    setUrl(url);
+    onOpen();
+  };
+
+  const confirm = (): void => {
+    if (url) {
+      handlePlay(url, true);
+      setUrl(null);
+    }
+  };
+
+  const reject = (): void => {
+    if (url) {
+      handlePlay(url);
+      setUrl(null);
+    }
   };
 
   const animate = {
@@ -71,7 +92,7 @@ export default function PlaylistListItem({ playlists, handleView, handlePlay }: 
                   colorScheme="green"
                   aria-label="Play Playlist"
                   icon={<HiPlay />}
-                  onClick={event => handleClickPlay(event, playlist.external_urls.spotify)}
+                  onClick={event => handlePrePlay(event, playlist.external_urls.spotify)}
                 />
               </motion.div>
             </Box>
@@ -88,6 +109,14 @@ export default function PlaylistListItem({ playlists, handleView, handlePlay }: 
           </Box>
         </Box>
       ))}
+      <ConfirmationModal
+        loading={state.isLoading}
+        isOpen={isOpen}
+        onClose={onClose}
+        confirm={confirm}
+        reject={reject}
+        description={'Do you want to clear the queue before playing?'}
+      />
     </Flex>
   );
 }
