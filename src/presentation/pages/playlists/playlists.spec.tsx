@@ -147,12 +147,39 @@ describe('Playlists Component', () => {
     );
   });
 
-  test('should call RunCommand with correct values', async () => {
+  test('should call RunCommand with stop and playlist', async () => {
     const { runCommandSpy, loadUserPlaylistsSpy } = makeSut();
     const runSpy = jest.spyOn(runCommandSpy, 'run');
     const playlistsList = await screen.findByTestId('playlists-list');
     await waitFor(() => playlistsList);
     await userEvent.click(playlistsList.querySelectorAll('.playlist-play-button')[1]);
+    await setTimeout(1000);
+    await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
+    await userEvent.click(screen.getByTestId('confirmation-confirm-button'));
+    await setTimeout(1000);
+    expect(runCommandSpy.callsCount).toBe(2);
+    expect(runSpy).toHaveBeenCalledWith(
+      `playlist ${loadUserPlaylistsSpy.spotifyUserPlaylists.items[1].external_urls.spotify}`
+    );
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Playlist Added',
+      description: 'Your playlist was successfully added to the queue',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
+  });
+
+  test('should call RunCommand with playlist', async () => {
+    const { runCommandSpy, loadUserPlaylistsSpy } = makeSut();
+    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const playlistsList = await screen.findByTestId('playlists-list');
+    await waitFor(() => playlistsList);
+    await userEvent.click(playlistsList.querySelectorAll('.playlist-play-button')[1]);
+    await setTimeout(1000);
+    await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
+    await userEvent.click(screen.getByTestId('confirmation-cancel-button'));
     await setTimeout(1000);
     expect(runCommandSpy.callsCount).toBe(1);
     expect(runSpy).toHaveBeenCalledWith(
@@ -175,6 +202,9 @@ describe('Playlists Component', () => {
     const playlistsList = await screen.findByTestId('playlists-list');
     await waitFor(() => playlistsList);
     await userEvent.click(playlistsList.querySelectorAll('.playlist-play-button')[1]);
+    await setTimeout(1000);
+    await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
+    await userEvent.click(screen.getByTestId('confirmation-cancel-button'));
     await setTimeout(1000);
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Add Playlist Error',

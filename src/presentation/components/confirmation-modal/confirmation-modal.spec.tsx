@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { render, RenderResult } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -9,12 +10,14 @@ type SutTypes = {
   onConfirm: () => void;
 };
 
-const makeSut = (loading = false): SutTypes => {
+const makeSut = (loading = false, description: string | null = null): SutTypes => {
   const onClose = jest.fn();
   const onConfirm = jest.fn();
   const isOpen = true;
 
-  const sut = render(<ConfirmationModal isOpen={isOpen} onClose={onClose} confirm={onConfirm} loading={loading} />);
+  const sut = render(
+    <ConfirmationModal isOpen={isOpen} onClose={onClose} confirm={onConfirm} loading={loading} description={description} />
+  );
 
   return {
     sut,
@@ -29,6 +32,14 @@ describe('ConfirmationModal', () => {
     const modalHeader = sut.getByTestId('confirmation-modal-header');
     expect(modalHeader).toBeInTheDocument();
     expect(modalHeader.innerHTML).toBe('Are you sure?');
+  });
+
+  test('should render ConfirmationModal component with description', () => {
+    const description = faker.random.word();
+    const { sut } = makeSut(false, description);
+    const modalDescription = sut.getByTestId('confirmation-modal-description');
+    expect(modalDescription).toBeInTheDocument();
+    expect(modalDescription.innerHTML).toBe(description);
   });
 
   test('should confirm modal', async () => {
