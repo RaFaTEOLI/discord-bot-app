@@ -9,3 +9,4 @@ export * from './delete-command';
 export * from './run-command';
 export * from './load-music';
 export * from './load-queue';
+export * from './load-user-playlists';
