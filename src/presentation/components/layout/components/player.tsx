@@ -119,8 +119,6 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
     }
   }, [volume]);
 
-  console.log({ music });
-
   return (
     <Grid
       templateColumns={['repeat(1, 1fr)', 'repeat(3, 1fr)']}
