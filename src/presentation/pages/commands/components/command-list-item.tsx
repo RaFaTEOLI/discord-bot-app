@@ -1,5 +1,5 @@
 import { CommandModel } from '@/domain/models';
-import { Box, Badge, Flex, IconButton, Tooltip } from '@chakra-ui/react';
+import { Box, Badge, Flex, IconButton, Tooltip, useColorModeValue } from '@chakra-ui/react';
 import { HiCloudArrowUp, HiEye } from 'react-icons/hi2';
 
 type Props = {
@@ -9,10 +9,11 @@ type Props = {
 };
 
 export default function CommandListItem({ commands, handleView, handleRun }: Props): JSX.Element {
+  const color = useColorModeValue('gray.50', 'gray.900');
   return (
     <Flex direction={['column', 'row']} flexWrap="wrap" gap={5} data-testid="commands-list">
       {commands.map(command => (
-        <Box key={command.id} w={[230, 280]} borderWidth="1px" borderRadius="lg" overflow="hidden">
+        <Box bgColor={color} key={command.id} w={[230, 280]} borderWidth="1px" borderRadius="lg" overflow="hidden">
           <Box p="6">
             <Box mt="1" fontWeight="semibold" as="h4" lineHeight="tight" noOfLines={1} className="command-name">
               !{command.command}
