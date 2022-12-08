@@ -154,6 +154,7 @@ describe('Playlists Component', () => {
     await waitFor(() => playlistsList);
     await userEvent.click(playlistsList.querySelectorAll('.playlist-play-button')[1]);
     await setTimeout(1000);
+    await userEvent.click(screen.getByTestId('filter-playlist-input'));
     expect(runCommandSpy.callsCount).toBe(1);
     expect(runSpy).toHaveBeenCalledWith(
       `playlist ${loadUserPlaylistsSpy.spotifyUserPlaylists.items[1].external_urls.spotify}`
@@ -184,5 +185,13 @@ describe('Playlists Component', () => {
       position: 'top',
       isClosable: true
     });
+  });
+
+  test('should navigate to playlists page with id', async () => {
+    const { loadUserPlaylistsSpy } = makeSut();
+    const playlistsList = await screen.findByTestId('playlists-list');
+    await waitFor(() => playlistsList);
+    await userEvent.click(playlistsList.querySelectorAll('.playlist-view-button')[0]);
+    expect(history.location.pathname).toBe(`/playlists/${loadUserPlaylistsSpy.spotifyUserPlaylists.items[0].id}`);
   });
 });
