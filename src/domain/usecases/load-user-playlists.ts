@@ -1,8 +1,8 @@
-import { SpotifyPlaylistModel } from '@/domain/models';
+import { SpotifyPlaylistListModel } from '@/domain/models';
 export interface LoadUserPlaylists {
-  all: () => Promise<LoadUserPlaylists.Model[]>;
+  all: () => Promise<LoadUserPlaylists.Model>;
 }
 
 export namespace LoadUserPlaylists {
-  export type Model = SpotifyPlaylistModel;
+  export type Model = SpotifyPlaylistListModel;
 }
