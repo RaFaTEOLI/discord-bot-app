@@ -12,6 +12,7 @@ import { currentAccountState } from '@/presentation/components';
 import { RecoilRoot } from 'recoil';
 import { PrivateRoute } from '../proxies';
 import { LayoutFactory, SpotifyContainerFactory } from '@/main/factories/components';
+import { Playlist } from '@/presentation/pages';
 
 const Router = (): JSX.Element => {
   const state = {
@@ -36,6 +37,7 @@ const Router = (): JSX.Element => {
               <Route path="/" element={<HomeFactory />} />
               <Route path="/commands" element={<CommandsFactory />} />
               <Route path="/playlists" element={<PlaylistsFactory />} />
+              <Route path="/playlists/:id" element={<Playlist />} />
               <Route path="/profile" element={<ProfileFactory />} />
             </Route>
           </Route>
