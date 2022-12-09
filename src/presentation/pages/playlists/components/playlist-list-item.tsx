@@ -17,7 +17,7 @@ export default function PlaylistListItem({ playlists, handleView, handlePlay }: 
   const color = useColorModeValue('gray.50', 'gray.900');
   const hoverColor = useColorModeValue('gray.100', 'gray.700');
   const [currentHover, setCurrentHover] = useState<string | null>(null);
-  const [url, setUrl] = useState<string | null>(null);
+  const [url, setUrl] = useState<string>('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const state = useRecoilValue(userPlaylistsState);
 
@@ -36,17 +36,14 @@ export default function PlaylistListItem({ playlists, handleView, handlePlay }: 
   };
 
   const confirm = (): void => {
-    if (url) {
-      handlePlay(url, true);
-      setUrl(null);
-    }
+    handlePlay(url, true);
+    setUrl('');
+    onClose();
   };
 
   const reject = (): void => {
-    if (url) {
-      handlePlay(url);
-      setUrl(null);
-    }
+    handlePlay(url);
+    setUrl('');
   };
 
   const animate = {
