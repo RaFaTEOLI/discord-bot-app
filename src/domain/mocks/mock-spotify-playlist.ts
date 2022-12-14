@@ -157,10 +157,10 @@ export const mockSpotifyTrack = (): SpotifyTrackModel => ({
 });
 
 export const mockSpotifyPlaylistTracksList = (tracksCount = 100): LoadPlaylistTracks.Model => ({
-  href: `${faker.internet.url()}/?offset=0&limit=100`,
+  href: `${faker.internet.url()}/${faker.datatype.uuid()}/tracks?offset=${tracksCount <= 100 ? 0 : 100}&limit=100`,
   items: Array(tracksCount).fill(mockSpotifyTrack()),
   limit: 100,
-  next: tracksCount <= 100 ? null : `${faker.internet.url()}/?offset=100&limit=100`,
+  next: tracksCount <= 100 ? null : `${faker.internet.url()}/${faker.datatype.uuid()}/tracks?offset=100&limit=100`,
   offset: tracksCount <= 100 ? 0 : 100,
   previous: null,
   total: tracksCount
