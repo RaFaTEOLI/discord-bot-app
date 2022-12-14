@@ -52,7 +52,7 @@ export type SpotifyTrackModel = {
       name: string;
       release_date: string;
       release_date_precision: string;
-      total_tracks: number;
+      total_tracks: number | string;
       type: string;
       uri: string;
     };
@@ -136,6 +136,16 @@ export type SpotifyPlaylistModel = {
 export type SpotifyPlaylistListModel = {
   href: string;
   items: SpotifyPlaylistModel[];
+  limit: number;
+  next: string | null;
+  offset: number;
+  previous: string | null;
+  total: number;
+};
+
+export type SpotifyPlaylistTrackListModel = {
+  href: string;
+  items: SpotifyTrackModel[];
   limit: number;
   next: string | null;
   offset: number;
