@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
-import { LoadUserPlaylists } from '@/domain/usecases';
-import { SpotifyPlaylistModel } from '../models';
+import { LoadPlaylistTracks, LoadUserPlaylists } from '@/domain/usecases';
+import { SpotifyPlaylistModel, SpotifyTrackModel } from '../models';
 
 export const mockSpotifyPlaylist = (): SpotifyPlaylistModel => ({
   collaborative: faker.datatype.boolean(),
@@ -54,6 +54,123 @@ export class LoadUserPlaylistsSpy implements LoadUserPlaylists {
   callsCount = 0;
 
   async all(): Promise<LoadUserPlaylists.Model> {
+    this.callsCount++;
+    return Promise.resolve(this.spotifyUserPlaylists);
+  }
+}
+
+export const mockSpotifyTrack = (): SpotifyTrackModel => ({
+  added_at: faker.date.past().toString(),
+  added_by: {
+    external_urls: {
+      spotify: faker.internet.url()
+    },
+    href: faker.internet.url(),
+    id: faker.datatype.uuid(),
+    type: 'user',
+    uri: `spotify:user:${faker.datatype.uuid()}`
+  },
+  is_local: faker.datatype.boolean(),
+  primary_color: null,
+  track: {
+    album: {
+      album_type: 'album',
+      artists: [
+        {
+          external_urls: {
+            spotify: faker.internet.url()
+          },
+          href: faker.internet.url(),
+          id: faker.datatype.uuid(),
+          name: faker.lorem.words(2),
+          type: 'user',
+          uri: `spotify:user:${faker.datatype.uuid()}`
+        }
+      ],
+      available_markets: ['US', 'BR'],
+      external_urls: {
+        spotify: faker.internet.url()
+      },
+      href: faker.internet.url(),
+      id: faker.datatype.uuid(),
+      images: [
+        {
+          height: 640,
+          url: faker.internet.avatar(),
+          width: 640
+        },
+        {
+          height: 300,
+          url: faker.internet.avatar(),
+          width: 300
+        },
+        {
+          height: 64,
+          url: faker.internet.avatar(),
+          width: 64
+        }
+      ],
+      name: faker.lorem.words(2),
+      release_date: faker.date.past().toString(),
+      release_date_precision: 'day',
+      total_tracks: faker.random.numeric(2),
+      type: 'album',
+      uri: `spotify:user:${faker.datatype.uuid()}`
+    },
+    artists: [
+      {
+        external_urls: {
+          spotify: faker.internet.url()
+        },
+        href: faker.internet.url(),
+        id: faker.datatype.uuid(),
+        name: faker.lorem.words(2),
+        type: 'artist',
+        uri: `spotify:user:${faker.datatype.uuid()}`
+      }
+    ],
+    available_markets: ['US', 'BR'],
+    disc_number: 1,
+    duration_ms: Number(faker.random.numeric(6)),
+    episode: faker.datatype.boolean(),
+    explicit: faker.datatype.boolean(),
+    external_ids: {
+      isrc: faker.datatype.uuid()
+    },
+    external_urls: {
+      spotify: faker.internet.url()
+    },
+    href: faker.internet.url(),
+    id: faker.datatype.uuid(),
+    is_local: faker.datatype.boolean(),
+    name: faker.lorem.words(2),
+    popularity: Number(faker.random.numeric(2)),
+    preview_url: faker.internet.url(),
+    track: faker.datatype.boolean(),
+    track_number: Number(faker.random.numeric(2)),
+    type: 'track',
+    uri: `spotify:track:${faker.datatype.uuid()}`
+  },
+  video_thumbnail: {
+    url: null
+  }
+});
+
+export const mockSpotifyPlaylistTracksList = (): LoadPlaylistTracks.Model => ({
+  href: `${faker.internet.url()}/?offset=0&limit=50`,
+  items: [mockSpotifyTrack(), mockSpotifyTrack(), mockSpotifyTrack(), mockSpotifyTrack(), mockSpotifyTrack()],
+  limit: 50,
+  next: null,
+  offset: 0,
+  previous: null,
+  total: 5
+});
+
+export class LoadPlaylistTracksSpy implements LoadPlaylistTracks {
+  spotifyUserPlaylists = mockSpotifyPlaylistTracksList();
+  callsCount = 0;
+
+  async load(id: string): Promise<LoadPlaylistTracks.Model> {
     this.callsCount++;
     return Promise.resolve(this.spotifyUserPlaylists);
   }
