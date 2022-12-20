@@ -1,20 +1,47 @@
-import { HttpClient, HttpStatusCode } from '@/data/protocols/http';
+import { HttpClient, HttpResponse, HttpStatusCode } from '@/data/protocols/http';
 import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
 import { LoadPlaylistTracks } from '@/domain/usecases';
 
 export class RemoteLoadPlaylistTracks implements LoadPlaylistTracks {
-  constructor(private readonly url: string, private readonly httpGetClient: HttpClient<RemoteLoadPlaylistTracks.Model>) {}
+  constructor(
+    private readonly url: string,
+    private readonly httpGetClient: HttpClient<RemoteLoadPlaylistTracks.Model>,
+    private readonly httpGetClientNext: HttpClient<RemoteLoadPlaylistTracks.Model>
+  ) {}
 
   async load(id: string): Promise<LoadPlaylistTracks.Model> {
-    // TODO: now the response is limited by 50 tracks, add a check to fetch next paginations and push into an array then return all tracks
     const httpResponse = await this.httpGetClient.request({
       url: `${this.url}/${id}/tracks`,
       method: 'get',
       headers: { 'Content-Type': 'application/json' }
     });
+
+    let items = httpResponse.body?.items ?? [];
+    let fetchNext = httpResponse.body?.next;
+
+    if (fetchNext) {
+      do {
+        const httpResponseNext: HttpResponse<LoadPlaylistTracks.Model> = await this.httpGetClientNext.request({
+          url: fetchNext,
+          method: 'get',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (httpResponseNext.body?.items) {
+          items = items.concat(httpResponseNext.body?.items);
+        }
+
+        fetchNext = httpResponseNext.body?.next;
+      } while (fetchNext);
+    }
+
+    const playlistResponse = Object.assign({}, httpResponse.body, {
+      items
+    });
+
     switch (httpResponse.statusCode) {
       case HttpStatusCode.success:
-        return httpResponse.body as LoadPlaylistTracks.Model;
+        return playlistResponse as LoadPlaylistTracks.Model;
       case HttpStatusCode.unauthorized:
         throw new AccessTokenExpiredError();
       case HttpStatusCode.forbidden:
