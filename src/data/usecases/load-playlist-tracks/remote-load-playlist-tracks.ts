@@ -19,7 +19,7 @@ export class RemoteLoadPlaylistTracks implements LoadPlaylistTracks {
 
     let items = httpResponse.body?.tracks?.items ?? [];
     let fetchNext = httpResponse.body?.tracks?.href;
-    let href = httpResponse.body?.tracks?.href;
+    const href = httpResponse.body?.tracks?.href;
 
     if (fetchNext) {
       do {
@@ -34,9 +34,6 @@ export class RemoteLoadPlaylistTracks implements LoadPlaylistTracks {
         }
 
         fetchNext = httpResponseNext.body?.next as string;
-        if (fetchNext) {
-          href = fetchNext;
-        }
       } while (fetchNext);
     }
 
