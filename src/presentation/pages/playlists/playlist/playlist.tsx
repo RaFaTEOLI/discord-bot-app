@@ -72,7 +72,7 @@ export default function Playlist({ loadPlaylistTracks }: Props): JSX.Element {
         handleError(error);
       }
     })();
-  }, []);
+  }, [state.reload]);
 
   return (
     <Flex alignItems="center" gap={3} data-testid="playlist-container" w="100%">
