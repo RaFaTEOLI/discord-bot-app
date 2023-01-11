@@ -4,6 +4,7 @@ import { AccountModel } from '@/domain/models';
 import { renderWithHistory } from '@/presentation/mocks';
 import { screen, waitFor } from '@testing-library/react';
 import { createMemoryHistory, MemoryHistory } from 'history';
+import userEvent from '@testing-library/user-event';
 import { setTimeout } from 'timers/promises';
 import Playlist from './playlist';
 
@@ -83,5 +84,15 @@ describe('Playlist Component', () => {
       duration: 9000,
       isClosable: true
     });
+  });
+
+  test('should call LoadPlaylistTracks on reload', async () => {
+    const loadPlaylistTracksSpy = new LoadPlaylistTracksSpy();
+    jest.spyOn(loadPlaylistTracksSpy, 'load').mockRejectedValueOnce(new UnexpectedError());
+    makeSut(loadPlaylistTracksSpy);
+    await waitFor(() => screen.getByTestId('error'));
+    await userEvent.click(screen.getByTestId('reload'));
+    await waitFor(() => screen.getByTestId('playlist-header'));
+    expect(loadPlaylistTracksSpy.callsCount).toBe(2);
   });
 });
