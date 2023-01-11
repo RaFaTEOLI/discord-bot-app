@@ -1,6 +1,21 @@
+import { AccessTokenExpiredError } from '@/domain/errors';
 import { LoadPlaylistTracks } from '@/domain/usecases';
-import { Loading } from '@/presentation/components';
-import { Avatar, Flex, HStack, IconButton, Image, Text, useColorModeValue, VStack, Grid, GridItem } from '@chakra-ui/react';
+import { Error, Loading } from '@/presentation/components';
+import { useErrorHandler } from '@/presentation/hooks';
+import {
+  Avatar,
+  Flex,
+  HStack,
+  IconButton,
+  Image,
+  Text,
+  useColorModeValue,
+  VStack,
+  Grid,
+  GridItem,
+  Box,
+  useToast
+} from '@chakra-ui/react';
 import { useEffect } from 'react';
 import { HiPlay } from 'react-icons/hi2';
 import { useParams } from 'react-router';
@@ -18,16 +33,44 @@ export default function Playlist({ loadPlaylistTracks }: Props): JSX.Element {
   const resetUserPlaylistState = useResetRecoilState(userPlaylistState);
   const [state, setState] = useRecoilState(userPlaylistState);
   const { id } = useParams();
+  const toast = useToast();
+  const handleError = useErrorHandler((error: Error) => {
+    setState(prev => ({ ...prev, isLoading: false, error: error.message, reload: false }));
+  });
+
+  const reload = (): void =>
+    setState(prev => ({ ...prev, playlists: [], error: '', reload: !prev.reload, isLoading: true }));
 
   useEffect(() => {
     resetUserPlaylistState();
     (async () => {
-      const playlist = await loadPlaylistTracks.load(id as string);
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        playlist
-      }));
+      try {
+        const playlist = await loadPlaylistTracks.load(id as string);
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          playlist
+        }));
+      } catch (error: any) {
+        if (error instanceof AccessTokenExpiredError) {
+          toast({
+            title: 'Access Denied',
+            description: 'Your login with spotify is either expired or invalid, please log in with spotify again!',
+            status: 'error',
+            duration: 9000,
+            isClosable: true
+          });
+        } else {
+          toast({
+            title: 'Server Error',
+            description: 'Something went wrong while trying to load playlists',
+            status: 'error',
+            duration: 9000,
+            isClosable: true
+          });
+        }
+        handleError(error);
+      }
     })();
   }, []);
 
@@ -36,6 +79,12 @@ export default function Playlist({ loadPlaylistTracks }: Props): JSX.Element {
       {state.isLoading ? (
         <Flex alignItems="center" justifyContent="center">
           <Loading />
+        </Flex>
+      ) : state.error ? (
+        <Flex justifyContent="center" alignItems="center">
+          <Box w="md">
+            <Error error={state.error} reload={reload} />
+          </Box>
         </Flex>
       ) : (
         <VStack w="100%">
