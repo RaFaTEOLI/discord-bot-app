@@ -1,27 +1,29 @@
 import { HttpClient, HttpResponse, HttpStatusCode } from '@/data/protocols/http';
 import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
+import { SpotifyPlaylistTrackListModel } from '@/domain/models';
 import { LoadPlaylistTracks } from '@/domain/usecases';
 
 export class RemoteLoadPlaylistTracks implements LoadPlaylistTracks {
   constructor(
     private readonly url: string,
     private readonly httpGetClient: HttpClient<RemoteLoadPlaylistTracks.Model>,
-    private readonly httpGetClientNext: HttpClient<RemoteLoadPlaylistTracks.Model>
+    private readonly httpGetClientNext: HttpClient<SpotifyPlaylistTrackListModel>
   ) {}
 
   async load(id: string): Promise<LoadPlaylistTracks.Model> {
     const httpResponse = await this.httpGetClient.request({
-      url: `${this.url}/${id}/tracks`,
+      url: `${this.url}/${id}`,
       method: 'get',
       headers: { 'Content-Type': 'application/json' }
     });
 
-    let items = httpResponse.body?.items ?? [];
-    let fetchNext = httpResponse.body?.next;
+    let items = httpResponse.body?.tracks?.items ?? [];
+    let fetchNext = httpResponse.body?.tracks?.href;
+    let href = httpResponse.body?.tracks?.href;
 
     if (fetchNext) {
       do {
-        const httpResponseNext: HttpResponse<LoadPlaylistTracks.Model> = await this.httpGetClientNext.request({
+        const httpResponseNext: HttpResponse<SpotifyPlaylistTrackListModel> = await this.httpGetClientNext.request({
           url: fetchNext,
           method: 'get',
           headers: { 'Content-Type': 'application/json' }
@@ -31,12 +33,20 @@ export class RemoteLoadPlaylistTracks implements LoadPlaylistTracks {
           items = items.concat(httpResponseNext.body?.items);
         }
 
-        fetchNext = httpResponseNext.body?.next;
+        fetchNext = httpResponseNext.body?.next as string;
+        if (fetchNext) {
+          href = fetchNext;
+        }
       } while (fetchNext);
     }
 
     const playlistResponse = Object.assign({}, httpResponse.body, {
-      items
+      tracks: {
+        ...httpResponse.body?.tracks,
+        href,
+        items,
+        total: items.length
+      }
     });
 
     switch (httpResponse.statusCode) {

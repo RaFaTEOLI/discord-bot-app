@@ -128,6 +128,9 @@ export type SpotifyPlaylistModel = {
     href: string;
     items?: SpotifyTrackModel[];
     total: number;
+    next?: string | null;
+    offset?: number;
+    previous?: string | null;
   };
   type: 'playlist';
   uri: string;
