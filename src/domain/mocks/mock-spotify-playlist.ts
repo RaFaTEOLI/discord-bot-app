@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { LoadPlaylistTracks, LoadUserPlaylists } from '@/domain/usecases';
-import { SpotifyPlaylistModel, SpotifyTrackModel } from '../models';
+import { SpotifyPlaylistModel, SpotifyTrackModel, SpotifyPlaylistTrackListModel } from '../models';
 
 export const mockSpotifyPlaylist = (): SpotifyPlaylistModel => ({
   collaborative: faker.datatype.boolean(),
@@ -157,13 +157,54 @@ export const mockSpotifyTrack = (): SpotifyTrackModel => ({
 });
 
 export const mockSpotifyPlaylistTracksList = (tracksCount = 100): LoadPlaylistTracks.Model => ({
+  collaborative: faker.datatype.boolean(),
+  description: faker.lorem.sentence(),
+  external_urls: {
+    spotify: faker.internet.url()
+  },
+  href: faker.internet.url(),
+  id: faker.datatype.uuid(),
+  images: [
+    {
+      height: null,
+      url: faker.internet.avatar(),
+      width: null
+    }
+  ],
+  name: faker.random.words(2),
+  owner: {
+    display_name: faker.name.fullName(),
+    external_urls: {
+      spotify: faker.internet.url()
+    },
+    href: faker.internet.url(),
+    id: faker.datatype.uuid(),
+    type: 'user',
+    uri: `spotify:user:${faker.datatype.uuid()}`
+  },
+  primary_color: null,
+  public: faker.datatype.boolean(),
+  snapshot_id: faker.datatype.uuid(),
+  tracks: {
+    href: `${faker.internet.url()}/${faker.datatype.uuid()}/tracks?offset=${tracksCount <= 100 ? 0 : 100}&limit=100`,
+    items: Array(tracksCount <= 100 ? tracksCount : 100).fill(mockSpotifyTrack()),
+    next: tracksCount <= 100 ? null : `${faker.internet.url()}/${faker.datatype.uuid()}/tracks?offset=100&limit=100`,
+    offset: tracksCount <= 100 ? 0 : 100,
+    previous: null,
+    total: Array(tracksCount <= 100 ? tracksCount : 100).fill(mockSpotifyTrack()).length
+  },
+  type: 'playlist',
+  uri: `spotify:playlist:${faker.datatype.uuid()}`
+});
+
+export const mockSpotifyPlaylistTracks = (tracksCount = 100): SpotifyPlaylistTrackListModel => ({
   href: `${faker.internet.url()}/${faker.datatype.uuid()}/tracks?offset=${tracksCount <= 100 ? 0 : 100}&limit=100`,
   items: Array(tracksCount <= 100 ? tracksCount : 100).fill(mockSpotifyTrack()),
-  limit: 100,
   next: tracksCount <= 100 ? null : `${faker.internet.url()}/${faker.datatype.uuid()}/tracks?offset=100&limit=100`,
   offset: tracksCount <= 100 ? 0 : 100,
   previous: null,
-  total: tracksCount
+  total: tracksCount,
+  limit: 100
 });
 
 export class LoadPlaylistTracksSpy implements LoadPlaylistTracks {

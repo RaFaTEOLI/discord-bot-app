@@ -3,7 +3,7 @@ import { RemoteLoadPlaylistTracks } from '@/data/usecases';
 import { HttpStatusCode } from '@/data/protocols/http';
 import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
 import { faker } from '@faker-js/faker';
-import { mockSpotifyPlaylistTracksList } from '@/domain/mocks';
+import { mockSpotifyPlaylistTracksList, mockSpotifyPlaylistTracks } from '@/domain/mocks';
 
 type SutTypes = {
   sut: RemoteLoadPlaylistTracks;
@@ -33,7 +33,7 @@ describe('RemoteLoadPlaylistTracks', () => {
     };
     const id = faker.datatype.uuid();
     await sut.load(id);
-    expect(httpClientSpy.url).toBe(`${url}/${id}/tracks`);
+    expect(httpClientSpy.url).toBe(`${url}/${id}`);
     expect(httpClientSpy.method).toBe('get');
     expect(httpClientSpy.headers).toEqual({ 'Content-Type': 'application/json' });
   });
@@ -82,42 +82,31 @@ describe('RemoteLoadPlaylistTracks', () => {
       body: httpResult
     };
     const spotifyUserPlaylistList = await sut.load(faker.datatype.uuid());
-    expect(spotifyUserPlaylistList).toEqual({
-      href: httpResult.href,
-      items: httpResult.items,
-      limit: httpResult.limit,
-      next: httpResult.next,
-      offset: httpResult.offset,
-      previous: httpResult.previous,
-      total: httpResult.total
-    });
+    expect(spotifyUserPlaylistList).toEqual(httpResult);
   });
 
   test('should return a list of SpotifyTracks using pagination if HttpClient returns 200', async () => {
-    const { sut, httpClientSpy, httpClientSpyNext } = makeSut();
+    const url = faker.internet.url();
+    const { sut, httpClientSpy, httpClientSpyNext } = makeSut(url);
     const httpResult = mockSpotifyPlaylistTracksList(200);
     httpClientSpy.response = {
       statusCode: HttpStatusCode.success,
       body: httpResult
     };
 
-    const httpResultNext = mockSpotifyPlaylistTracksList(100);
+    const httpResultNext = mockSpotifyPlaylistTracks(100);
     httpClientSpyNext.response = {
       statusCode: HttpStatusCode.success,
       body: httpResultNext
     };
-    const items = httpResult.items.concat(httpResultNext.items);
-    const spotifyUserPlaylistList = await sut.load(faker.datatype.uuid());
+    const id = faker.datatype.uuid();
+    const items = httpResult.tracks.items?.concat(httpResultNext.items);
+    const spotifyUserPlaylistList = await sut.load(id);
     expect(spotifyUserPlaylistList).toEqual({
-      href: httpResult.href,
-      items,
-      limit: httpResult.limit,
-      next: httpResult.next,
-      offset: httpResult.offset,
-      previous: httpResult.previous,
-      total: httpResult.total
+      ...httpResult,
+      tracks: { ...httpResult.tracks, items, total: items?.length }
     });
-    expect(spotifyUserPlaylistList.items.length).toBe(200);
+    expect(spotifyUserPlaylistList.tracks.items?.length).toBe(200);
   });
 
   test('should return empty items if HttpClient returns undefined', async () => {
@@ -127,11 +116,15 @@ describe('RemoteLoadPlaylistTracks', () => {
     };
     const spotifyUserPlaylistList = await sut.load(faker.datatype.uuid());
     expect(spotifyUserPlaylistList).toEqual({
-      items: []
+      tracks: {
+        href: undefined,
+        items: [],
+        total: 0
+      }
     });
   });
 
-  test('should return empty items if HttpClient returns undefined', async () => {
+  test('should return only 100 items if HttpClientNext returns undefined', async () => {
     const { sut, httpClientSpy, httpClientSpyNext } = makeSut();
     const httpResult = mockSpotifyPlaylistTracksList(200);
     httpClientSpy.response = {
@@ -142,14 +135,6 @@ describe('RemoteLoadPlaylistTracks', () => {
       statusCode: HttpStatusCode.success
     };
     const spotifyUserPlaylistList = await sut.load(faker.datatype.uuid());
-    expect(spotifyUserPlaylistList).toEqual({
-      href: httpResult.href,
-      items: httpResult.items,
-      limit: httpResult.limit,
-      next: httpResult.next,
-      offset: httpResult.offset,
-      previous: httpResult.previous,
-      total: httpResult.total
-    });
+    expect(spotifyUserPlaylistList).toEqual(httpResult);
   });
 });
