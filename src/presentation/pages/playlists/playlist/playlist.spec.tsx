@@ -1,7 +1,8 @@
+import { UnexpectedError } from '@/domain/errors';
 import { LoadPlaylistTracksSpy } from '@/domain/mocks';
 import { AccountModel } from '@/domain/models';
 import { renderWithHistory } from '@/presentation/mocks';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import Playlist from './playlist';
 
@@ -35,5 +36,16 @@ describe('Playlist Component', () => {
   test('should call LoadPlaylistTracks', () => {
     const { loadPlaylistTracks } = makeSut();
     expect(loadPlaylistTracks.callsCount).toBe(1);
+  });
+
+  test('should render error on UnexpectedError on LoadPlaylistTracks', async () => {
+    const loadPlaylistTracks = new LoadPlaylistTracksSpy();
+    const error = new UnexpectedError();
+    jest.spyOn(loadPlaylistTracks, 'load').mockRejectedValueOnce(error);
+    makeSut(loadPlaylistTracks);
+    await waitFor(() => screen.getByTestId('error'));
+    expect(screen.queryByTestId('playlists-list')).not.toBeInTheDocument();
+    const errorWrap = await screen.findByTestId('error');
+    expect(errorWrap).toHaveTextContent(error.message);
   });
 });
