@@ -1,5 +1,5 @@
 import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
-import { LoadPlaylistTracksSpy } from '@/domain/mocks';
+import { LoadPlaylistTracksSpy, mockSpotifyPlaylistTracksList } from '@/domain/mocks';
 import { AccountModel } from '@/domain/models';
 import { renderWithHistory } from '@/presentation/mocks';
 import { screen, waitFor } from '@testing-library/react';
@@ -94,5 +94,27 @@ describe('Playlist Component', () => {
     await userEvent.click(screen.getByTestId('reload'));
     await waitFor(() => screen.getByTestId('playlist-header'));
     expect(loadPlaylistTracksSpy.callsCount).toBe(2);
+  });
+
+  test('should show playlist info', async () => {
+    const playlist = mockSpotifyPlaylistTracksList();
+    const loadPlaylistTracks = new LoadPlaylistTracksSpy();
+    jest.spyOn(loadPlaylistTracks, 'load').mockResolvedValueOnce(playlist);
+    makeSut(loadPlaylistTracks);
+    const playlistHeader = await screen.findByTestId('playlist-header');
+    await waitFor(() => playlistHeader);
+    expect(screen.getByTestId('playlist-image-url')).toHaveAttribute('src', playlist.images[0].url);
+    expect(screen.getByTestId('playlist-name')).toHaveTextContent(playlist.name);
+    expect(screen.getByTestId('playlist-description')).toHaveTextContent(playlist.description);
+    expect(screen.getByTestId('playlist-song-count')).toHaveTextContent(playlist.tracks.total.toString());
+  });
+
+  test('should show all tracks if empty filter is provided', async () => {
+    makeSut();
+    const tracksList = await screen.findByTestId('tracks-list');
+    await waitFor(() => tracksList);
+    const inputFilter = screen.getByTestId('filter-track-input');
+    await userEvent.type(inputFilter, ' ');
+    expect(tracksList.children).toHaveLength(100);
   });
 });
