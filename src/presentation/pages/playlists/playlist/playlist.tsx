@@ -36,7 +36,7 @@ export default function Playlist({ loadPlaylistTracks, runCommand }: Props): JSX
   const resetUserPlaylistState = useResetRecoilState(userPlaylistState);
   const [state, setState] = useRecoilState(userPlaylistState);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [url, setUrl] = useState<string>('');
+  const [currentPlay, setCurrentPlay] = useState<{ url: string; music: boolean }>({ url: '', music: false });
   const { id } = useParams();
   const toast = useToast();
   const handleError = useErrorHandler((error: Error) => {
@@ -94,25 +94,32 @@ export default function Playlist({ loadPlaylistTracks, runCommand }: Props): JSX
     });
   };
 
-  const handlePlay = async (url: string, clearQueue = false): Promise<void> => {
+  const handlePlay = async (url: string, clearQueue = false, music = false): Promise<void> => {
     try {
       if (clearQueue) {
         await runCommand.run('stop');
       }
-      await runCommand.run(`playlist ${url}`);
+      if (music) {
+        await runCommand.run(`play ${url}`);
+      } else {
+        await runCommand.run(`playlist ${url}`);
+      }
+
       toast({
-        title: 'Playlist Added',
-        description: 'Your playlist was successfully added to the queue',
+        title: `${music ? 'Song' : 'Playlist'} Added`,
+        description: `Your ${music ? 'song' : 'playlist'} was successfully added to the queue`,
         status: 'success',
         duration: 9000,
         isClosable: true,
         position: 'top'
       });
+      setCurrentPlay({ url: '', music: false });
+      onClose();
     } catch (error: any) {
       handleError(error);
       toast({
-        title: 'Add Playlist Error',
-        description: 'There was an error while trying to add your playlist to the queue',
+        title: `Add ${music ? 'Song' : 'Playlist'} Error`,
+        description: `There was an error while trying to add your ${music ? 'song' : 'playlist'} to the queue`,
         status: 'error',
         duration: 9000,
         position: 'top',
@@ -121,21 +128,18 @@ export default function Playlist({ loadPlaylistTracks, runCommand }: Props): JSX
     }
   };
 
-  const handlePrePlay = (event: MouseEvent<HTMLButtonElement>, url: string): void => {
+  const handlePrePlay = (event: MouseEvent<HTMLButtonElement>, url: string, music = false): void => {
     event.stopPropagation();
-    setUrl(url);
+    setCurrentPlay({ url, music });
     onOpen();
   };
 
   const confirm = (): void => {
-    handlePlay(url, true);
-    setUrl('');
-    onClose();
+    handlePlay(currentPlay.url, true, currentPlay.music);
   };
 
   const reject = (): void => {
-    handlePlay(url);
-    setUrl('');
+    handlePlay(currentPlay.url, false, currentPlay.music);
   };
 
   const gridTableFontSize = [10, 12, 13, 14, 15];
@@ -286,6 +290,7 @@ export default function Playlist({ loadPlaylistTracks, runCommand }: Props): JSX
                         size={['xs', 'sm']}
                         colorScheme="green"
                         aria-label="Play Song"
+                        onClick={event => handlePrePlay(event, track.external_urls.spotify, true)}
                         icon={<HiPlay />}
                       />
                     </Flex>
