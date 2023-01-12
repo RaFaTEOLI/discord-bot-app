@@ -31,7 +31,7 @@ const InputFilter = ({ borderRightRadius }: { borderRightRadius: number }): JSX.
         size="sm"
         title="Search"
         placeholder="Search song..."
-        data-testid="filter-song-input"
+        data-testid="filter-track-input"
         onChange={event => setFilterValue(event.target.value)}
       />
     </InputGroup>

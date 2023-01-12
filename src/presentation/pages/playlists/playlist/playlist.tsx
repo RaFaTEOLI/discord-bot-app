@@ -21,6 +21,7 @@ import { HiPlay } from 'react-icons/hi2';
 import { useParams } from 'react-router';
 import { useRecoilState, useResetRecoilState } from 'recoil';
 import { InputFilter, userPlaylistState } from './components';
+import { format, formatDuration, intervalToDuration } from 'date-fns';
 
 type Props = {
   loadPlaylistTracks: LoadPlaylistTracks;
@@ -74,6 +75,23 @@ export default function Playlist({ loadPlaylistTracks }: Props): JSX.Element {
     })();
   }, [state.reload]);
 
+  const getFormattedTime = (time: number): string => {
+    const duration = intervalToDuration({ start: 0, end: time * 1000 });
+
+    const zeroPad = (num: any): string => String(num).padStart(2, '0');
+
+    return formatDuration(duration, {
+      format: ['minutes', 'seconds'],
+      zero: true,
+      delimiter: ':',
+      locale: {
+        formatDistance: (_token, count) => zeroPad(count)
+      }
+    });
+  };
+
+  const gridTableFontSize = [10, 12, 13, 14, 15];
+
   return (
     <Flex alignItems="center" gap={3} data-testid="playlist-container" w="100%">
       {state.isLoading ? (
@@ -87,23 +105,28 @@ export default function Playlist({ loadPlaylistTracks }: Props): JSX.Element {
           </Box>
         </Flex>
       ) : (
-        <VStack w="100%">
-          <Flex w="100%" flexDirection={['column', 'column', 'column', 'row']} gap={3} data-testid="playlist-header">
+        <VStack w="100%" h="82vh">
+          <Flex
+            w="100%"
+            flexDirection={['column', 'column', 'column', 'column', 'row']}
+            gap={3}
+            data-testid="playlist-header"
+          >
             <Image
-              boxSize="200px"
+              boxSize={['35px', '40px', '80px', '150px', '200px']}
               src={state.playlist.images[0].url}
               alt={state.playlist.name}
               data-testid="playlist-image-url"
             />
             <Flex flexDir="column" h="200px" justifyContent="space-between" w="100%">
               <Text>Public Playlist</Text>
-              <Text fontSize={50} fontWeight={700} data-testid="playlist-name">
+              <Text fontWeight={700} data-testid="playlist-name" fontSize={[12, 20, 30, 40, 50]}>
                 {state.playlist.name}
               </Text>
               <Text color={color} fontSize="sm" data-testid="playlist-description">
                 {state.playlist.description}
               </Text>
-              <Flex justifyContent="space-between" w="100%" flexDirection={['column', 'column', 'column', 'row']}>
+              <Flex justifyContent="space-between" w="100%" flexDirection={['column', 'column', 'column', 'column', 'row']}>
                 <HStack>
                   <Avatar
                     size="sm"
@@ -112,7 +135,7 @@ export default function Playlist({ loadPlaylistTracks }: Props): JSX.Element {
                     src="https://scontent-ams2-1.xx.fbcdn.net/v/t1.18169-1/18199154_1201124763332887_8123261132169986051_n.jpg?stp=dst-jpg_p320x320&_nc_cat=100&ccb=1-7&_nc_sid=0c64ff&_nc_ohc=Sa3dIE_3nZQAX-bRbDz&_nc_ht=scontent-ams2-1.xx&edm=AP4hL3IEAAAA&oh=00_AfCG0nZkDks6gW8i6aexxX7Xvk8PlZgJcCQi_kVS_p-Vkw&oe=63BA4985"
                   />
                   <Text data-testid="playlist-song-count">
-                    <b>{state.playlist.owner.display_name}</b> • 99 Songs
+                    <b>{state.playlist.owner.display_name}</b> • {state.playlist.tracks.total} Songs
                   </Text>
                 </HStack>
                 <HStack>
@@ -137,66 +160,84 @@ export default function Playlist({ loadPlaylistTracks }: Props): JSX.Element {
               borderRadius={5}
               cursor="pointer"
               w="100%"
-              templateColumns="repeat(5, 1fr)"
+              templateColumns={['repeat(1, 1fr)', 'repeat(4, 1fr)']}
               alignItems="center"
               gap={6}
             >
-              <GridItem w="100%">
-                <Text>Title</Text>
+              <GridItem w={['100%', '100%', '100%', '100%', '25rem']}>
+                <Text fontSize={gridTableFontSize}>Title</Text>
               </GridItem>
-              <GridItem w="100%">
-                <Text>Album</Text>
+              <GridItem w="100%" display={['none', 'block']}>
+                <Text fontSize={gridTableFontSize}>Album</Text>
               </GridItem>
-              <GridItem w="100%">
-                <Text>Added at</Text>
+              <GridItem w="100%" display={['none', 'block']}>
+                <Text fontSize={gridTableFontSize}>Added at</Text>
               </GridItem>
-              <GridItem w="100%">
-                <Text>Duration</Text>
+              <GridItem w="100%" display={['none', 'block']}>
+                <Text fontSize={gridTableFontSize}>Duration</Text>
               </GridItem>
             </Grid>
 
-            <Grid
-              borderRadius={5}
-              cursor="pointer"
-              w="100%"
-              bgColor={trackColor}
-              _hover={{ bg: trackHoverColor }}
-              templateColumns="repeat(5, 1fr)"
-              alignItems="center"
-              gap={6}
-            >
-              <GridItem w="100%">
-                <Flex alignItems="center" gap={3}>
-                  <Image boxSize="70px" src="https://bit.ly/dan-abramov" alt="Dan Abramov" />
-                  <Flex flexDirection="column">
-                    <Text fontWeight={600}>Numb</Text>
-                    <Text fontWeight={300}>Linkin Park</Text>
+            <VStack w="100%" justifyContent="flex-start" overflowY="scroll" h="48vh" data-testid="tracks-list">
+              {state.playlist.tracks.items?.map(({ track, ...trackInfo }) => (
+                <Grid
+                  key={track.id}
+                  borderRadius={5}
+                  cursor="pointer"
+                  w="100%"
+                  bgColor={trackColor}
+                  _hover={{ bg: trackHoverColor }}
+                  templateColumns={['repeat(1, 1fr)', 'repeat(4, 1fr)']}
+                  alignItems="center"
+                  gap={6}
+                  position="relative"
+                >
+                  <GridItem w={['100%', '100%', '100%', '100%', '25rem']} h={['45px', '55px', '65px', '68px', '70px']}>
+                    <Flex alignItems="center" gap={3}>
+                      <Image
+                        boxSize={['45px', '55px', '65px', '68px', '70px']}
+                        src={track.album.images[0].url}
+                        alt={track.album.name}
+                      />
+                      <Flex flexDirection="column">
+                        <Text fontSize={gridTableFontSize} fontWeight={600}>
+                          {track.name}
+                        </Text>
+                        <Text fontSize={gridTableFontSize} fontWeight={300}>
+                          {track.artists[0].name}
+                        </Text>
+                      </Flex>
+                    </Flex>
+                  </GridItem>
+                  <GridItem w="100%" display={['none', 'block']}>
+                    <Text fontSize={gridTableFontSize} fontWeight={300}>
+                      {track.album.name}
+                    </Text>
+                  </GridItem>
+                  <GridItem w="100%" display={['none', 'block']}>
+                    <Text fontSize={gridTableFontSize} fontWeight={300}>
+                      {format(new Date(trackInfo.added_at), 'PP')}
+                    </Text>
+                  </GridItem>
+                  <GridItem w="100%" display={['none', 'block']}>
+                    <Text fontSize={gridTableFontSize} fontWeight={300}>
+                      {getFormattedTime(track.duration_ms / 1000)}
+                    </Text>
+                  </GridItem>
+                  <Flex right={0} pr={5} position="absolute">
+                    <IconButton
+                      className="song-play-button"
+                      variant="solid"
+                      borderRadius={50}
+                      size={['xs', 'sm']}
+                      colorScheme="green"
+                      aria-label="Play Song"
+                      icon={<HiPlay />}
+                    />
                   </Flex>
-                </Flex>
-              </GridItem>
-              <GridItem w="100%">
-                <Text fontWeight={300}>Meteora</Text>
-              </GridItem>
-              <GridItem w="100%">
-                <Text fontWeight={300}>15 de set. de 2020</Text>
-              </GridItem>
-              <GridItem w="100%">
-                <Text fontWeight={300}>3:06</Text>
-              </GridItem>
-              <GridItem w="100%">
-                <Flex justifyContent="flex-end" pr={5}>
-                  <IconButton
-                    className="song-play-button"
-                    variant="solid"
-                    borderRadius={50}
-                    size="lg"
-                    colorScheme="green"
-                    aria-label="Play Song"
-                    icon={<HiPlay />}
-                  />
-                </Flex>
-              </GridItem>
-            </Grid>
+                </Grid>
+              ))}
+            </VStack>
           </VStack>
         </VStack>
       )}
