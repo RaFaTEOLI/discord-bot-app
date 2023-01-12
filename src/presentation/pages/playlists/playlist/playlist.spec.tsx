@@ -117,4 +117,28 @@ describe('Playlist Component', () => {
     await userEvent.type(inputFilter, ' ');
     expect(tracksList.children).toHaveLength(100);
   });
+
+  test('should show zero tracks from TracksList if filter does not match with any track', async () => {
+    makeSut();
+    const tracksList = await screen.findByTestId('tracks-list');
+    await waitFor(() => tracksList);
+    const inputFilter = screen.getByTestId('filter-track-input');
+    await userEvent.type(inputFilter, 'INVALID FILTER');
+    expect(tracksList.children).toHaveLength(0);
+  });
+
+  test('should only one track filtered from TracksList by track artist', async () => {
+    const { loadPlaylistTracks } = makeSut();
+    const tracksList = await screen.findByTestId('tracks-list');
+    await waitFor(() => tracksList);
+    const inputFilter = screen.getByTestId('filter-track-input');
+    if (loadPlaylistTracks.spotifyUserPlaylists.tracks?.items) {
+      const artistName = loadPlaylistTracks.spotifyUserPlaylists.tracks?.items[2].track.artists[0].name;
+      const trackName = loadPlaylistTracks.spotifyUserPlaylists.tracks?.items[2].track.name;
+      await userEvent.type(inputFilter, artistName);
+      expect(tracksList.children).toHaveLength(1);
+      expect(tracksList.querySelector('.track-name')).toHaveTextContent(trackName);
+      expect(tracksList.querySelector('.track-artist')).toHaveTextContent(artistName);
+    }
+  });
 });

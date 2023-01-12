@@ -123,7 +123,7 @@ describe('Playlists Component', () => {
     expect(playlistsList.children).toHaveLength(5);
   });
 
-  test('should show zero playlists from PlaylistList if filter does not match with any command', async () => {
+  test('should show zero playlists from PlaylistList if filter does not match with any playlist', async () => {
     makeSut();
     const playlistsList = await screen.findByTestId('playlists-list');
     await waitFor(() => playlistsList);
