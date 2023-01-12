@@ -179,7 +179,7 @@ export default function Playlist({ loadPlaylistTracks }: Props): JSX.Element {
             </Grid>
 
             <VStack w="100%" justifyContent="flex-start" overflowY="scroll" h="48vh" data-testid="tracks-list">
-              {state.playlist.tracks.items?.map(({ track, ...trackInfo }) => (
+              {state.filteredTracks.map(({ track, ...trackInfo }) => (
                 <Grid
                   key={track.id}
                   borderRadius={5}
@@ -200,10 +200,10 @@ export default function Playlist({ loadPlaylistTracks }: Props): JSX.Element {
                         alt={track.album.name}
                       />
                       <Flex flexDirection="column">
-                        <Text fontSize={gridTableFontSize} fontWeight={600}>
+                        <Text className="track-name" fontSize={gridTableFontSize} fontWeight={600}>
                           {track.name}
                         </Text>
-                        <Text fontSize={gridTableFontSize} fontWeight={300}>
+                        <Text className="track-artist" fontSize={gridTableFontSize} fontWeight={300}>
                           {track.artists[0].name}
                         </Text>
                       </Flex>

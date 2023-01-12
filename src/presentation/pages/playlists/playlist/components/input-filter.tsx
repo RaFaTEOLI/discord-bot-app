@@ -13,7 +13,9 @@ const InputFilter = ({ borderRightRadius }: { borderRightRadius: number }): JSX.
   useEffect(() => {
     const filteredTracks =
       state.playlist.tracks.items?.filter(
-        track => track.track.name.includes(filterValue) || track.track.artists[0].name.includes(filterValue)
+        track =>
+          track.track.name.toLowerCase().includes(filterValue.toLowerCase()) ||
+          track.track.artists[0].name.toLowerCase().includes(filterValue.toLowerCase())
       ) ?? [];
     setState(prev => ({ ...prev, filteredTracks }));
   }, [filterValue]);
