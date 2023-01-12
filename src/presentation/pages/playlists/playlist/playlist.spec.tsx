@@ -1,5 +1,5 @@
 import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
-import { LoadPlaylistTracksSpy, mockSpotifyPlaylistTracksList } from '@/domain/mocks';
+import { LoadPlaylistTracksSpy, RunCommandSpy } from '@/domain/mocks';
 import { AccountModel } from '@/domain/models';
 import { renderWithHistory } from '@/presentation/mocks';
 import { screen, waitFor } from '@testing-library/react';
@@ -11,7 +11,8 @@ import Playlist from './playlist';
 type SutTypes = {
   setCurrentAccountMock: (account: AccountModel) => void;
   history: MemoryHistory;
-  loadPlaylistTracks: LoadPlaylistTracksSpy;
+  loadPlaylistTracksSpy: LoadPlaylistTracksSpy;
+  runCommandSpy: RunCommandSpy;
 };
 
 const mockToast = jest.fn();
@@ -24,13 +25,13 @@ jest.mock('@chakra-ui/react', () => {
   };
 });
 const history = createMemoryHistory({ initialEntries: ['/playlists/1'] });
-const makeSut = (loadPlaylistTracks = new LoadPlaylistTracksSpy()): SutTypes => {
+const makeSut = (loadPlaylistTracksSpy = new LoadPlaylistTracksSpy(), runCommandSpy = new RunCommandSpy()): SutTypes => {
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
-    Page: () => Playlist({ loadPlaylistTracks })
+    Page: () => Playlist({ loadPlaylistTracks: loadPlaylistTracksSpy, runCommand: runCommandSpy })
   });
-  return { setCurrentAccountMock, loadPlaylistTracks, history };
+  return { setCurrentAccountMock, loadPlaylistTracksSpy, runCommandSpy, history };
 };
 
 describe('Playlist Component', () => {
@@ -45,8 +46,8 @@ describe('Playlist Component', () => {
   });
 
   test('should call LoadPlaylistTracks', () => {
-    const { loadPlaylistTracks } = makeSut();
-    expect(loadPlaylistTracks.callsCount).toBe(1);
+    const { loadPlaylistTracksSpy } = makeSut();
+    expect(loadPlaylistTracksSpy.callsCount).toBe(1);
   });
 
   test('should render error on UnexpectedError on LoadPlaylistTracks', async () => {
@@ -97,16 +98,20 @@ describe('Playlist Component', () => {
   });
 
   test('should show playlist info', async () => {
-    const playlist = mockSpotifyPlaylistTracksList();
-    const loadPlaylistTracks = new LoadPlaylistTracksSpy();
-    jest.spyOn(loadPlaylistTracks, 'load').mockResolvedValueOnce(playlist);
-    makeSut(loadPlaylistTracks);
+    const { loadPlaylistTracksSpy } = makeSut();
     const playlistHeader = await screen.findByTestId('playlist-header');
     await waitFor(() => playlistHeader);
-    expect(screen.getByTestId('playlist-image-url')).toHaveAttribute('src', playlist.images[0].url);
-    expect(screen.getByTestId('playlist-name')).toHaveTextContent(playlist.name);
-    expect(screen.getByTestId('playlist-description')).toHaveTextContent(playlist.description);
-    expect(screen.getByTestId('playlist-song-count')).toHaveTextContent(playlist.tracks.total.toString());
+    expect(screen.getByTestId('playlist-image-url')).toHaveAttribute(
+      'src',
+      loadPlaylistTracksSpy.spotifyUserPlaylists.images[0].url
+    );
+    expect(screen.getByTestId('playlist-name')).toHaveTextContent(loadPlaylistTracksSpy.spotifyUserPlaylists.name);
+    expect(screen.getByTestId('playlist-description')).toHaveTextContent(
+      loadPlaylistTracksSpy.spotifyUserPlaylists.description
+    );
+    expect(screen.getByTestId('playlist-song-count')).toHaveTextContent(
+      loadPlaylistTracksSpy.spotifyUserPlaylists.tracks.total.toString()
+    );
   });
 
   test('should show all tracks if empty filter is provided', async () => {
@@ -128,17 +133,60 @@ describe('Playlist Component', () => {
   });
 
   test('should only one track filtered from TracksList by track artist', async () => {
-    const { loadPlaylistTracks } = makeSut();
+    const { loadPlaylistTracksSpy } = makeSut();
     const tracksList = await screen.findByTestId('tracks-list');
     await waitFor(() => tracksList);
     const inputFilter = screen.getByTestId('filter-track-input');
-    if (loadPlaylistTracks.spotifyUserPlaylists.tracks?.items) {
-      const artistName = loadPlaylistTracks.spotifyUserPlaylists.tracks?.items[2].track.artists[0].name;
-      const trackName = loadPlaylistTracks.spotifyUserPlaylists.tracks?.items[2].track.name;
+    if (loadPlaylistTracksSpy.spotifyUserPlaylists.tracks?.items) {
+      const artistName = loadPlaylistTracksSpy.spotifyUserPlaylists.tracks?.items[2].track.artists[0].name;
+      const trackName = loadPlaylistTracksSpy.spotifyUserPlaylists.tracks?.items[2].track.name;
       await userEvent.type(inputFilter, artistName);
       expect(tracksList.children).toHaveLength(1);
       expect(tracksList.querySelector('.track-name')).toHaveTextContent(trackName);
       expect(tracksList.querySelector('.track-artist')).toHaveTextContent(artistName);
     }
+  });
+
+  test('should call RunCommand with playlist', async () => {
+    const { runCommandSpy, loadPlaylistTracksSpy } = makeSut();
+    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const playlistHeader = await screen.findByTestId('playlist-header');
+    await waitFor(() => playlistHeader);
+    await userEvent.click(screen.getByTestId('playlist-play-button'));
+    await setTimeout(1000);
+    await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
+    await userEvent.click(screen.getByTestId('confirmation-cancel-button'));
+    await setTimeout(1000);
+    expect(runCommandSpy.callsCount).toBe(1);
+    expect(runSpy).toHaveBeenCalledWith(`playlist ${loadPlaylistTracksSpy.spotifyUserPlaylists.external_urls.spotify}`);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Playlist Added',
+      description: 'Your playlist was successfully added to the queue',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
+  });
+
+  test('should call toast with error values if RunCommand fails', async () => {
+    const runCommandSpy = new RunCommandSpy();
+    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    makeSut(new LoadPlaylistTracksSpy(), runCommandSpy);
+    const playlistsHeader = await screen.findByTestId('playlist-header');
+    await waitFor(() => playlistsHeader);
+    await userEvent.click(screen.getByTestId('playlist-play-button'));
+    await setTimeout(1000);
+    await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
+    await userEvent.click(screen.getByTestId('confirmation-cancel-button'));
+    await setTimeout(1000);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Add Playlist Error',
+      description: 'There was an error while trying to add your playlist to the queue',
+      status: 'error',
+      duration: 9000,
+      position: 'top',
+      isClosable: true
+    });
   });
 });
