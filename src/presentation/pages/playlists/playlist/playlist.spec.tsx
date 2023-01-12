@@ -189,4 +189,99 @@ describe('Playlist Component', () => {
       isClosable: true
     });
   });
+
+  test('should call RunCommand with song', async () => {
+    const { runCommandSpy, loadPlaylistTracksSpy } = makeSut();
+    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const tracksList = await screen.findByTestId('tracks-list');
+    await waitFor(() => tracksList);
+    await userEvent.click(tracksList.querySelectorAll('.song-play-button')[1]);
+    await setTimeout(1000);
+    await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
+    await userEvent.click(screen.getByTestId('confirmation-cancel-button'));
+    await setTimeout(1000);
+    expect(runCommandSpy.callsCount).toBe(1);
+    if (loadPlaylistTracksSpy.spotifyUserPlaylists.tracks.items) {
+      expect(runSpy).toHaveBeenCalledWith(
+        `play ${loadPlaylistTracksSpy.spotifyUserPlaylists.tracks.items[1].track.external_urls.spotify}`
+      );
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Song Added',
+        description: 'Your song was successfully added to the queue',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
+    }
+  });
+
+  test('should call toast with error values if RunCommand with song fails', async () => {
+    const runCommandSpy = new RunCommandSpy();
+    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    makeSut(new LoadPlaylistTracksSpy(), runCommandSpy);
+    const tracksList = await screen.findByTestId('tracks-list');
+    await waitFor(() => tracksList);
+    await userEvent.click(tracksList.querySelectorAll('.song-play-button')[1]);
+    await setTimeout(1000);
+    await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
+    await userEvent.click(screen.getByTestId('confirmation-cancel-button'));
+    await setTimeout(1000);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Add Song Error',
+      description: 'There was an error while trying to add your song to the queue',
+      status: 'error',
+      duration: 9000,
+      position: 'top',
+      isClosable: true
+    });
+  });
+
+  test('should call RunCommand with stop and playlist', async () => {
+    const { runCommandSpy, loadPlaylistTracksSpy } = makeSut();
+    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const playlistHeader = await screen.findByTestId('playlist-header');
+    await waitFor(() => playlistHeader);
+    await userEvent.click(screen.getByTestId('playlist-play-button'));
+    await setTimeout(1000);
+    await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
+    await userEvent.click(screen.getByTestId('confirmation-confirm-button'));
+    await setTimeout(1000);
+    expect(runCommandSpy.callsCount).toBe(2);
+    expect(runSpy).toHaveBeenCalledWith(`playlist ${loadPlaylistTracksSpy.spotifyUserPlaylists.external_urls.spotify}`);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Playlist Added',
+      description: 'Your playlist was successfully added to the queue',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
+  });
+
+  test('should call RunCommand with stop and song', async () => {
+    const { runCommandSpy, loadPlaylistTracksSpy } = makeSut();
+    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const tracksList = await screen.findByTestId('tracks-list');
+    await waitFor(() => tracksList);
+    await userEvent.click(tracksList.querySelectorAll('.song-play-button')[1]);
+    await setTimeout(1000);
+    await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
+    await userEvent.click(screen.getByTestId('confirmation-confirm-button'));
+    await setTimeout(1000);
+    expect(runCommandSpy.callsCount).toBe(2);
+    if (loadPlaylistTracksSpy.spotifyUserPlaylists.tracks.items) {
+      expect(runSpy).toHaveBeenCalledWith(
+        `play ${loadPlaylistTracksSpy.spotifyUserPlaylists.tracks.items[1].track.external_urls.spotify}`
+      );
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Song Added',
+        description: 'Your song was successfully added to the queue',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
+    }
+  });
 });
