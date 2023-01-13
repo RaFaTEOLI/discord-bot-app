@@ -1,20 +1,27 @@
 import { LoadServer } from '@/domain/usecases';
 import { faker } from '@faker-js/faker';
 
-const mockServerMember = (): any => ({
+const mockServerMember = (status = faker.helpers.arrayElement(['online', 'dnd']), showGame = true): any => ({
   id: faker.datatype.uuid(),
   username: faker.internet.userName(),
   discriminator: '0000',
   avatar: null,
-  status: 'online',
-  game: {
-    name: faker.lorem.word()
-  },
+  status,
+  ...(showGame && {
+    game: {
+      name: faker.lorem.word()
+    }
+  }),
   avatar_url: faker.internet.avatar()
 });
 
-const createArray = (length: number, factoryFunction: () => any): any => {
-  const createdArray = [];
+const createArray = (length: number, factoryFunction: (status?: string, showGame?: boolean) => any): any => {
+  const createdArray = [
+    factoryFunction('online'),
+    factoryFunction('dnd'),
+    factoryFunction('online', false),
+    factoryFunction('dnd', false)
+  ];
   for (let i = 0; i < length; i++) {
     createdArray.push(factoryFunction());
   }
