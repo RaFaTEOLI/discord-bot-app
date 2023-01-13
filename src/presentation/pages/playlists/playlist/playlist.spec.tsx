@@ -1,5 +1,5 @@
 import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
-import { LoadPlaylistTracksSpy, RunCommandSpy } from '@/domain/mocks';
+import { LoadPlaylistTracksSpy, LoadUserByIdSpy, RunCommandSpy } from '@/domain/mocks';
 import { AccountModel } from '@/domain/models';
 import { renderWithHistory } from '@/presentation/mocks';
 import { screen, waitFor } from '@testing-library/react';
@@ -13,6 +13,7 @@ type SutTypes = {
   history: MemoryHistory;
   loadPlaylistTracksSpy: LoadPlaylistTracksSpy;
   runCommandSpy: RunCommandSpy;
+  loadUserByIdSpy: LoadUserByIdSpy;
 };
 
 const mockToast = jest.fn();
@@ -25,13 +26,18 @@ jest.mock('@chakra-ui/react', () => {
   };
 });
 const history = createMemoryHistory({ initialEntries: ['/playlists/1'] });
-const makeSut = (loadPlaylistTracksSpy = new LoadPlaylistTracksSpy(), runCommandSpy = new RunCommandSpy()): SutTypes => {
+const makeSut = (
+  loadPlaylistTracksSpy = new LoadPlaylistTracksSpy(),
+  runCommandSpy = new RunCommandSpy(),
+  loadUserByIdSpy = new LoadUserByIdSpy()
+): SutTypes => {
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
-    Page: () => Playlist({ loadPlaylistTracks: loadPlaylistTracksSpy, runCommand: runCommandSpy })
+    Page: () =>
+      Playlist({ loadPlaylistTracks: loadPlaylistTracksSpy, runCommand: runCommandSpy, loadUserById: loadUserByIdSpy })
   });
-  return { setCurrentAccountMock, loadPlaylistTracksSpy, runCommandSpy, history };
+  return { setCurrentAccountMock, loadPlaylistTracksSpy, runCommandSpy, loadUserByIdSpy, history };
 };
 
 describe('Playlist Component', () => {
@@ -283,5 +289,13 @@ describe('Playlist Component', () => {
         position: 'top'
       });
     }
+  });
+
+  test('should call LoadUserById and show user avatar', async () => {
+    const { loadUserByIdSpy } = makeSut();
+    const playlistHeader = await screen.findByTestId('playlist-header');
+    await waitFor(() => playlistHeader);
+    expect(loadUserByIdSpy.callsCount).toBe(1);
+    expect(screen.getByTestId('playlist-owner-image-url')).toBeInTheDocument();
   });
 });
