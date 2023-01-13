@@ -1,5 +1,5 @@
 import { AccessTokenExpiredError } from '@/domain/errors';
-import { LoadPlaylistTracks, RunCommand } from '@/domain/usecases';
+import { LoadPlaylistTracks, LoadUserById, RunCommand } from '@/domain/usecases';
 import { ConfirmationModal, Error, Loading } from '@/presentation/components';
 import { useErrorHandler } from '@/presentation/hooks';
 import {
@@ -27,9 +27,10 @@ import { MouseEvent, useEffect } from 'react';
 type Props = {
   loadPlaylistTracks: LoadPlaylistTracks;
   runCommand: RunCommand;
+  loadUserById: LoadUserById;
 };
 
-export default function Playlist({ loadPlaylistTracks, runCommand }: Props): JSX.Element {
+export default function Playlist({ loadPlaylistTracks, runCommand, loadUserById }: Props): JSX.Element {
   const color = useColorModeValue('gray.600', 'gray.400');
   const trackColor = useColorModeValue('gray.50', 'gray.900');
   const trackHoverColor = useColorModeValue('gray.100', 'gray.700');
@@ -50,10 +51,12 @@ export default function Playlist({ loadPlaylistTracks, runCommand }: Props): JSX
     (async () => {
       try {
         const playlist = await loadPlaylistTracks.load(id as string);
+        const playlistOwner = await loadUserById.loadById(playlist.owner.id);
         setState(prev => ({
           ...prev,
           isLoading: false,
-          playlist
+          playlist,
+          playlistOwner
         }));
       } catch (error: any) {
         if (error instanceof AccessTokenExpiredError) {
@@ -186,9 +189,9 @@ export default function Playlist({ loadPlaylistTracks, runCommand }: Props): JSX
                   <HStack>
                     <Avatar
                       size="sm"
-                      name="Rafael Tessarollo"
+                      name={state.playlistOwner.display_name}
                       data-testid="playlist-owner-image-url"
-                      src="https://scontent-ams2-1.xx.fbcdn.net/v/t1.18169-1/18199154_1201124763332887_8123261132169986051_n.jpg?stp=dst-jpg_p320x320&_nc_cat=100&ccb=1-7&_nc_sid=0c64ff&_nc_ohc=Sa3dIE_3nZQAX-bRbDz&_nc_ht=scontent-ams2-1.xx&edm=AP4hL3IEAAAA&oh=00_AfCG0nZkDks6gW8i6aexxX7Xvk8PlZgJcCQi_kVS_p-Vkw&oe=63BA4985"
+                      src={state.playlistOwner.images.length ? state.playlistOwner.images[0].url : ''}
                     />
                     <Text data-testid="playlist-song-count">
                       <b>{state.playlist.owner.display_name}</b> • {state.playlist.tracks.total} Songs

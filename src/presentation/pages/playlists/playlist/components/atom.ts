@@ -1,4 +1,5 @@
 import { SpotifyPlaylistModel, SpotifyTrackModel } from '@/domain/models';
+import { LoadUserById } from '@/domain/usecases';
 import { atom } from 'recoil';
 
 export const userPlaylistState = atom({
@@ -8,8 +9,8 @@ export const userPlaylistState = atom({
     reload: false,
     error: '',
     currentPlay: { url: '', music: false },
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     playlist: undefined as unknown as SpotifyPlaylistModel,
-    filteredTracks: [] as SpotifyTrackModel[]
+    filteredTracks: [] as SpotifyTrackModel[],
+    playlistOwner: undefined as unknown as LoadUserById.Model
   }
 });
