@@ -9,3 +9,4 @@ export * from './mock-commands';
 export * from './mock-music';
 export * from './mock-queue';
 export * from './mock-spotify-playlist';
+export * from './mock-server';

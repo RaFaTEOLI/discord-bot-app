@@ -17,6 +17,9 @@ export type ServerModel = {
       avatar: null;
       status: string;
       avatar_url: string;
+      game?: {
+        name: string;
+      };
     }
   ];
   presence_count: number;

@@ -12,3 +12,4 @@ export * from './load-queue/remote-load-queue';
 export * from './load-user-playlists/remote-load-user-playlists';
 export * from './load-playlist-tracks/remote-load-playlist-tracks';
 export * from './load-user-by-id/remote-load-user-by-id';
+export * from './load-server/remote-load-server';
