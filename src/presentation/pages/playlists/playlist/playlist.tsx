@@ -96,7 +96,7 @@ export default function Playlist({ loadPlaylistTracks, runCommand, loadUserById 
     });
   };
 
-  const handlePlay = async (url: string, clearQueue = false, music = false): Promise<void> => {
+  const handlePlay = async (url: string, clearQueue: boolean, music: boolean): Promise<void> => {
     try {
       if (clearQueue) {
         await runCommand.run('stop');

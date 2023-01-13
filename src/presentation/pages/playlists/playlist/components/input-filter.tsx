@@ -11,12 +11,11 @@ const InputFilter = ({ borderRightRadius }: { borderRightRadius: number }): JSX.
   const [state, setState] = useRecoilState(userPlaylistState);
 
   useEffect(() => {
-    const filteredTracks =
-      state.playlist.tracks.items?.filter(
-        track =>
-          track.track.name.toLowerCase().includes(filterValue.toLowerCase()) ||
-          track.track.artists[0].name.toLowerCase().includes(filterValue.toLowerCase())
-      ) ?? [];
+    const filteredTracks = state.playlist.tracks.items.filter(
+      track =>
+        track.track.name.toLowerCase().includes(filterValue.toLowerCase()) ||
+        track.track.artists[0].name.toLowerCase().includes(filterValue.toLowerCase())
+    );
     setState(prev => ({ ...prev, filteredTracks }));
   }, [filterValue]);
 

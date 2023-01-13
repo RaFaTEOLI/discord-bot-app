@@ -126,7 +126,7 @@ export type SpotifyPlaylistModel = {
   snapshot_id: string;
   tracks: {
     href: string;
-    items?: SpotifyTrackModel[];
+    items: SpotifyTrackModel[];
     total: number;
     next?: string | null;
     offset?: number;
