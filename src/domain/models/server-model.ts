@@ -15,7 +15,7 @@ export type ServerModel = {
       username: string;
       discriminator: string;
       avatar: null;
-      status: string;
+      status: 'online' | 'dnd';
       avatar_url: string;
       game?: {
         name: string;
