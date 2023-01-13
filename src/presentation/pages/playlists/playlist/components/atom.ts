@@ -7,6 +7,7 @@ export const userPlaylistState = atom({
     isLoading: true,
     reload: false,
     error: '',
+    currentPlay: { url: '', music: false },
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     playlist: undefined as unknown as SpotifyPlaylistModel,
     filteredTracks: [] as SpotifyTrackModel[]

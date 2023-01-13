@@ -22,7 +22,7 @@ import { useParams } from 'react-router';
 import { useRecoilState, useResetRecoilState } from 'recoil';
 import { InputFilter, userPlaylistState } from './components';
 import { format, formatDuration, intervalToDuration } from 'date-fns';
-import { MouseEvent, useEffect, useState } from 'react';
+import { MouseEvent, useEffect } from 'react';
 
 type Props = {
   loadPlaylistTracks: LoadPlaylistTracks;
@@ -36,7 +36,6 @@ export default function Playlist({ loadPlaylistTracks, runCommand }: Props): JSX
   const resetUserPlaylistState = useResetRecoilState(userPlaylistState);
   const [state, setState] = useRecoilState(userPlaylistState);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [currentPlay, setCurrentPlay] = useState<{ url: string; music: boolean }>({ url: '', music: false });
   const { id } = useParams();
   const toast = useToast();
   const handleError = useErrorHandler((error: Error) => {
@@ -113,7 +112,7 @@ export default function Playlist({ loadPlaylistTracks, runCommand }: Props): JSX
         isClosable: true,
         position: 'top'
       });
-      setCurrentPlay({ url: '', music: false });
+      setState(prev => ({ ...prev, currentPlay: { url: '', music: false } }));
       onClose();
     } catch (error: any) {
       handleError(error);
@@ -130,16 +129,16 @@ export default function Playlist({ loadPlaylistTracks, runCommand }: Props): JSX
 
   const handlePrePlay = (event: MouseEvent<HTMLButtonElement>, url: string, music = false): void => {
     event.stopPropagation();
-    setCurrentPlay({ url, music });
+    setState(prev => ({ ...prev, currentPlay: { url, music } }));
     onOpen();
   };
 
   const confirm = (): void => {
-    handlePlay(currentPlay.url, true, currentPlay.music);
+    handlePlay(state.currentPlay.url, true, state.currentPlay.music);
   };
 
   const reject = (): void => {
-    handlePlay(currentPlay.url, false, currentPlay.music);
+    handlePlay(state.currentPlay.url, false, state.currentPlay.music);
   };
 
   const gridTableFontSize = [10, 12, 13, 14, 15];
