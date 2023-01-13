@@ -1,5 +1,5 @@
 import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
-import { LoadPlaylistTracksSpy, LoadUserByIdSpy, RunCommandSpy } from '@/domain/mocks';
+import { LoadPlaylistTracksSpy, LoadUserByIdSpy, mockSpotifyUserById, RunCommandSpy } from '@/domain/mocks';
 import { AccountModel } from '@/domain/models';
 import { renderWithHistory } from '@/presentation/mocks';
 import { screen, waitFor } from '@testing-library/react';
@@ -207,19 +207,17 @@ describe('Playlist Component', () => {
     await userEvent.click(screen.getByTestId('confirmation-cancel-button'));
     await setTimeout(1000);
     expect(runCommandSpy.callsCount).toBe(1);
-    if (loadPlaylistTracksSpy.spotifyUserPlaylists.tracks.items) {
-      expect(runSpy).toHaveBeenCalledWith(
-        `play ${loadPlaylistTracksSpy.spotifyUserPlaylists.tracks.items[1].track.external_urls.spotify}`
-      );
-      expect(mockToast).toHaveBeenCalledWith({
-        title: 'Song Added',
-        description: 'Your song was successfully added to the queue',
-        status: 'success',
-        duration: 9000,
-        isClosable: true,
-        position: 'top'
-      });
-    }
+    expect(runSpy).toHaveBeenCalledWith(
+      `play ${loadPlaylistTracksSpy.spotifyUserPlaylists.tracks.items[1].track.external_urls.spotify}`
+    );
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Song Added',
+      description: 'Your song was successfully added to the queue',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
   });
 
   test('should call toast with error values if RunCommand with song fails', async () => {
@@ -276,19 +274,17 @@ describe('Playlist Component', () => {
     await userEvent.click(screen.getByTestId('confirmation-confirm-button'));
     await setTimeout(1000);
     expect(runCommandSpy.callsCount).toBe(2);
-    if (loadPlaylistTracksSpy.spotifyUserPlaylists.tracks.items) {
-      expect(runSpy).toHaveBeenCalledWith(
-        `play ${loadPlaylistTracksSpy.spotifyUserPlaylists.tracks.items[1].track.external_urls.spotify}`
-      );
-      expect(mockToast).toHaveBeenCalledWith({
-        title: 'Song Added',
-        description: 'Your song was successfully added to the queue',
-        status: 'success',
-        duration: 9000,
-        isClosable: true,
-        position: 'top'
-      });
-    }
+    expect(runSpy).toHaveBeenCalledWith(
+      `play ${loadPlaylistTracksSpy.spotifyUserPlaylists.tracks.items[1].track.external_urls.spotify}`
+    );
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Song Added',
+      description: 'Your song was successfully added to the queue',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
   });
 
   test('should call LoadUserById and show user avatar', async () => {
@@ -296,6 +292,15 @@ describe('Playlist Component', () => {
     const playlistHeader = await screen.findByTestId('playlist-header');
     await waitFor(() => playlistHeader);
     expect(loadUserByIdSpy.callsCount).toBe(1);
+    expect(screen.getByTestId('playlist-owner-image-url')).toBeInTheDocument();
+  });
+
+  test('should call LoadUserById and show fallback avatar when user does not have one', async () => {
+    const loadUserByIdSpy = new LoadUserByIdSpy();
+    jest.spyOn(loadUserByIdSpy, 'loadById').mockResolvedValueOnce(Object.assign({}, mockSpotifyUserById(), { images: [] }));
+    makeSut(new LoadPlaylistTracksSpy(), new RunCommandSpy(), loadUserByIdSpy);
+    const playlistHeader = await screen.findByTestId('playlist-header');
+    await waitFor(() => playlistHeader);
     expect(screen.getByTestId('playlist-owner-image-url')).toBeInTheDocument();
   });
 });
