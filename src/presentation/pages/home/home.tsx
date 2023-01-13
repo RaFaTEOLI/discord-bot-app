@@ -35,7 +35,7 @@ export default function Home({ loadServer }: Props): JSX.Element {
       } catch (error: any) {
         toast({
           title: 'Server Error',
-          description: 'Something went wrong while trying to load playlists',
+          description: 'Something went wrong while trying to load server info',
           status: 'error',
           duration: 9000,
           isClosable: true
@@ -60,7 +60,7 @@ export default function Home({ loadServer }: Props): JSX.Element {
               </Box>
             </Flex>
           ) : (
-            <Flex w="100%" flexDirection="column">
+            <Flex w="100%" flexDirection="column" data-testid="server-container">
               <Heading size="md" data-testid="server-name">
                 {state.server.name}
               </Heading>
