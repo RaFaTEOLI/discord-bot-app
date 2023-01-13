@@ -11,3 +11,4 @@ export * from './load-music';
 export * from './load-queue';
 export * from './load-user-playlists';
 export * from './load-playlist-tracks';
+export * from './load-user-by-id';
