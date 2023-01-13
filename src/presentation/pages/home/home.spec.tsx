@@ -4,6 +4,7 @@ import { AccountModel } from '@/domain/models';
 import { renderWithHistory } from '@/presentation/mocks';
 import { screen, waitFor } from '@testing-library/react';
 import { createMemoryHistory, MemoryHistory } from 'history';
+import userEvent from '@testing-library/user-event';
 import Home from './home';
 
 type SutTypes = {
@@ -83,5 +84,22 @@ describe('Home Component', () => {
     expect(screen.queryByTestId('server-container')).not.toBeInTheDocument();
     const errorWrap = await screen.findByTestId('error');
     expect(errorWrap).toHaveTextContent(error.message);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Server Error',
+      description: 'Something went wrong while trying to load server info',
+      status: 'error',
+      duration: 9000,
+      isClosable: true
+    });
+  });
+
+  test('should call LoadServer on reload', async () => {
+    const loadServerSpy = new LoadServerSpy();
+    jest.spyOn(loadServerSpy, 'load').mockRejectedValueOnce(new UnexpectedError());
+    makeSut(loadServerSpy);
+    await waitFor(() => screen.getByTestId('error'));
+    await userEvent.click(screen.getByTestId('reload'));
+    await waitFor(() => screen.getByTestId('channels-list'));
+    expect(loadServerSpy.callsCount).toBe(2);
   });
 });
