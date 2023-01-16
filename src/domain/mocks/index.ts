@@ -10,3 +10,4 @@ export * from './mock-music';
 export * from './mock-queue';
 export * from './mock-spotify-playlist';
 export * from './mock-server';
+export * from './mock-spotify-search';
