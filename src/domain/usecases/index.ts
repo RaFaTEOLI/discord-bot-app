@@ -13,3 +13,4 @@ export * from './load-user-playlists';
 export * from './load-playlist-tracks';
 export * from './load-user-by-id';
 export * from './load-server';
+export * from './spotify-search';
