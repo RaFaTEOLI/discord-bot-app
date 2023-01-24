@@ -7,6 +7,7 @@ export const searchState = atom({
     isLoading: false,
     error: '',
     value: '',
-    search: undefined as unknown as SpotifySearch.Model
+    search: undefined as unknown as SpotifySearch.Model,
+    currentPlay: { url: '', music: false }
   }
 });
