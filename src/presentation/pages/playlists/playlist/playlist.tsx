@@ -1,6 +1,6 @@
 import { AccessTokenExpiredError } from '@/domain/errors';
 import { LoadPlaylistTracks, LoadUserById, RunCommand } from '@/domain/usecases';
-import { ConfirmationModal, Error, Loading } from '@/presentation/components';
+import { ConfirmationModal, Error, Loading, TrackList } from '@/presentation/components';
 import { useErrorHandler } from '@/presentation/hooks';
 import {
   Avatar,
@@ -11,8 +11,6 @@ import {
   Text,
   useColorModeValue,
   VStack,
-  Grid,
-  GridItem,
   Box,
   useToast,
   useDisclosure
@@ -21,7 +19,6 @@ import { HiPlay } from 'react-icons/hi2';
 import { useParams } from 'react-router';
 import { useRecoilState, useResetRecoilState } from 'recoil';
 import { InputFilter, userPlaylistState } from './components';
-import { format, formatDuration, intervalToDuration } from 'date-fns';
 import { MouseEvent, useEffect } from 'react';
 
 type Props = {
@@ -32,8 +29,6 @@ type Props = {
 
 export default function Playlist({ loadPlaylistTracks, runCommand, loadUserById }: Props): JSX.Element {
   const color = useColorModeValue('gray.600', 'gray.400');
-  const trackColor = useColorModeValue('gray.50', 'gray.900');
-  const trackHoverColor = useColorModeValue('gray.100', 'gray.700');
   const resetUserPlaylistState = useResetRecoilState(userPlaylistState);
   const [state, setState] = useRecoilState(userPlaylistState);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -80,21 +75,6 @@ export default function Playlist({ loadPlaylistTracks, runCommand, loadUserById 
       }
     })();
   }, [state.reload]);
-
-  const getFormattedTime = (time: number): string => {
-    const duration = intervalToDuration({ start: 0, end: time * 1000 });
-
-    const zeroPad = (num: any): string => String(num).padStart(2, '0');
-
-    return formatDuration(duration, {
-      format: ['minutes', 'seconds'],
-      zero: true,
-      delimiter: ':',
-      locale: {
-        formatDistance: (_token, count) => zeroPad(count)
-      }
-    });
-  };
 
   const handlePlay = async (url: string, clearQueue: boolean, music: boolean): Promise<void> => {
     try {
@@ -214,92 +194,8 @@ export default function Playlist({ loadPlaylistTracks, runCommand, loadUserById 
                 </Flex>
               </Flex>
             </Flex>
-            <VStack w="100%" justifyContent="flex-start">
-              <Grid
-                mt={5}
-                borderRadius={5}
-                cursor="pointer"
-                w="100%"
-                templateColumns={['repeat(1, 1fr)', 'repeat(4, 1fr)']}
-                alignItems="center"
-                gap={6}
-              >
-                <GridItem w={['100%', '100%', '100%', '100%', '25rem']}>
-                  <Text fontSize={gridTableFontSize}>Title</Text>
-                </GridItem>
-                <GridItem w="100%" display={['none', 'block']}>
-                  <Text fontSize={gridTableFontSize}>Album</Text>
-                </GridItem>
-                <GridItem w="100%" display={['none', 'block']}>
-                  <Text fontSize={gridTableFontSize}>Added at</Text>
-                </GridItem>
-                <GridItem w="100%" display={['none', 'block']}>
-                  <Text fontSize={gridTableFontSize}>Duration</Text>
-                </GridItem>
-              </Grid>
 
-              <VStack w="100%" justifyContent="flex-start" overflowY="scroll" h="48vh" data-testid="tracks-list">
-                {state.filteredTracks.map(({ track, ...trackInfo }) => (
-                  <Grid
-                    key={track.id}
-                    borderRadius={5}
-                    cursor="pointer"
-                    w="100%"
-                    bgColor={trackColor}
-                    _hover={{ bg: trackHoverColor }}
-                    templateColumns={['repeat(1, 1fr)', 'repeat(4, 1fr)']}
-                    alignItems="center"
-                    gap={6}
-                    position="relative"
-                  >
-                    <GridItem w={['100%', '100%', '100%', '100%', '25rem']} h={['45px', '55px', '65px', '68px', '70px']}>
-                      <Flex alignItems="center" gap={3}>
-                        <Image
-                          boxSize={['45px', '55px', '65px', '68px', '70px']}
-                          src={track.album.images[0].url}
-                          alt={track.album.name}
-                        />
-                        <Flex flexDirection="column">
-                          <Text className="track-name" fontSize={gridTableFontSize} fontWeight={600}>
-                            {track.name}
-                          </Text>
-                          <Text className="track-artist" fontSize={gridTableFontSize} fontWeight={300}>
-                            {track.artists[0].name}
-                          </Text>
-                        </Flex>
-                      </Flex>
-                    </GridItem>
-                    <GridItem w="100%" display={['none', 'block']}>
-                      <Text fontSize={gridTableFontSize} fontWeight={300}>
-                        {track.album.name}
-                      </Text>
-                    </GridItem>
-                    <GridItem w="100%" display={['none', 'block']}>
-                      <Text fontSize={gridTableFontSize} fontWeight={300}>
-                        {format(new Date(trackInfo.added_at), 'PP')}
-                      </Text>
-                    </GridItem>
-                    <GridItem w="100%" display={['none', 'block']}>
-                      <Text fontSize={gridTableFontSize} fontWeight={300}>
-                        {getFormattedTime(track.duration_ms / 1000)}
-                      </Text>
-                    </GridItem>
-                    <Flex right={0} pr={5} position="absolute">
-                      <IconButton
-                        className="song-play-button"
-                        variant="solid"
-                        borderRadius={50}
-                        size={['xs', 'sm']}
-                        colorScheme="green"
-                        aria-label="Play Song"
-                        onClick={event => handlePrePlay(event, track.external_urls.spotify, true)}
-                        icon={<HiPlay />}
-                      />
-                    </Flex>
-                  </Grid>
-                ))}
-              </VStack>
-            </VStack>
+            <TrackList tracks={state.filteredTracks} gridTableFontSize={gridTableFontSize} handlePrePlay={handlePrePlay} />
           </VStack>
         )}
       </Flex>

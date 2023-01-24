@@ -6,7 +6,7 @@ export default function Content({ title, children }: { title: string; children: 
       <Heading mb={5} size={['md', 'xl']}>
         {title}
       </Heading>
-      <Box h="72vh" overflowY="scroll">
+      <Box h="72vh" overflowY="auto">
         {children}
       </Box>
     </Flex>
