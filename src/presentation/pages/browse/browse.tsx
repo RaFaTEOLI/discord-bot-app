@@ -89,7 +89,9 @@ export default function Browse({ spotifySearch }: Props): JSX.Element {
               ) : (
                 <Flex flexDir="column" h="250px" justifyContent="center" alignItems="center">
                   <CHiNoSymbol size={90} mb={2} />
-                  <Heading size="md">Nothing to show...</Heading>
+                  <Heading size="md" data-testeid="nothing-to-show">
+                    Nothing to show...
+                  </Heading>
                 </Flex>
               )}
             </Flex>

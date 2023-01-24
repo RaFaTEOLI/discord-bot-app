@@ -7,6 +7,8 @@ import { createMemoryHistory, MemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import Browse from './browse';
 import { setTimeout } from 'timers/promises';
+import { faker } from '@faker-js/faker';
+import { SpotifySearch } from '@/domain/usecases';
 
 type SutTypes = {
   setCurrentAccountMock: (account: AccountModel) => void;
@@ -68,5 +70,48 @@ describe('Browse Component', () => {
       duration: 9000,
       isClosable: true
     });
+  });
+
+  test('should show all tracks', async () => {
+    makeSut();
+    const searchInput = screen.getByTestId('search-song-input');
+    const noun = faker.word.noun();
+    await userEvent.type(searchInput, noun);
+    await userEvent.click(screen.getByTestId('search-song-button'));
+
+    const tracksList = await screen.findByTestId('tracks-list');
+    await waitFor(() => tracksList);
+
+    expect(tracksList.children).toHaveLength(1);
+  });
+
+  test('should show no tracks', async () => {
+    const spotifySearchSpy = new SpotifySearchSpy();
+    jest.spyOn(spotifySearchSpy, 'search').mockResolvedValueOnce(undefined as unknown as SpotifySearch.Model);
+    makeSut(spotifySearchSpy);
+    const searchInput = screen.getByTestId('search-song-input');
+    const noun = faker.word.noun();
+    await userEvent.type(searchInput, noun);
+    await userEvent.click(screen.getByTestId('search-song-button'));
+
+    const noContent = screen.getByRole('heading', {
+      name: 'Nothing to show...'
+    });
+    expect(noContent).toBeInTheDocument();
+  });
+
+  test('should show track from TracksList', async () => {
+    const { spotifySearchSpy } = makeSut();
+    const searchInput = screen.getByTestId('search-song-input');
+    const noun = faker.word.noun();
+    await userEvent.type(searchInput, noun);
+    await userEvent.click(screen.getByTestId('search-song-button'));
+    const tracksList = await screen.findByTestId('tracks-list');
+    await waitFor(() => tracksList);
+    const artistName = spotifySearchSpy.spotifySearch.tracks.items[0].artists[0].name;
+    const trackName = spotifySearchSpy.spotifySearch.tracks.items[0].name;
+    expect(tracksList.children).toHaveLength(1);
+    expect(tracksList.querySelector('.track-name')).toHaveTextContent(trackName);
+    expect(tracksList.querySelector('.track-artist')).toHaveTextContent(artistName);
   });
 });
