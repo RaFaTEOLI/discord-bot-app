@@ -12,6 +12,8 @@ export default function MembersList(): JSX.Element {
       return 'Online';
     } else if (status === 'dnd') {
       return 'Do Not Disturb';
+    } else if (status === 'idle') {
+      return 'Idle';
     }
     return status;
   };

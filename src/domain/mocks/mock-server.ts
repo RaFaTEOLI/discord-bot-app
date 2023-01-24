@@ -1,7 +1,7 @@
 import { LoadServer } from '@/domain/usecases';
 import { faker } from '@faker-js/faker';
 
-const mockServerMember = (status = faker.helpers.arrayElement(['online', 'dnd']), showGame = true): any => ({
+const mockServerMember = (status = faker.helpers.arrayElement(['online', 'dnd', 'idle']), showGame = true): any => ({
   id: faker.datatype.uuid(),
   username: faker.internet.userName(),
   discriminator: '0000',
@@ -20,7 +20,8 @@ const createArray = (length: number, factoryFunction: (status?: string, showGame
     factoryFunction('online'),
     factoryFunction('dnd'),
     factoryFunction('online', false),
-    factoryFunction('dnd', false)
+    factoryFunction('dnd', false),
+    factoryFunction('idle', false)
   ];
   for (let i = 0; i < length; i++) {
     createdArray.push(factoryFunction());

@@ -73,6 +73,7 @@ describe('Home Component', () => {
     );
     expect(membersList.querySelectorAll('.user-status')[2]).toHaveTextContent('Online');
     expect(membersList.querySelectorAll('.user-status')[3]).toHaveTextContent('Do Not Disturb');
+    expect(membersList.querySelectorAll('.user-status')[4]).toHaveTextContent('Idle');
   });
 
   test('should render error on UnexpectedError on LoadServer', async () => {
