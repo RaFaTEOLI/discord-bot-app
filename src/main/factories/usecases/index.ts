@@ -13,3 +13,4 @@ export * from './load-user-playlists/remote-load-user-playlists-factory';
 export * from './load-playlist-tracks/remote-playlist-tracks-factory';
 export * from './load-user-by-id/remote-load-user-by-id-factory';
 export * from './load-server/remote-load-user-factory';
+export * from './spotify-search/remote-spotify-search-factory';
