@@ -6,7 +6,8 @@ import {
   CommandsFactory,
   ProfileFactory,
   PlaylistsFactory,
-  PlaylistFactory
+  PlaylistFactory,
+  BrowseFactory
 } from '@/main/factories/pages/';
 import { getCurrentAccountAdapter, setCurrentAccountAdapter } from '@/main/adapters/current-account-adapter';
 import { currentAccountState } from '@/presentation/components';
@@ -39,6 +40,7 @@ const Router = (): JSX.Element => {
               <Route path="/playlists" element={<PlaylistsFactory />} />
               <Route path="/playlists/:id" element={<PlaylistFactory />} />
               <Route path="/profile" element={<ProfileFactory />} />
+              <Route path="/browse" element={<BrowseFactory />} />
             </Route>
           </Route>
         </Routes>

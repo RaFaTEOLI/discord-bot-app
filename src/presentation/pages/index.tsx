@@ -5,3 +5,4 @@ export { default as Commands } from './commands/commands';
 export { default as Playlists } from './playlists/playlists';
 export { default as Playlist } from './playlists/playlist/playlist';
 export { default as Profile } from './profile/profile';
+export { default as Browse } from './browse/browse';
