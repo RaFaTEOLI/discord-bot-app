@@ -1,3 +1,4 @@
+
 # ▶️ Discord Bot App 🤖
 
 Discord Bot App is a React frontend application that integrates with [Discord Bot API](https://github.com/RaFaTEOLI/discord-bot-api).
@@ -28,48 +29,48 @@ You can also see your channels and members and their status.
 
 ## 🌙 Dark Theme Previews
 
-![Login](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/dark/Login.png)
+![Login](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/dark/Login.png?raw=true)
 
-![Signup](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/dark/Signup.png)
+![Signup](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/dark/Signup.png?raw=true)
 
-![Home](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/dark/Home.png)
+![Home](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/dark/Home.png?raw=true)
 
-![Home Profile Menu](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/dark/Home-Profile-Menu.png)
+![Home Profile Menu](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/dark/Home-Profile-Menu.png?raw=true)
 
-![Commands](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/dark/Commands.png)
+![Commands](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/dark/Commands.png?raw=true)
 
-![Command Edit](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/dark/Command-Edit.png)
+![Command Edit](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/dark/Command-Edit.png?raw=true)
 
-![Playlists](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/dark/Playlists.png)
+![Playlists](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/dark/Playlists.png?raw=true)
 
-![Playlists Hover](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/dark/Playlists-Hover.png)
+![Playlists Hover](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/dark/Playlists-Hover.png?raw=true)
 
-![Playlist](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/dark/Playlist-Dark.png)
+![Playlist](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/dark/Playlist-Dark.png?raw=true)
 
-![Playlist Track Hover](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/dark/Playlist-Hover.png)
+![Playlist Track Hover](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/dark/Playlist-Hover.png?raw=true)
 
-![Browse](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/dark/Browse.png)
+![Browse](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/dark/Browse.png?raw=true)
 
 ## ☀️ Light Theme Previews
 
-![Login](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/light/Login.png)
+![Login](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/light/Login.png)
 
-![Signup](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/light/Signup.png)
+![Signup](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/light/Signup.png?raw=true)
 
-![Home](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/light/Home.png)
+![Home](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/light/Home.png?raw=true)
 
-![Home Profile Menu](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/light/Home-Profile-Menu.png)
+![Home Profile Menu](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/light/Home-Profile-Menu.png?raw=true)
 
-![Commands](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/light/Commands.png)
+![Commands](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/light/Commands.png?raw=true)
 
-![Command Edit](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/light/Command-Edit.png)
+![Command Edit](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/light/Command-Edit.png?raw=true)
 
-![Playlists](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/light/Playlists.png)
+![Playlists](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/light/Playlists.png?raw=true)
 
-![Playlists Hover](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/light/Playlists-Hover.png)
+![Playlists Hover](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/light/Playlists-Hover.png?raw=true)
 
-![Playlist](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/light/Playlist-Dark.png)
+![Playlist](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/light/Playlist-Dark.png?raw=true)
 
-![Playlist Track Hover](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/light/Playlist-Hover.png)
+![Playlist Track Hover](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/light/Playlist-Hover.png?raw=true)
 
-![Browse](https://raw.githubusercontent.com/RaFaTEOLI/discord-bot-app/public/previews/light/Browse.png)
+![Browse](https://github.com/RaFaTEOLI/discord-bot-app/blob/main/public/previews/light/Browse.png?raw=true)
