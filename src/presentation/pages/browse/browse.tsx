@@ -1,14 +1,17 @@
 import { SpotifySearch } from '@/domain/usecases';
-import { Content, Error, Loading } from '@/presentation/components';
+import { Content, Error, Loading, TrackList } from '@/presentation/components';
 import { useErrorHandler } from '@/presentation/hooks';
-import { Flex, Box, useToast } from '@chakra-ui/react';
-import { useEffect } from 'react';
+import { Flex, Box, useToast, Heading, chakra } from '@chakra-ui/react';
+import { MouseEvent, useEffect } from 'react';
+import { HiNoSymbol } from 'react-icons/hi2';
 import { useRecoilState, useResetRecoilState } from 'recoil';
 import { searchState, SearchContainer } from './components';
 
 type Props = {
   spotifySearch: SpotifySearch;
 };
+
+const CHiNoSymbol = chakra(HiNoSymbol);
 
 export default function Browse({ spotifySearch }: Props): JSX.Element {
   const resetSearchState = useResetRecoilState(searchState);
@@ -51,6 +54,14 @@ export default function Browse({ spotifySearch }: Props): JSX.Element {
     }
   };
 
+  const handlePrePlay = (event: MouseEvent<HTMLButtonElement>, url: string, music = false): void => {
+    event.stopPropagation();
+    // setState(prev => ({ ...prev, currentPlay: { url, music } }));
+    // onOpen();
+  };
+
+  const gridTableFontSize = [10, 12, 13, 14, 15];
+
   return (
     <Content title="Browse">
       {state.isLoading ? (
@@ -68,6 +79,19 @@ export default function Browse({ spotifySearch }: Props): JSX.Element {
           ) : (
             <Flex w="100%" flexDirection="column" data-testid="browse-container">
               <SearchContainer onClick={handleSearch} />
+              {state.search?.tracks.items.length ? (
+                <TrackList
+                  tracks={state.search.tracks.items}
+                  gridTableFontSize={gridTableFontSize}
+                  handlePrePlay={handlePrePlay}
+                  h="60vh"
+                />
+              ) : (
+                <Flex flexDir="column" h="250px" justifyContent="center" alignItems="center">
+                  <CHiNoSymbol size={90} mb={2} />
+                  <Heading size="md">Nothing to show...</Heading>
+                </Flex>
+              )}
             </Flex>
           )}
         </Flex>

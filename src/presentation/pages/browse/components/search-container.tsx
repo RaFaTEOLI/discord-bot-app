@@ -9,7 +9,7 @@ const SearchContainer = ({ onClick }: { onClick: () => Promise<void> }): JSX.Ele
   const setState = useSetRecoilState(searchState);
 
   return (
-    <Flex mr={1}>
+    <Flex>
       <InputGroup>
         <InputLeftElement>
           <CSearchIcon size={15} mb={2} />
