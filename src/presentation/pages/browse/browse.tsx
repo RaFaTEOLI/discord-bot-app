@@ -56,7 +56,7 @@ export default function Browse({ spotifySearch, runCommand }: Props): JSX.Elemen
     }
   };
 
-  const handlePlay = async (url: string, clearQueue: boolean, music: boolean): Promise<void> => {
+  const handlePlay = async (url: string, clearQueue: boolean): Promise<void> => {
     try {
       if (clearQueue) {
         await runCommand.run('stop');
@@ -87,18 +87,18 @@ export default function Browse({ spotifySearch, runCommand }: Props): JSX.Elemen
     }
   };
 
-  const handlePrePlay = (event: MouseEvent<HTMLButtonElement>, url: string, music = false): void => {
+  const handlePrePlay = (event: MouseEvent<HTMLButtonElement>, url: string): void => {
     event.stopPropagation();
-    setState(prev => ({ ...prev, currentPlay: { url, music } }));
+    setState(prev => ({ ...prev, currentPlay: { url } }));
     onOpen();
   };
 
   const confirm = (): void => {
-    handlePlay(state.currentPlay.url, true, state.currentPlay.music);
+    handlePlay(state.currentPlay.url, true);
   };
 
   const reject = (): void => {
-    handlePlay(state.currentPlay.url, false, state.currentPlay.music);
+    handlePlay(state.currentPlay.url, false);
   };
 
   const gridTableFontSize = [10, 12, 13, 14, 15];

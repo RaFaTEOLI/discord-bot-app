@@ -8,6 +8,6 @@ export const searchState = atom({
     error: '',
     value: '',
     search: undefined as unknown as SpotifySearch.Model,
-    currentPlay: { url: '', music: false }
+    currentPlay: { url: '' }
   }
 });
