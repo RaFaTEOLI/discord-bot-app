@@ -1,5 +1,5 @@
 import { UnexpectedError } from '@/domain/errors';
-import { SpotifySearchSpy } from '@/domain/mocks';
+import { RunCommandSpy, SpotifySearchSpy } from '@/domain/mocks';
 import { AccountModel } from '@/domain/models';
 import { renderWithHistory } from '@/presentation/mocks';
 import { screen, waitFor } from '@testing-library/react';
@@ -14,6 +14,7 @@ type SutTypes = {
   setCurrentAccountMock: (account: AccountModel) => void;
   history: MemoryHistory;
   spotifySearchSpy: SpotifySearchSpy;
+  runCommandSpy: RunCommandSpy;
 };
 
 const mockToast = jest.fn();
@@ -26,13 +27,13 @@ jest.mock('@chakra-ui/react', () => {
   };
 });
 const history = createMemoryHistory({ initialEntries: ['/'] });
-const makeSut = (spotifySearchSpy = new SpotifySearchSpy()): SutTypes => {
+const makeSut = (spotifySearchSpy = new SpotifySearchSpy(), runCommandSpy = new RunCommandSpy()): SutTypes => {
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
-    Page: () => Browse({ spotifySearch: spotifySearchSpy })
+    Page: () => Browse({ spotifySearch: spotifySearchSpy, runCommand: runCommandSpy })
   });
-  return { setCurrentAccountMock, spotifySearchSpy, history };
+  return { setCurrentAccountMock, spotifySearchSpy, history, runCommandSpy };
 };
 
 describe('Browse Component', () => {
@@ -113,5 +114,82 @@ describe('Browse Component', () => {
     expect(tracksList.children).toHaveLength(1);
     expect(tracksList.querySelector('.track-name')).toHaveTextContent(trackName);
     expect(tracksList.querySelector('.track-artist')).toHaveTextContent(artistName);
+  });
+
+  test('should call RunCommand with song', async () => {
+    const { runCommandSpy, spotifySearchSpy } = makeSut();
+    const searchInput = screen.getByTestId('search-song-input');
+    const noun = faker.word.noun();
+    await userEvent.type(searchInput, noun);
+    await userEvent.click(screen.getByTestId('search-song-button'));
+    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const tracksList = await screen.findByTestId('tracks-list');
+    await waitFor(() => tracksList);
+    await userEvent.click(tracksList.querySelectorAll('.song-play-button')[0]);
+    await setTimeout(1000);
+    await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
+    await userEvent.click(screen.getByTestId('confirmation-cancel-button'));
+    await setTimeout(1000);
+    expect(runCommandSpy.callsCount).toBe(1);
+    expect(runSpy).toHaveBeenCalledWith(`play ${spotifySearchSpy.spotifySearch.tracks.items[0].external_urls.spotify}`);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Song Added',
+      description: 'Your song was successfully added to the queue',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
+  });
+
+  test('should call toast with error values if RunCommand with song fails', async () => {
+    const runCommandSpy = new RunCommandSpy();
+    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    makeSut(new SpotifySearchSpy(), runCommandSpy);
+    const searchInput = screen.getByTestId('search-song-input');
+    const noun = faker.word.noun();
+    await userEvent.type(searchInput, noun);
+    await userEvent.click(screen.getByTestId('search-song-button'));
+    const tracksList = await screen.findByTestId('tracks-list');
+    await waitFor(() => tracksList);
+    await userEvent.click(tracksList.querySelectorAll('.song-play-button')[0]);
+    await setTimeout(1000);
+    await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
+    await userEvent.click(screen.getByTestId('confirmation-cancel-button'));
+    await setTimeout(1000);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Add Song Error',
+      description: 'There was an error while trying to add your song to the queue',
+      status: 'error',
+      duration: 9000,
+      position: 'top',
+      isClosable: true
+    });
+  });
+
+  test('should call RunCommand with stop and song', async () => {
+    const { runCommandSpy, spotifySearchSpy } = makeSut();
+    const searchInput = screen.getByTestId('search-song-input');
+    const noun = faker.word.noun();
+    await userEvent.type(searchInput, noun);
+    await userEvent.click(screen.getByTestId('search-song-button'));
+    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const tracksList = await screen.findByTestId('tracks-list');
+    await waitFor(() => tracksList);
+    await userEvent.click(tracksList.querySelectorAll('.song-play-button')[0]);
+    await setTimeout(1000);
+    await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
+    await userEvent.click(screen.getByTestId('confirmation-confirm-button'));
+    await setTimeout(1000);
+    expect(runCommandSpy.callsCount).toBe(2);
+    expect(runSpy).toHaveBeenCalledWith(`play ${spotifySearchSpy.spotifySearch.tracks.items[0].external_urls.spotify}`);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Song Added',
+      description: 'Your song was successfully added to the queue',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
   });
 });
