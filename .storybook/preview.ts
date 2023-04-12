@@ -1,4 +1,6 @@
 import type { Preview } from '@storybook/react';
+import theme from '../src/main/styles/theme';
+import './fonts.css';
 
 const preview: Preview = {
   parameters: {
@@ -8,6 +10,9 @@ const preview: Preview = {
         color: /(background|color)$/i,
         date: /Date$/
       }
+    },
+    chakra: {
+      theme
     }
   }
 };

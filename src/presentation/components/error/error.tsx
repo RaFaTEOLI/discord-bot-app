@@ -1,7 +1,7 @@
 import { Alert, AlertIcon, Button } from '@chakra-ui/react';
 import { FiRotateCw } from 'react-icons/fi';
 
-type Props = {
+export type Props = {
   error: string;
   reload: () => void;
 };

@@ -2166,6 +2166,11 @@
     "@chakra-ui/icon" "3.0.11"
     "@chakra-ui/react-context" "2.0.4"
 
+"@chakra-ui/storybook-addon@^4.0.16":
+  version "4.0.16"
+  resolved "https://registry.yarnpkg.com/@chakra-ui/storybook-addon/-/storybook-addon-4.0.16.tgz#6e2c1c6c92aa50eda6db412fd53cce5088e3e514"
+  integrity sha512-4+Mm9WHl+2lZ6BFTRV9xE+vT6Gxh0cvtScOw7idvhPru1vzTiJVsSpHoWANzQAs08DAzwulexjLghCMGnLKKhw==
+
 "@chakra-ui/styled-system@2.3.4":
   version "2.3.4"
   resolved "https://registry.yarnpkg.com/@chakra-ui/styled-system/-/styled-system-2.3.4.tgz#6022c5a675b54a69b1d3c2d3e60258901dc7b82a"
