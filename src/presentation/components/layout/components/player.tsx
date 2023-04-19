@@ -115,7 +115,6 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
   };
 
   useEffect(() => {
-    console.log({ volume, sliding });
     if (volume >= 0 && !sliding) {
       onVolumeChange(volume);
     }
