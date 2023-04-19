@@ -64,6 +64,7 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
   const state = useRecoilValue(playerState);
   const [paused, setPaused] = useState<boolean>(false);
   const [volume, setVolume] = useState<number>(-1);
+  const [sliding, setSliding] = useState<boolean>(false);
 
   const music = useMemo(() => {
     if (state.music.name) {
@@ -114,10 +115,20 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
   };
 
   useEffect(() => {
-    if (volume >= 0) {
+    console.log({ volume, sliding });
+    if (volume >= 0 && !sliding) {
       onVolumeChange(volume);
     }
   }, [volume]);
+
+  const handleVolumeChange = async (): Promise<void> => {
+    if (volume >= 0) {
+      await onVolumeChange(volume);
+      setSliding(false);
+    } else {
+      setSliding(false);
+    }
+  };
 
   return (
     <Grid
@@ -220,7 +231,11 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
             )}
           </IconButton>
           <Slider
-            onChangeEnd={val => setVolume(val)}
+            onChangeEnd={handleVolumeChange}
+            onChange={val => {
+              setSliding(true);
+              setVolume(val);
+            }}
             aria-label="slider"
             colorScheme="gray"
             defaultValue={50}
