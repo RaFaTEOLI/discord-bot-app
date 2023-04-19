@@ -3,7 +3,7 @@ import { FaSpotify } from 'react-icons/fa';
 
 const CFaSpotify = chakra(FaSpotify);
 
-type Props = {
+export type Props = {
   text: string;
   isLoading?: boolean | undefined;
   onClick?: () => any;
