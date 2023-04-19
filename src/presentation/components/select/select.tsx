@@ -7,7 +7,7 @@ export type Options = {
   value: string;
 };
 
-type Props = DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> & {
+export type Props = DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> & {
   state: any;
   setState: any;
   name: string;
