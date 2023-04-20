@@ -219,9 +219,9 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
     }
   };
 
-  const onSkip = async (): Promise<void> => {
+  const onSkip = async (index?: number): Promise<void> => {
     try {
-      await runCommand.run('skip');
+      await runCommand.run(index ? `skip ${index}` : 'skip');
       toast({
         title: 'Song Skipped',
         description: 'Your song was successfully skipped',

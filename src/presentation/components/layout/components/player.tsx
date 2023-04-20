@@ -35,7 +35,7 @@ import {
   BsFillVolumeMuteFill,
   BsJustify
 } from 'react-icons/bs';
-import { HiMusicalNote } from 'react-icons/hi2';
+import { HiPlay } from 'react-icons/hi2';
 import { useRecoilValue } from 'recoil';
 import { playerState } from './atom';
 import IconButton from './icon-button';
@@ -48,13 +48,12 @@ const VolumeIcon = chakra(BsFillVolumeUpFill);
 const VolumeMuteIcon = chakra(BsFillVolumeMuteFill);
 const QueueIcon = chakra(BsJustify);
 const CircleIcon = chakra(BsCircleFill);
-const MusicIcon = chakra(HiMusicalNote);
 
 type Props = {
   onResume: () => Promise<void>;
   onPause: () => Promise<void>;
   onShuffle: () => Promise<void>;
-  onSkip: () => Promise<void>;
+  onSkip: (index?: number) => Promise<void>;
   onVolumeChange: (volume: number) => Promise<void>;
 };
 
@@ -192,7 +191,7 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
                 <QueueIcon size={15} color={secondaryIconColor} />
               </ChakraIconButton>
             </PopoverTrigger>
-            <PopoverContent>
+            <PopoverContent w="25vw">
               <PopoverArrow />
               <PopoverCloseButton />
               <PopoverHeader>Queue</PopoverHeader>
@@ -202,7 +201,17 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
                     queue.map((song, index) => (
                       <Box w="100%" key={song.id} className="music-queue">
                         <Box gap={3} w="100%" display="flex" alignItems="center">
-                          <MusicIcon color="blue.400" size={20} />
+                          <ChakraIconButton
+                            isDisabled={!index}
+                            className="song-play-button"
+                            variant="solid"
+                            borderRadius={50}
+                            size={['xs', 'sm']}
+                            colorScheme="green"
+                            aria-label="Play Song"
+                            onClick={async () => onSkip(index)}
+                            icon={<HiPlay />}
+                          />
                           <Text className="queue-song-name" fontSize="sm" noOfLines={1} w="90%">
                             {song.name}
                           </Text>
