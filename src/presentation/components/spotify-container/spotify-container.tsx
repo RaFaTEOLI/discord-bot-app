@@ -27,14 +27,15 @@ export default function SpotifyContainer({ spotifyAuthenticateLogin, spotifyAuth
   useEffect(() => {
     (async () => {
       const code = searchParams.get('code');
-      const spotifyState = searchParams.get('state');
-      if (code && spotifyState) {
+      // const spotifyState = searchParams.get('state');
+      if (code) {
+        // if (code && spotifyState) {
         try {
           let spotifyAccess: AccountModel;
           if (currentRoute === 'signup') {
-            spotifyAccess = await spotifyAuthenticateSignUp.request({ code, state: spotifyState });
+            spotifyAccess = await spotifyAuthenticateSignUp.request({ code }); // state: spotifyState
           } else {
-            spotifyAccess = await spotifyAuthenticateLogin.request({ code, state: spotifyState });
+            spotifyAccess = await spotifyAuthenticateLogin.request({ code }); // state: spotifyState
           }
 
           setCurrentAccount(spotifyAccess);
