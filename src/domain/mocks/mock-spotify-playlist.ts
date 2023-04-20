@@ -33,7 +33,103 @@ export const mockSpotifyPlaylist = (): SpotifyPlaylistModel => ({
   snapshot_id: faker.datatype.uuid(),
   tracks: {
     href: faker.internet.url(),
-    total: faker.datatype.number({ min: 1, max: 300 })
+    total: faker.datatype.number({ min: 1, max: 300 }),
+    items: [
+      {
+        added_at: faker.date.past().toString(),
+        added_by: {
+          external_urls: {
+            spotify: faker.internet.url()
+          },
+          href: faker.internet.url(),
+          id: faker.datatype.uuid(),
+          type: 'user',
+          uri: `spotify:user:${faker.datatype.uuid()}`
+        },
+        is_local: faker.datatype.boolean(),
+        primary_color: null,
+        video_thumbnail: { url: faker.internet.avatar() },
+        track: {
+          album: {
+            album_type: 'album',
+            artists: [
+              {
+                external_urls: {
+                  spotify: faker.internet.url()
+                },
+                href: faker.internet.url(),
+                id: faker.datatype.uuid(),
+                name: faker.lorem.words(2),
+                type: 'user',
+                uri: `spotify:user:${faker.datatype.uuid()}`
+              }
+            ],
+            available_markets: ['US', 'BR'],
+            external_urls: {
+              spotify: faker.internet.url()
+            },
+            href: faker.internet.url(),
+            id: faker.datatype.uuid(),
+            images: [
+              {
+                height: 640,
+                url: faker.internet.avatar(),
+                width: 640
+              },
+              {
+                height: 300,
+                url: faker.internet.avatar(),
+                width: 300
+              },
+              {
+                height: 64,
+                url: faker.internet.avatar(),
+                width: 64
+              }
+            ],
+            name: faker.lorem.words(2),
+            release_date: faker.date.past().toString(),
+            release_date_precision: 'day',
+            total_tracks: faker.random.numeric(2),
+            type: 'album',
+            uri: `spotify:user:${faker.datatype.uuid()}`
+          },
+          artists: [
+            {
+              external_urls: {
+                spotify: faker.internet.url()
+              },
+              href: faker.internet.url(),
+              id: faker.datatype.uuid(),
+              name: faker.lorem.sentence(2),
+              type: 'artist',
+              uri: `spotify:user:${faker.datatype.uuid()}`
+            }
+          ],
+          available_markets: ['US', 'BR'],
+          disc_number: 1,
+          duration_ms: Number(faker.random.numeric(6)),
+          episode: faker.datatype.boolean(),
+          explicit: faker.datatype.boolean(),
+          external_ids: {
+            isrc: faker.datatype.uuid()
+          },
+          external_urls: {
+            spotify: faker.internet.url()
+          },
+          href: faker.internet.url(),
+          id: faker.datatype.uuid(),
+          is_local: faker.datatype.boolean(),
+          name: faker.lorem.words(2),
+          popularity: Number(faker.random.numeric(2)),
+          preview_url: faker.internet.url(),
+          track: faker.datatype.boolean(),
+          track_number: Number(faker.random.numeric(2)),
+          type: 'track',
+          uri: `spotify:track:${faker.datatype.uuid()}`
+        }
+      }
+    ]
   },
   type: 'playlist',
   uri: `spotify:playlist:${faker.datatype.uuid()}`

@@ -82,7 +82,8 @@ describe('RemoteLoadMusic', () => {
     expect(music).toEqual({
       id: httpResult.id,
       name: httpResult.name,
-      startedAt: httpResult.startedAt
+      startedAt: httpResult.startedAt,
+      duration: httpResult.duration
     });
   });
 
@@ -132,7 +133,8 @@ describe('RemoteLoadMusic', () => {
       id: httpResult.id,
       name: httpResult.name,
       startedAt: httpResult.startedAt,
-      thumbnail: spotifyHttpResult.tracks.items[0].album.images[0].url
+      thumbnail: spotifyHttpResult.tracks.items[0].album.images[0].url,
+      duration: httpResult.duration
     });
   });
 });
