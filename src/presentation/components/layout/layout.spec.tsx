@@ -548,4 +548,25 @@ describe('Layout Component', () => {
     await userEvent.click(botName);
     expect(screen.getByTestId('nav-flex')).toHaveAttribute('data-status', 'large');
   });
+
+  test('should call RunCommand with skip with index when skip is from Queue', async () => {
+    const { runCommandSpy } = makeSut();
+    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    await userEvent.click(screen.getByTestId('show-queue'));
+    const queueList = await screen.findByTestId('queue-list');
+    await userEvent.click(queueList.querySelectorAll('.song-play-button')[1]);
+    await setTimeout(500);
+    expect(runCommandSpy.callsCount).toBe(1);
+    expect(runSpy).toHaveBeenCalledWith('skip 1');
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Song Skipped',
+      description: 'Your song was successfully skipped',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
+  });
 });
