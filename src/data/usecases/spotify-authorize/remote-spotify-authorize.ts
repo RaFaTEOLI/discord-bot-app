@@ -8,7 +8,8 @@ export class RemoteSpotifyAuthorize implements SpotifyAuthorize {
       this.spotifySettings.clientId
     }&scope=${encodeURIComponent(this.spotifySettings.scope)}&redirect_uri=${encodeURIComponent(
       this.spotifySettings.redirectUri
-    )}&state=${this.spotifySettings.state}`;
+    )}`;
+    // &state=${this.spotifySettings.state}`;
     return await Promise.resolve(`${this.url}${queryString}`);
   }
 }

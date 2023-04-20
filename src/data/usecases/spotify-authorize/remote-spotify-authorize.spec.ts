@@ -24,7 +24,8 @@ describe('RemoteSpotifyAuthorize', () => {
         spotifyAuthorizeParams.clientId
       }&scope=${encodeURIComponent(spotifyAuthorizeParams.scope)}&redirect_uri=${encodeURIComponent(
         spotifyAuthorizeParams.redirectUri
-      )}&state=${spotifyAuthorizeParams.state}`
+      )}`
     );
+    // &state=${spotifyAuthorizeParams.state}`
   });
 });
