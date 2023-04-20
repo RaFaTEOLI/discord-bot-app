@@ -20,7 +20,9 @@ export class SpotifyAuthorizeSpy implements SpotifyAuthorize {
     this.callsCount++;
     const settings = this.spotifySettings;
     return Promise.resolve(
-      `${this.url}?response_type=${settings.responseType}&client_id${settings.clientId}&scope=${settings.scope}&redirect_uri=${settings.redirectUri}&state=${settings.state}`
+      `${this.url}?response_type=${settings.responseType}&client_id${settings.clientId}&scope=${
+        settings.scope
+      }&redirect_uri=${settings.redirectUri}&state=${settings.state as string}`
     );
   }
 }

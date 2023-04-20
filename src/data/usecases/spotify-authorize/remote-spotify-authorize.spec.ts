@@ -24,8 +24,22 @@ describe('RemoteSpotifyAuthorize', () => {
         spotifyAuthorizeParams.clientId
       }&scope=${encodeURIComponent(spotifyAuthorizeParams.scope)}&redirect_uri=${encodeURIComponent(
         spotifyAuthorizeParams.redirectUri
+        // eslint-disable-next-line
+      )}&state=${spotifyAuthorizeParams.state}`
+    );
+  });
+
+  test('should call return authorize url without state', async () => {
+    const url = faker.internet.url();
+    const { state, ...spotifyAuthorizeParams } = mockSpotifyAuthorizeParams();
+    const { sut } = makeSut(url, spotifyAuthorizeParams);
+    const generatedUrl = await sut.authorize();
+    expect(generatedUrl).toBe(
+      `${url}?response_type=${spotifyAuthorizeParams.responseType}&client_id=${
+        spotifyAuthorizeParams.clientId
+      }&scope=${encodeURIComponent(spotifyAuthorizeParams.scope)}&redirect_uri=${encodeURIComponent(
+        spotifyAuthorizeParams.redirectUri
       )}`
     );
-    // &state=${spotifyAuthorizeParams.state}`
   });
 });
