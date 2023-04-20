@@ -29,8 +29,6 @@ export default function TrackList({ tracks, gridTableFontSize, handlePrePlay, h 
     });
   };
 
-  console.log(tracks);
-
   return (
     <VStack w="100%" justifyContent="flex-start">
       <Grid
