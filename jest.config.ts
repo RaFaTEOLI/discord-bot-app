@@ -2,7 +2,7 @@ export default {
   roots: ['<rootDir>/src'],
   collectCoverageFrom: [
     '<rootDir>/src/**/*.{ts,tsx}',
-    '!<rootDir>/src/**/*.{stories}.{ts,tsx}',
+    '!<rootDir>/src/**/*.stories.{ts,tsx}',
     '!<rootDir>/src/main/**/*',
     '!<rootDir>/src/data/protocols/**/*',
     '!<rootDir>/src/domain/models/*',
