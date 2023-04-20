@@ -12,7 +12,7 @@ import {
   Spinner
 } from '@chakra-ui/react';
 
-interface IProps {
+export interface IProps {
   onClose: () => void;
   isOpen: boolean;
   confirm: () => any;

@@ -1,9 +1,7 @@
 import { Button } from '@chakra-ui/react';
 
-type Props = {
+export type Props = {
   text: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  state: any;
   icon?: JSX.Element | undefined;
   isLoading?: boolean;
   isDisabled?: boolean;

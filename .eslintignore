@@ -6,3 +6,5 @@ dist
 jest.config.ts
 vite.config.ts
 *.d.ts
+.storybook
+src/stories
