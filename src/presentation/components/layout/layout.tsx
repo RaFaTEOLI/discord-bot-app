@@ -271,7 +271,7 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
   };
 
   return (
-    <Flex flexDir="column">
+    <Flex flexDir="column" h="100vh">
       <Flex justifyContent="space-between" bg={borderColor}>
         <Flex
           pos="sticky"

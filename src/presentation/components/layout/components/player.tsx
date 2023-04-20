@@ -120,9 +120,7 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
   }, [volume]);
 
   const handleVolumeChange = async (): Promise<void> => {
-    if (volume >= 0) {
-      await onVolumeChange(volume);
-    }
+    await onVolumeChange(volume);
     setSliding(false);
   };
 
