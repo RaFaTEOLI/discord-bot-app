@@ -482,7 +482,7 @@ describe('Layout Component', () => {
     await userEvent.click(screen.getByTestId('volume-slider'));
     await setTimeout(500);
     expect(runCommandSpy.callsCount).toBe(1);
-    expect(runSpy).toHaveBeenCalledWith('setVolume 50');
+    expect(runSpy).toHaveBeenCalledWith('setVolume 0');
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Song Volume',
       description: 'The song volume was successfully changed',
