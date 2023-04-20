@@ -6,6 +6,7 @@ import { currentAccountState } from '@/presentation/components';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@chakra-ui/react';
 import { AccountModel } from '@/domain/models';
+import { InvalidCredentialsError } from '@/domain/errors';
 
 type Props = {
   spotifyAuthenticateLogin: SpotifyAuthenticate;
@@ -28,7 +29,7 @@ export default function SpotifyContainer({ spotifyAuthenticateLogin, spotifyAuth
     (async () => {
       const code = searchParams.get('code');
       const spotifyState = searchParams.get('state');
-      if (code && spotifyState) {
+      if (code) {
         try {
           let spotifyAccess: AccountModel;
           if (currentRoute === 'signup') {
@@ -42,13 +43,23 @@ export default function SpotifyContainer({ spotifyAuthenticateLogin, spotifyAuth
             navigate('/');
           }
         } catch (err) {
-          toast({
-            title: 'Login Error',
-            description: 'There was an error while trying to login with Spotify.',
-            status: 'error',
-            duration: 9000,
-            isClosable: true
-          });
+          if (err instanceof InvalidCredentialsError) {
+            toast({
+              title: 'Login Error',
+              description: 'Your credentials are invalid.',
+              status: 'error',
+              duration: 9000,
+              isClosable: true
+            });
+          } else {
+            toast({
+              title: 'Login Error',
+              description: 'There was an error while trying to login with Spotify.',
+              status: 'error',
+              duration: 9000,
+              isClosable: true
+            });
+          }
         }
       }
     })();

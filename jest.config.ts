@@ -2,6 +2,7 @@ export default {
   roots: ['<rootDir>/src'],
   collectCoverageFrom: [
     '<rootDir>/src/**/*.{ts,tsx}',
+    '!<rootDir>/src/**/*.stories.{ts,tsx}',
     '!<rootDir>/src/main/**/*',
     '!<rootDir>/src/data/protocols/**/*',
     '!<rootDir>/src/domain/models/*',
@@ -11,6 +12,7 @@ export default {
     '!<rootDir>/src/**/index.ts',
     '!<rootDir>/src/presentation/components/index.tsx',
     '!<rootDir>/src/presentation/pages/index.tsx',
+    '!<rootDir>/src/presentation/components/story-wrapper/chakra-story-wrapper.tsx',
     '!**/*.d.ts'
   ],
   coverageDirectory: 'coverage',

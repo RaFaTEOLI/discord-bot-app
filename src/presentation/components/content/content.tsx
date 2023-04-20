@@ -1,6 +1,11 @@
 import { Flex, Box, Heading } from '@chakra-ui/react';
 
-export default function Content({ title, children }: { title: string; children: JSX.Element }): JSX.Element {
+export interface Props {
+  title: string;
+  children: JSX.Element;
+}
+
+export default function Content({ title, children }: Props): JSX.Element {
   return (
     <Flex flexDir="column">
       <Heading mb={5} size={['md', 'xl']}>

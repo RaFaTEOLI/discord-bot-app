@@ -7,7 +7,7 @@ export interface SpotifyAuthenticate {
 export namespace SpotifyAuthenticate {
   export type Params = {
     code: string;
-    state: string;
+    state?: string | null;
   };
   export type Model = AccountModel;
 }

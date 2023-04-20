@@ -13,7 +13,8 @@
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
-    "plugin:prettier/recommended"
+    "plugin:prettier/recommended",
+    "plugin:storybook/recommended"
   ],
   "env": {
     "browser": true,
@@ -22,7 +23,7 @@
   "plugins": [
     "react",
     "@typescript-eslint",
-    "react-hooks", 
+    "react-hooks",
     "prettier"
   ],
   "parserOptions": {
@@ -51,6 +52,7 @@
       {
         "checksVoidReturn": false
       }
-    ]
+    ],
+    "@typescript-eslint/consistent-type-assertions": "off"
   }
 }

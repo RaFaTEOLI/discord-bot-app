@@ -8,6 +8,6 @@ export namespace SpotifyAuthorize {
     clientId: string;
     scope: string;
     redirectUri: string;
-    state: string;
+    state?: string;
   };
 }

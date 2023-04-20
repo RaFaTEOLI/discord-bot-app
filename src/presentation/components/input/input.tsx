@@ -9,7 +9,7 @@ import {
   InputLeftElement
 } from '@chakra-ui/react';
 
-type Props = DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> & {
+export type Props = DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> & {
   state: any;
   name: string;
   placeholder?: string;
