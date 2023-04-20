@@ -5,6 +5,7 @@ import SpotifyContainer from './spotify-container';
 import { SpotifyAuthenticateSpy } from '@/domain/mocks';
 import { Authentication } from '@/domain/usecases';
 import { setTimeout } from 'timers/promises';
+import { InvalidCredentialsError } from '@/domain/errors';
 
 type SutTypes = {
   setCurrentAccountMock: (account: Authentication.Model) => void;
@@ -17,12 +18,12 @@ const historyWithLoginSpotifyLogin = createMemoryHistory({ initialEntries: ['/lo
 const historyWithSignUpSpotifyLogin = createMemoryHistory({ initialEntries: ['/signup?code=any_code&state=any_state'] });
 const historyWithSpotifyLogin = createMemoryHistory({ initialEntries: ['?code=any_code&state=any_state'] });
 
-const makeSut = (memoryHistory: MemoryHistory = historyWithLoginSpotifyLogin, error = false): SutTypes => {
+const makeSut = (memoryHistory: MemoryHistory = historyWithLoginSpotifyLogin, error: null | Error = null): SutTypes => {
   const spotifyAuthenticateLoginSpy = new SpotifyAuthenticateSpy();
   const spotifyAuthenticateSignUpSpy = new SpotifyAuthenticateSpy();
   if (error) {
-    jest.spyOn(spotifyAuthenticateLoginSpy, 'request').mockRejectedValueOnce(new Error());
-    jest.spyOn(spotifyAuthenticateSignUpSpy, 'request').mockRejectedValueOnce(new Error());
+    jest.spyOn(spotifyAuthenticateLoginSpy, 'request').mockRejectedValueOnce(error);
+    jest.spyOn(spotifyAuthenticateSignUpSpy, 'request').mockRejectedValueOnce(error);
   }
   const { setCurrentAccountMock } = renderWithHistory({
     history: memoryHistory,
@@ -74,7 +75,7 @@ describe('Spotify Container Component', () => {
   });
 
   test('should show toast error if spotify fails', async () => {
-    const { setCurrentAccountMock } = makeSut(historyWithSpotifyLogin, true);
+    const { setCurrentAccountMock } = makeSut(historyWithSpotifyLogin, new Error());
     await setTimeout(3000);
     expect(setCurrentAccountMock).toHaveBeenCalledTimes(0);
     expect(mockToast).toHaveBeenCalledWith({
@@ -91,5 +92,18 @@ describe('Spotify Container Component', () => {
     expect(spotifyAuthenticateLoginSpy.callsCount).toBe(0);
     await setTimeout(3000);
     expect(setCurrentAccountMock).toHaveBeenCalledTimes(0);
+  });
+
+  test('should show toast invalid credentials error', async () => {
+    const { setCurrentAccountMock } = makeSut(historyWithSpotifyLogin, new InvalidCredentialsError());
+    await setTimeout(3000);
+    expect(setCurrentAccountMock).toHaveBeenCalledTimes(0);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Login Error',
+      description: 'Your credentials are invalid.',
+      status: 'error',
+      duration: 9000,
+      isClosable: true
+    });
   });
 });
