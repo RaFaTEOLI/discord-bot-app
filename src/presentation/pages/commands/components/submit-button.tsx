@@ -9,9 +9,7 @@ type Props = {
 
 const SubmitButton = ({ text, icon }: Props): JSX.Element => {
   const state = useRecoilValue(commandsState);
-  return (
-    <SubmitButtonBase isDisabled={state.disabledForm} isLoading={state.isLoading} text={text} state={state} icon={icon} />
-  );
+  return <SubmitButtonBase isDisabled={state.disabledForm} isLoading={state.isLoading} text={text} icon={icon} />;
 };
 
 export default SubmitButton;
