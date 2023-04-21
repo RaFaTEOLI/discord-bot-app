@@ -64,6 +64,7 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
   const [paused, setPaused] = useState<boolean>(false);
   const [volume, setVolume] = useState<number>(-1);
   const [sliding, setSliding] = useState<boolean>(false);
+  const [skippedIndex, setSkippedIndex] = useState<number>(1);
 
   const music = useMemo(() => {
     if (state.music.name) {
@@ -84,11 +85,11 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
   const queue = useMemo(() => {
     if (state.queue.length) {
       const queueList = [...state.queue];
-      return queueList.splice(1, 8);
+      return queueList.splice(skippedIndex, 8);
     } else {
       return state.queue;
     }
-  }, [state.queue]);
+  }, [state.queue, skippedIndex]);
 
   const handlePlayPause = (): void => {
     setPaused(prev => {
@@ -122,6 +123,11 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
   const handleVolumeChange = async (): Promise<void> => {
     await onVolumeChange(volume);
     setSliding(false);
+  };
+
+  const handleQueueSkip = (index: number): void => {
+    onSkip(index);
+    setSkippedIndex(prev => prev + index + 1);
   };
 
   return (
@@ -200,14 +206,13 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
                       <Box w="100%" key={song.id} className="music-queue">
                         <Box gap={3} w="100%" display="flex" alignItems="center">
                           <ChakraIconButton
-                            isDisabled={!index}
                             className="song-play-button"
                             variant="solid"
                             borderRadius={50}
                             size={['xs', 'sm']}
                             colorScheme="green"
                             aria-label="Play Song"
-                            onClick={async () => onSkip(index)}
+                            onClick={async () => handleQueueSkip(index)}
                             icon={<HiPlay />}
                           />
                           <Text className="queue-song-name" fontSize="sm" noOfLines={1} w="90%">
