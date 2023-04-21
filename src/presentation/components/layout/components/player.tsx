@@ -189,7 +189,7 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
                 <QueueIcon size={15} color={secondaryIconColor} />
               </ChakraIconButton>
             </PopoverTrigger>
-            <PopoverContent w="25vw">
+            <PopoverContent w={['85vw', '85vw', '45vw', '30vw']}>
               <PopoverArrow />
               <PopoverCloseButton />
               <PopoverHeader>Queue</PopoverHeader>
