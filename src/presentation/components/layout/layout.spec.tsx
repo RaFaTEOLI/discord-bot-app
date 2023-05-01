@@ -471,7 +471,7 @@ describe('Layout Component', () => {
     });
     await userEvent.click(screen.getByTestId('music-volume'));
     await setTimeout(500);
-    expect(runSpy).toHaveBeenCalledWith('setVolume 50');
+    expect(runSpy).toHaveBeenCalledWith('setVolume 100');
   });
 
   test('should call RunCommand with setVolume with correct volume when volume slider is changed', async () => {

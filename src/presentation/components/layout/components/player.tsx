@@ -116,12 +116,12 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
 
   useEffect(() => {
     if (volume >= 0 && !sliding) {
-      onVolumeChange(volume);
+      onVolumeChange(Number(volume * 2));
     }
   }, [volume]);
 
   const handleVolumeChange = async (): Promise<void> => {
-    await onVolumeChange(volume);
+    await onVolumeChange(Number(volume * 2));
     setSliding(false);
   };
 
