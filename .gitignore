@@ -15,6 +15,7 @@ coverage
 .env
 .env.prod
 .env.dev
+.env.test
 
 # Editor directories and files
 .vscode/*
