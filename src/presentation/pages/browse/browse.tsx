@@ -59,7 +59,7 @@ export default function Browse({ spotifySearch, runCommand }: Props): JSX.Elemen
   const handlePlay = async (url: string, clearQueue: boolean): Promise<void> => {
     try {
       if (clearQueue) {
-        await runCommand.run('stop');
+        await runCommand.run('clearQueue');
       }
 
       await runCommand.run(`play ${url}`);
