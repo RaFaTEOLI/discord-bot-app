@@ -13,11 +13,15 @@ import {
   mockAccountWithSpotifyModel,
   mockMusicModel,
   RunCommandSpy,
-  SpotifyAuthorizeSpy
+  SpotifyAuthorizeSpy,
+  io as mockIo,
+  serverSocket,
+  cleanup
 } from '@/domain/mocks';
 import { setTimeout } from 'timers/promises';
 import { faker } from '@faker-js/faker';
 import { AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
+import { Socket } from 'socket.io-client';
 
 type SutTypes = {
   history: MemoryHistory;
@@ -27,6 +31,7 @@ type SutTypes = {
   loadMusicSpy: LoadMusicSpy;
   runCommandSpy: RunCommandSpy;
   loadQueueSpy: LoadQueueSpy;
+  socketClientSpy: Socket;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/'] });
@@ -34,7 +39,8 @@ const makeSut = (
   account = mockAccountModel(),
   loadMusicSpy = new LoadMusicSpy(),
   runCommandSpy = new RunCommandSpy(),
-  loadQueueSpy = new LoadQueueSpy()
+  loadQueueSpy = new LoadQueueSpy(),
+  socketClientSpy = mockIo.connect() as unknown as Socket
 ): SutTypes => {
   const loadUserSpy = new LoadUserSpy();
   const spotifyAuthorizeSpy = new SpotifyAuthorizeSpy();
@@ -47,11 +53,21 @@ const makeSut = (
         spotifyAuthorize: spotifyAuthorizeSpy,
         loadMusic: loadMusicSpy,
         runCommand: runCommandSpy,
-        loadQueue: loadQueueSpy
+        loadQueue: loadQueueSpy,
+        socketClient: socketClientSpy
       }),
     account
   });
-  return { history, setCurrentAccountMock, spotifyAuthorizeSpy, loadUserSpy, loadMusicSpy, runCommandSpy, loadQueueSpy };
+  return {
+    history,
+    setCurrentAccountMock,
+    spotifyAuthorizeSpy,
+    loadUserSpy,
+    loadMusicSpy,
+    runCommandSpy,
+    loadQueueSpy,
+    socketClientSpy
+  };
 };
 
 const mockToast = jest.fn();
@@ -70,6 +86,8 @@ describe('Layout Component', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     jest.clearAllMocks();
   });
+
+  afterEach(cleanup);
 
   test('should have home page as active on initial state', () => {
     makeSut();
@@ -396,7 +414,7 @@ describe('Layout Component', () => {
   });
 
   test('should call RunCommand with skip when skip is clicked', async () => {
-    const { runCommandSpy, loadMusicSpy } = makeSut();
+    const { runCommandSpy } = makeSut();
     const runSpy = jest.spyOn(runCommandSpy, 'run');
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
@@ -412,8 +430,6 @@ describe('Layout Component', () => {
       isClosable: true,
       position: 'top'
     });
-    await setTimeout(1550);
-    expect(loadMusicSpy.callsCount).toBe(2);
   });
 
   test('should show toast if RunCommand with skip fails', async () => {
@@ -530,15 +546,24 @@ describe('Layout Component', () => {
     expect(screen.getByTestId('empty-queue')).toHaveTextContent('Queue is empty');
   });
 
-  test('should fetch music and queue every 3 minutes', async () => {
-    jest.useFakeTimers();
-    const { loadMusicSpy, loadQueueSpy } = makeSut();
+  test('should fetch music and queue on music change', async () => {
+    const { loadMusicSpy, loadQueueSpy } = makeSut(
+      mockAccountModel(),
+      new LoadMusicSpy(),
+      new RunCommandSpy(),
+      new LoadQueueSpy(),
+      mockIo.connect() as unknown as Socket
+    );
+
+    serverSocket?.emit('music', {
+      name: `${faker.name.firstName()} - ${faker.name.lastName()}`,
+      duration: `${faker.random.numeric()}:${faker.random.numeric(2)}`
+    });
+
     await setTimeout(500);
-    jest.advanceTimersByTime(200000);
-    await setTimeout(1000);
+
     expect(loadMusicSpy.callsCount).toBe(2);
     expect(loadQueueSpy.callsCount).toBe(2);
-    jest.useRealTimers();
   });
 
   test('should show render small layout then resize to a big one', async () => {
