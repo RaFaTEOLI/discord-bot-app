@@ -87,6 +87,7 @@
     "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
     "prop-types": "^15.8.1",
+    "socket.io": "^4.6.1",
     "storybook": "^7.0.4",
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
