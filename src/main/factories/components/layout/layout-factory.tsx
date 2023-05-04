@@ -6,6 +6,7 @@ import {
   makeRemoteRunCommand,
   makeRemoteSpotifyAuthorize
 } from '@/main/factories/usecases';
+import { makeSocketClient } from '@/main/factories/http';
 
 export const LayoutFactory = (): JSX.Element => {
   return (
@@ -15,6 +16,7 @@ export const LayoutFactory = (): JSX.Element => {
       loadMusic={makeRemoteLoadMusic()}
       runCommand={makeRemoteRunCommand()}
       loadQueue={makeRemoteLoadQueue()}
+      socketClient={makeSocketClient()}
     />
   );
 };
