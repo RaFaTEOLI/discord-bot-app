@@ -9,6 +9,7 @@ import { LoadMusic, LoadQueue, LoadUser, RunCommand, SpotifyAuthorize } from '@/
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { useErrorHandler } from '@/presentation/hooks';
 import { AccessTokenExpiredError } from '@/domain/errors';
+import { Socket } from 'socket.io-client';
 
 const HomeIcon = chakra(HiHome);
 const CommandsIcon = chakra(HiCommandLine);
@@ -21,9 +22,17 @@ type Props = {
   loadMusic: LoadMusic;
   runCommand: RunCommand;
   loadQueue: LoadQueue;
+  socketClient: Socket;
 };
 
-export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runCommand, loadQueue }: Props): JSX.Element {
+export default function Layout({
+  loadUser,
+  spotifyAuthorize,
+  loadMusic,
+  runCommand,
+  loadQueue,
+  socketClient
+}: Props): JSX.Element {
   const sidebarColor = useColorModeValue('gray.100', 'gray.900');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const [navSize, setNavSize] = useState<string>('large');
@@ -94,19 +103,6 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
         handleError(error);
       }
     })();
-  }, []);
-
-  useEffect(() => {
-    // TODO: replace this with a websocket
-    const musicCheckInterval = setInterval(async () => {
-      await fetchMusic();
-      await fetchQueue();
-      // fetches new music and queue every 3 minutes
-    }, 180000);
-
-    return () => {
-      clearInterval(musicCheckInterval);
-    };
   }, []);
 
   useEffect(() => {
@@ -230,9 +226,6 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
         isClosable: true,
         position: 'top'
       });
-      setTimeout(() => {
-        fetchMusic();
-      }, 1500);
     } catch (error: any) {
       handleError(error);
       toast({
@@ -269,6 +262,23 @@ export default function Layout({ loadUser, spotifyAuthorize, loadMusic, runComma
       });
     }
   };
+
+  useEffect(() => {
+    function onMusicChange(value: any): void {
+      setState(prev => ({
+        ...prev,
+        music: value
+      }));
+      fetchMusic();
+      fetchQueue();
+    }
+
+    socketClient.on('music', onMusicChange);
+
+    return () => {
+      socketClient.off('music', onMusicChange);
+    };
+  }, []);
 
   return (
     <Flex flexDir="column" h="100vh">
