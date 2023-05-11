@@ -26,6 +26,7 @@ You can also see your channels and members and their status.
 
  - [Discord Bot API](https://github.com/RaFaTEOLI/discord-bot-api)
  - [Discord Bot Player](https://github.com/RaFaTEOLI/discord-bot-player)
+ - [Discord Bot API Queue (Optional)](https://github.com/RaFaTEOLI/discord-bot-api-queue)
 
 ## 🌙 Dark Theme Previews
 
