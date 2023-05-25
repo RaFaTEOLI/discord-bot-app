@@ -14,6 +14,7 @@ import {
   mockMusicModel,
   RunCommandSpy,
   SpotifyAuthorizeSpy,
+  DiscordAuthorizeSpy,
   io as mockIo,
   serverSocket,
   cleanup
@@ -32,6 +33,7 @@ type SutTypes = {
   runCommandSpy: RunCommandSpy;
   loadQueueSpy: LoadQueueSpy;
   socketClientSpy: Socket;
+  discordAuthorizeSpy: DiscordAuthorizeSpy;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/'] });
@@ -44,6 +46,7 @@ const makeSut = (
 ): SutTypes => {
   const loadUserSpy = new LoadUserSpy();
   const spotifyAuthorizeSpy = new SpotifyAuthorizeSpy();
+  const discordAuthorizeSpy = new DiscordAuthorizeSpy();
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
@@ -54,7 +57,8 @@ const makeSut = (
         loadMusic: loadMusicSpy,
         runCommand: runCommandSpy,
         loadQueue: loadQueueSpy,
-        socketClient: socketClientSpy
+        socketClient: socketClientSpy,
+        discordAuthorize: discordAuthorizeSpy
       }),
     account
   });
@@ -66,7 +70,8 @@ const makeSut = (
     loadMusicSpy,
     runCommandSpy,
     loadQueueSpy,
-    socketClientSpy
+    socketClientSpy,
+    discordAuthorizeSpy
   };
 };
 
@@ -593,5 +598,12 @@ describe('Layout Component', () => {
       isClosable: true,
       position: 'top'
     });
+  });
+
+  test('should redirect user to discord authorize login url on discord link', async () => {
+    const { discordAuthorizeSpy } = makeSut();
+    const discordButton = screen.getByTestId('link-discord');
+    await userEvent.click(discordButton);
+    expect(discordAuthorizeSpy.callsCount).toBe(1);
   });
 });
