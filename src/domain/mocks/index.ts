@@ -12,3 +12,4 @@ export * from './mock-spotify-playlist';
 export * from './mock-server';
 export * from './mock-spotify-search';
 export * from './mock-socket-client';
+export * from './mock-discord-authorize';
