@@ -10,5 +10,11 @@ export type AccountModel = {
       accessToken: string;
       refreshToken: string;
     };
+    discord?: {
+      id: string;
+      username: string;
+      avatar: string;
+      discriminator: string;
+    };
   };
 };

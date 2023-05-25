@@ -1,7 +1,7 @@
 import { Box, Flex, Avatar, Menu, MenuButton, Text, Button, MenuList, MenuItem, chakra } from '@chakra-ui/react';
 import { FiChevronDown, FiChevronUp, FiLogOut } from 'react-icons/fi';
 import { HiUser } from 'react-icons/hi2';
-import { FaSpotify } from 'react-icons/fa';
+import { FaDiscord, FaSpotify } from 'react-icons/fa';
 import { useLogout } from '@/presentation/hooks';
 import { currentAccountState } from '@/presentation/components';
 import { useRecoilValue } from 'recoil';
@@ -11,12 +11,14 @@ import { useNavigate } from 'react-router';
 const CFaSpotify = chakra(FaSpotify);
 const CFiChevronUp = chakra(FiChevronUp);
 const CFiChevronDown = chakra(FiChevronDown);
+const CFaDiscord = chakra(FaDiscord);
 
 type Props = {
   onSpotifySignUp: () => void;
+  onDiscordLink: () => void;
 };
 
-export default function UserMenu({ onSpotifySignUp }: Props): JSX.Element {
+export default function UserMenu({ onSpotifySignUp, onDiscordLink }: Props): JSX.Element {
   const logout = useLogout();
   const navigate = useNavigate();
   const { getCurrentAccount } = useRecoilValue(currentAccountState);
@@ -31,6 +33,7 @@ export default function UserMenu({ onSpotifySignUp }: Props): JSX.Element {
   }, [getCurrentAccount()]);
 
   const isLinkedWithSpotify = useMemo(() => !!getCurrentAccount().user.spotify?.accessToken, [getCurrentAccount()]);
+  const isLinkedWithDiscord = useMemo(() => !!getCurrentAccount().user.discord, [getCurrentAccount()]);
 
   return (
     <Box position="absolute" right={8}>
@@ -79,6 +82,14 @@ export default function UserMenu({ onSpotifySignUp }: Props): JSX.Element {
                 isDisabled={isLinkedWithSpotify}
               >
                 {isLinkedWithSpotify ? 'Linked with Spotify' : 'Link with Spotify'}
+              </MenuItem>
+              <MenuItem
+                data-testid="link-discord"
+                onClick={onDiscordLink}
+                icon={<CFaDiscord color="#7289da" />}
+                isDisabled={isLinkedWithDiscord}
+              >
+                {isLinkedWithDiscord ? 'Linked with Discord' : 'Link with Discord'}
               </MenuItem>
               <MenuItem data-testid="logout" icon={<FiLogOut />} onClick={buttonClick}>
                 Log Out
