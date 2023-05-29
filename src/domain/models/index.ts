@@ -7,3 +7,4 @@ export * from './queue-model';
 export * from './spotify-playlist-model';
 export * from './server-model';
 export * from './discord-access-model';
+export * from './discord-user-model';

@@ -16,3 +16,4 @@ export * from './load-server/remote-load-server';
 export * from './spotify-search/remote-spotify-search';
 export * from './discord-authorize/remote-discord-authorize';
 export * from './discord-authenticate/remote-discord-authenticate';
+export * from './discord-load-user/remote-discord-load-user';

@@ -16,3 +16,4 @@ export * from './load-server';
 export * from './spotify-search';
 export * from './discord-authorize';
 export * from './discord-request-token';
+export * from './discord-load-user';
