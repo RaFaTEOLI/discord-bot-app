@@ -4,7 +4,8 @@ import {
   makeRemoteLoadQueue,
   makeRemoteLoadUser,
   makeRemoteRunCommand,
-  makeRemoteSpotifyAuthorize
+  makeRemoteSpotifyAuthorize,
+  makeRemoteDiscordAuthorize
 } from '@/main/factories/usecases';
 import { makeSocketClient } from '@/main/factories/http';
 
@@ -17,6 +18,7 @@ export const LayoutFactory = (): JSX.Element => {
       runCommand={makeRemoteRunCommand()}
       loadQueue={makeRemoteLoadQueue()}
       socketClient={makeSocketClient()}
+      discordAuthorize={makeRemoteDiscordAuthorize(process.env.VITE_DISCORD_REDIRECT_URI as string)}
     />
   );
 };

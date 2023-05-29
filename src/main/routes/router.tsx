@@ -13,7 +13,7 @@ import { getCurrentAccountAdapter, setCurrentAccountAdapter } from '@/main/adapt
 import { currentAccountState } from '@/presentation/components';
 import { RecoilRoot } from 'recoil';
 import { PrivateRoute } from '../proxies';
-import { LayoutFactory, SpotifyContainerFactory } from '@/main/factories/components';
+import { LayoutFactory, SpotifyContainerFactory, DiscordContainerFactory } from '@/main/factories/components';
 
 const Router = (): JSX.Element => {
   const state = {
@@ -43,6 +43,7 @@ const Router = (): JSX.Element => {
               <Route path="/browse" element={<BrowseFactory />} />
             </Route>
           </Route>
+          <Route path="/discord" element={<DiscordContainerFactory />} />
         </Routes>
       </BrowserRouter>
     </RecoilRoot>
