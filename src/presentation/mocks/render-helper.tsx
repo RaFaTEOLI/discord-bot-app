@@ -21,6 +21,7 @@ type Params = {
 
 type Result = {
   setCurrentAccountMock: (account: AccountModel) => void;
+  getCurrentAccountMock: () => AccountModel;
 };
 
 export const renderWithHistory = ({
@@ -62,6 +63,7 @@ export const renderWithHistory = ({
   }
 
   return {
-    setCurrentAccountMock
+    setCurrentAccountMock,
+    getCurrentAccountMock: mockedState.getCurrentAccount
   };
 };
