@@ -19,7 +19,7 @@ export class DiscordLoadUserSpy implements DiscordLoadUser {
   access = mockDiscordUserModel();
   callsCount = 0;
 
-  async request(): Promise<DiscordLoadUser.Model> {
+  async load(): Promise<DiscordLoadUser.Model> {
     this.callsCount++;
     return Promise.resolve(this.access);
   }

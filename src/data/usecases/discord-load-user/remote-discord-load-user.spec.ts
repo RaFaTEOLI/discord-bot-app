@@ -1,6 +1,6 @@
 import { HttpClientSpy } from '@/data/mocks';
 import { RemoteDiscordLoadUser } from '@/data/usecases';
-import { mockDiscordAccessModel } from '@/domain/mocks';
+import { mockDiscordUserModel } from '@/domain/mocks';
 import { AccessDeniedError, InvalidCredentialsError, UnexpectedError } from '@/domain/errors';
 import { HttpStatusCode } from '@/data/protocols/http';
 import { faker } from '@faker-js/faker';
@@ -23,7 +23,7 @@ describe('RemoteDiscordLoadUser', () => {
   test('should call HttpClient with correct values', async () => {
     const url = faker.internet.url();
     const { sut, httpClientSpy } = makeSut(url);
-    await sut.request(faker.datatype.uuid());
+    await sut.load(faker.datatype.uuid());
     expect(httpClientSpy.url).toBe(url);
     expect(httpClientSpy.method).toBe('get');
   });
@@ -33,7 +33,7 @@ describe('RemoteDiscordLoadUser', () => {
     httpClientSpy.response = {
       statusCode: HttpStatusCode.unauthorized
     };
-    const promise = sut.request(faker.datatype.uuid());
+    const promise = sut.load(faker.datatype.uuid());
     await expect(promise).rejects.toThrow(new InvalidCredentialsError());
   });
 
@@ -42,7 +42,7 @@ describe('RemoteDiscordLoadUser', () => {
     httpClientSpy.response = {
       statusCode: HttpStatusCode.badRequest
     };
-    const promise = sut.request(faker.datatype.uuid());
+    const promise = sut.load(faker.datatype.uuid());
     await expect(promise).rejects.toThrow(new UnexpectedError());
   });
 
@@ -51,7 +51,7 @@ describe('RemoteDiscordLoadUser', () => {
     httpClientSpy.response = {
       statusCode: HttpStatusCode.forbidden
     };
-    const promise = sut.request(faker.datatype.uuid());
+    const promise = sut.load(faker.datatype.uuid());
     await expect(promise).rejects.toThrow(new AccessDeniedError());
   });
 
@@ -60,7 +60,7 @@ describe('RemoteDiscordLoadUser', () => {
     httpClientSpy.response = {
       statusCode: HttpStatusCode.notFound
     };
-    const promise = sut.request(faker.datatype.uuid());
+    const promise = sut.load(faker.datatype.uuid());
     await expect(promise).rejects.toThrow(new UnexpectedError());
   });
 
@@ -69,18 +69,18 @@ describe('RemoteDiscordLoadUser', () => {
     httpClientSpy.response = {
       statusCode: HttpStatusCode.serverError
     };
-    const promise = sut.request(faker.datatype.uuid());
+    const promise = sut.load(faker.datatype.uuid());
     await expect(promise).rejects.toThrow(new UnexpectedError());
   });
 
   test('should return an DiscordLoadUser.Model if HttpClient returns 200', async () => {
     const { sut, httpClientSpy } = makeSut();
-    const httpResult = mockDiscordAccessModel();
+    const httpResult = mockDiscordUserModel();
     httpClientSpy.response = {
       statusCode: HttpStatusCode.success,
       body: httpResult
     };
-    const account = await sut.request(faker.datatype.uuid());
+    const account = await sut.load(faker.datatype.uuid());
     expect(account).toEqual(httpResult);
   });
 });

@@ -5,7 +5,7 @@ import { DiscordLoadUser } from '@/domain/usecases';
 export class RemoteDiscordLoadUser implements DiscordLoadUser {
   constructor(private readonly url: string, private readonly httpClient: HttpClient<RemoteDiscordLoadUser.Model>) {}
 
-  async request(accessToken: string): Promise<DiscordLoadUser.Model> {
+  async load(accessToken: string): Promise<DiscordLoadUser.Model> {
     const httpResponse = await this.httpClient.request({
       url: this.url,
       method: 'get',
