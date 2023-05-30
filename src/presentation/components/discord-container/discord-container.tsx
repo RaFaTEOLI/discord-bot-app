@@ -1,4 +1,4 @@
-import { DiscordAuthenticate, DiscordLoadUser } from '@/domain/usecases';
+import { DiscordAuthenticate, DiscordLoadUser, SaveUser } from '@/domain/usecases';
 import { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router';
 import { useRecoilValue } from 'recoil';
@@ -10,9 +10,10 @@ import { InvalidCredentialsError } from '@/domain/errors';
 type Props = {
   discordAuthenticate: DiscordAuthenticate;
   discordLoadUser: DiscordLoadUser;
+  saveUser: SaveUser;
 };
 
-export default function DiscordContainer({ discordAuthenticate, discordLoadUser }: Props): JSX.Element {
+export default function DiscordContainer({ discordAuthenticate, discordLoadUser, saveUser }: Props): JSX.Element {
   const [searchParams] = useSearchParams();
   const { setCurrentAccount, getCurrentAccount } = useRecoilValue(currentAccountState);
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function DiscordContainer({ discordAuthenticate, discordLoadUser 
       if (code) {
         try {
           const discordAccess = await discordAuthenticate.request({ code });
-          const discordUser = await discordLoadUser.request(discordAccess.access_token);
+          const discordUser = await discordLoadUser.load(discordAccess.access_token);
 
           const currentAccount = getCurrentAccount();
           currentAccount.user.discord = {
@@ -36,9 +37,12 @@ export default function DiscordContainer({ discordAuthenticate, discordLoadUser 
 
           setCurrentAccount(currentAccount);
 
+          await saveUser.save({
+            discord: currentAccount.user.discord
+          });
+
           navigate('/');
         } catch (err) {
-          console.log('Catching error');
           if (err instanceof InvalidCredentialsError) {
             toast({
               title: 'Login Error',
