@@ -5,7 +5,7 @@ import DiscordContainer from './discord-container';
 import { Authentication } from '@/domain/usecases';
 import { setTimeout } from 'timers/promises';
 import { InvalidCredentialsError } from '@/domain/errors';
-import { DiscordAuthenticateSpy, DiscordLoadUserSpy } from '@/domain/mocks';
+import { DiscordAuthenticateSpy, DiscordLoadUserSpy, SaveUserSpy } from '@/domain/mocks';
 import { AccountModel } from '@/domain/models';
 
 type SutTypes = {
@@ -13,6 +13,7 @@ type SutTypes = {
   discordAuthenticateSpy: DiscordAuthenticateSpy;
   discordLoadUserSpy: DiscordLoadUserSpy;
   getCurrentAccountMock: () => AccountModel;
+  saveUserSpy: SaveUserSpy;
 };
 
 const historyEmpty = createMemoryHistory({ initialEntries: ['/discord'] });
@@ -21,20 +22,23 @@ const historyWithDiscordLogin = createMemoryHistory({ initialEntries: ['/discord
 const makeSut = (memoryHistory: MemoryHistory = historyWithDiscordLogin, error: null | Error = null): SutTypes => {
   const discordAuthenticateSpy = new DiscordAuthenticateSpy();
   const discordLoadUserSpy = new DiscordLoadUserSpy();
+  const saveUserSpy = new SaveUserSpy();
   if (error) {
     console.log('Throwing error');
     jest.spyOn(discordAuthenticateSpy, 'request').mockRejectedValue(error);
-    jest.spyOn(discordLoadUserSpy, 'request').mockRejectedValue(error);
+    jest.spyOn(discordLoadUserSpy, 'load').mockRejectedValue(error);
+    jest.spyOn(saveUserSpy, 'save').mockRejectedValue(error);
   }
   const { setCurrentAccountMock, getCurrentAccountMock } = renderWithHistory({
     history: memoryHistory,
     Page: () =>
       DiscordContainer({
         discordAuthenticate: discordAuthenticateSpy,
-        discordLoadUser: discordLoadUserSpy
+        discordLoadUser: discordLoadUserSpy,
+        saveUser: saveUserSpy
       })
   });
-  return { setCurrentAccountMock, discordAuthenticateSpy, discordLoadUserSpy, getCurrentAccountMock };
+  return { setCurrentAccountMock, discordAuthenticateSpy, discordLoadUserSpy, getCurrentAccountMock, saveUserSpy };
 };
 
 const mockToast = jest.fn();
@@ -46,6 +50,7 @@ jest.mock('@chakra-ui/react', () => {
     useToast: jest.fn().mockImplementation(() => mockToast)
   };
 });
+jest.setTimeout(8000);
 
 describe('Discord Container Component', () => {
   beforeEach(() => {
@@ -54,14 +59,15 @@ describe('Discord Container Component', () => {
 
   test('should call DiscordLoadUser with Discord Access Token', async () => {
     const { discordAuthenticateSpy, discordLoadUserSpy } = makeSut();
-    const loadUserSpy = jest.spyOn(discordLoadUserSpy, 'request');
+    const loadUserSpy = jest.spyOn(discordLoadUserSpy, 'load');
     expect(discordAuthenticateSpy.callsCount).toBe(1);
     await setTimeout(3000);
     expect(loadUserSpy).toHaveBeenCalledWith(discordAuthenticateSpy.access.access_token);
   });
 
-  test('should load user from Discord', async () => {
-    const { setCurrentAccountMock, discordLoadUserSpy, getCurrentAccountMock } = makeSut();
+  test('should load user from Discord and then save it', async () => {
+    const { setCurrentAccountMock, discordLoadUserSpy, getCurrentAccountMock, saveUserSpy } = makeSut();
+    const saveSpy = jest.spyOn(saveUserSpy, 'save');
     await setTimeout(3000);
     const currentAccount = getCurrentAccountMock();
     currentAccount.user.discord = {
@@ -71,6 +77,8 @@ describe('Discord Container Component', () => {
       discriminator: discordLoadUserSpy.access.user.discriminator
     };
     expect(setCurrentAccountMock).toHaveBeenCalledWith(currentAccount);
+    expect(saveUserSpy.callsCount).toBe(1);
+    expect(saveSpy).toHaveBeenLastCalledWith({ discord: currentAccount.user.discord });
     expect(historyWithDiscordLogin.location.pathname).toBe('/');
   });
 
