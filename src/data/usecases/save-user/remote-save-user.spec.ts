@@ -29,7 +29,7 @@ describe('RemoteSaveUser', () => {
     const saveUserParams = mockSaveUserParams();
     await sut.save(saveUserParams);
     expect(httpClientSpy.url).toBe(url);
-    expect(httpClientSpy.method).toBe('put');
+    expect(httpClientSpy.method).toBe('patch');
     expect(httpClientSpy.body).toEqual(saveUserParams);
   });
 
