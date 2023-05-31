@@ -17,7 +17,8 @@ import {
   DiscordAuthorizeSpy,
   io as mockIo,
   serverSocket,
-  cleanup
+  cleanup,
+  mockAccountWithDiscordModel
 } from '@/domain/mocks';
 import { setTimeout } from 'timers/promises';
 import { faker } from '@faker-js/faker';
@@ -598,6 +599,12 @@ describe('Layout Component', () => {
       isClosable: true,
       position: 'top'
     });
+  });
+
+  test('should show account linked with discord when user is linked', async () => {
+    makeSut(mockAccountWithDiscordModel());
+    const discordButton = screen.getByTestId('link-discord');
+    expect(discordButton).toHaveTextContent('Linked with Discord');
   });
 
   test('should redirect user to discord authorize login url on discord link', async () => {
