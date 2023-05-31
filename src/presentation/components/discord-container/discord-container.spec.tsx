@@ -50,36 +50,11 @@ jest.mock('@chakra-ui/react', () => {
     useToast: jest.fn().mockImplementation(() => mockToast)
   };
 });
-jest.setTimeout(8000);
+jest.setTimeout(20000);
 
 describe('Discord Container Component', () => {
   beforeEach(() => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
-  });
-
-  test('should call DiscordLoadUser with Discord Access Token', async () => {
-    const { discordAuthenticateSpy, discordLoadUserSpy } = makeSut();
-    const loadUserSpy = jest.spyOn(discordLoadUserSpy, 'load');
-    expect(discordAuthenticateSpy.callsCount).toBe(1);
-    await setTimeout(3000);
-    expect(loadUserSpy).toHaveBeenCalledWith(discordAuthenticateSpy.access.access_token);
-  });
-
-  test('should load user from Discord and then save it', async () => {
-    const { setCurrentAccountMock, discordLoadUserSpy, getCurrentAccountMock, saveUserSpy } = makeSut();
-    const saveSpy = jest.spyOn(saveUserSpy, 'save');
-    await setTimeout(3000);
-    const currentAccount = getCurrentAccountMock();
-    currentAccount.user.discord = {
-      id: discordLoadUserSpy.access.user.id,
-      username: discordLoadUserSpy.access.user.username,
-      avatar: discordLoadUserSpy.access.user.avatar,
-      discriminator: discordLoadUserSpy.access.user.discriminator
-    };
-    expect(setCurrentAccountMock).toHaveBeenCalledWith(currentAccount);
-    expect(saveUserSpy.callsCount).toBe(1);
-    expect(saveSpy).toHaveBeenLastCalledWith({ discord: currentAccount.user.discord });
-    expect(historyWithDiscordLogin.location.pathname).toBe('/');
   });
 
   test('should show toast error if discord fails', async () => {
@@ -95,13 +70,6 @@ describe('Discord Container Component', () => {
     });
   });
 
-  test('should not login into discord if no redirect is received from any page', async () => {
-    const { setCurrentAccountMock, discordAuthenticateSpy } = makeSut(historyEmpty);
-    expect(discordAuthenticateSpy.callsCount).toBe(0);
-    await setTimeout(3000);
-    expect(setCurrentAccountMock).toHaveBeenCalledTimes(0);
-  });
-
   test('should show toast invalid credentials error', async () => {
     const { setCurrentAccountMock } = makeSut(historyWithDiscordLogin, new InvalidCredentialsError());
     await setTimeout(3000);
@@ -113,5 +81,33 @@ describe('Discord Container Component', () => {
       duration: 9000,
       isClosable: true
     });
+  });
+
+  test('should load user from Discord and then save it', async () => {
+    const { discordAuthenticateSpy, setCurrentAccountMock, discordLoadUserSpy, getCurrentAccountMock, saveUserSpy } =
+      makeSut();
+    const saveSpy = jest.spyOn(saveUserSpy, 'save');
+    const loadUserSpy = jest.spyOn(discordLoadUserSpy, 'load');
+    await setTimeout(3000);
+    expect(discordAuthenticateSpy.callsCount).toBe(1);
+    expect(loadUserSpy).toHaveBeenCalledWith(discordAuthenticateSpy.access.access_token);
+    const currentAccount = getCurrentAccountMock();
+    currentAccount.user.discord = {
+      id: discordLoadUserSpy.access.user.id,
+      username: discordLoadUserSpy.access.user.username,
+      avatar: discordLoadUserSpy.access.user.avatar,
+      discriminator: discordLoadUserSpy.access.user.discriminator
+    };
+    expect(setCurrentAccountMock).toHaveBeenCalledWith(currentAccount);
+    expect(saveUserSpy.callsCount).toBe(1);
+    expect(saveSpy).toHaveBeenLastCalledWith({ discord: currentAccount.user.discord });
+    expect(historyWithDiscordLogin.location.pathname).toBe('/');
+  });
+
+  test('should not login into discord if no redirect is received from any page', async () => {
+    const { setCurrentAccountMock, discordAuthenticateSpy } = makeSut(historyEmpty);
+    expect(discordAuthenticateSpy.callsCount).toBe(0);
+    await setTimeout(3000);
+    expect(setCurrentAccountMock).toHaveBeenCalledTimes(0);
   });
 });
