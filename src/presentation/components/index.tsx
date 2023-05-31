@@ -14,4 +14,5 @@ export { default as SpotifyButton } from './spotify-button/spotify-button';
 export { default as SpotifyContainer } from './spotify-container/spotify-container';
 export { default as ConfirmationModal } from './confirmation-modal/confirmation-modal';
 export { default as TrackList } from './track-list/track-list';
+export { default as DiscordContainer } from './discord-container/discord-container';
 export * from './atoms/atoms';

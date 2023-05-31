@@ -1,14 +1,6 @@
+import { UserModel } from './user-model';
+
 export type AccountModel = {
   accessToken: string;
-  user: {
-    name: string;
-    email: string;
-    id: string;
-    role?: string;
-    spotify?: {
-      avatarUrl?: string;
-      accessToken: string;
-      refreshToken: string;
-    };
-  };
+  user: UserModel;
 };

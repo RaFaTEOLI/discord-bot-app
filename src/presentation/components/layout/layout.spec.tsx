@@ -14,9 +14,11 @@ import {
   mockMusicModel,
   RunCommandSpy,
   SpotifyAuthorizeSpy,
+  DiscordAuthorizeSpy,
   io as mockIo,
   serverSocket,
-  cleanup
+  cleanup,
+  mockAccountWithDiscordModel
 } from '@/domain/mocks';
 import { setTimeout } from 'timers/promises';
 import { faker } from '@faker-js/faker';
@@ -32,6 +34,7 @@ type SutTypes = {
   runCommandSpy: RunCommandSpy;
   loadQueueSpy: LoadQueueSpy;
   socketClientSpy: Socket;
+  discordAuthorizeSpy: DiscordAuthorizeSpy;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/'] });
@@ -44,6 +47,7 @@ const makeSut = (
 ): SutTypes => {
   const loadUserSpy = new LoadUserSpy();
   const spotifyAuthorizeSpy = new SpotifyAuthorizeSpy();
+  const discordAuthorizeSpy = new DiscordAuthorizeSpy();
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
@@ -54,7 +58,8 @@ const makeSut = (
         loadMusic: loadMusicSpy,
         runCommand: runCommandSpy,
         loadQueue: loadQueueSpy,
-        socketClient: socketClientSpy
+        socketClient: socketClientSpy,
+        discordAuthorize: discordAuthorizeSpy
       }),
     account
   });
@@ -66,7 +71,8 @@ const makeSut = (
     loadMusicSpy,
     runCommandSpy,
     loadQueueSpy,
-    socketClientSpy
+    socketClientSpy,
+    discordAuthorizeSpy
   };
 };
 
@@ -593,5 +599,18 @@ describe('Layout Component', () => {
       isClosable: true,
       position: 'top'
     });
+  });
+
+  test('should show account linked with discord when user is linked', async () => {
+    makeSut(mockAccountWithDiscordModel());
+    const discordButton = screen.getByTestId('link-discord');
+    expect(discordButton).toHaveTextContent('Linked with Discord');
+  });
+
+  test('should redirect user to discord authorize login url on discord link', async () => {
+    const { discordAuthorizeSpy } = makeSut();
+    const discordButton = screen.getByTestId('link-discord');
+    await userEvent.click(discordButton);
+    expect(discordAuthorizeSpy.callsCount).toBe(1);
   });
 });

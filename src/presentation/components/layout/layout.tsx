@@ -5,7 +5,7 @@ import { Outlet, useLocation } from 'react-router';
 import { ThemeSwitcher, currentAccountState } from '@/presentation/components';
 import Logo from '../logo/logo';
 import { NavItem, UserMenu, Player, playerState } from './components';
-import { LoadMusic, LoadQueue, LoadUser, RunCommand, SpotifyAuthorize } from '@/domain/usecases';
+import { LoadMusic, LoadQueue, LoadUser, RunCommand, SpotifyAuthorize, DiscordAuthorize } from '@/domain/usecases';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { useErrorHandler } from '@/presentation/hooks';
 import { AccessTokenExpiredError } from '@/domain/errors';
@@ -23,6 +23,7 @@ type Props = {
   runCommand: RunCommand;
   loadQueue: LoadQueue;
   socketClient: Socket;
+  discordAuthorize: DiscordAuthorize;
 };
 
 export default function Layout({
@@ -31,7 +32,8 @@ export default function Layout({
   loadMusic,
   runCommand,
   loadQueue,
-  socketClient
+  socketClient,
+  discordAuthorize
 }: Props): JSX.Element {
   const sidebarColor = useColorModeValue('gray.100', 'gray.900');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -137,6 +139,11 @@ export default function Layout({
 
   const onSpotifySignUp = async (): Promise<void> => {
     const url = await spotifyAuthorize.authorize();
+    window.location.href = url;
+  };
+
+  const onDiscordLink = async (): Promise<void> => {
+    const url = await discordAuthorize.authorize();
     window.location.href = url;
   };
 
@@ -357,7 +364,7 @@ export default function Layout({
           overflowX="hidden"
           overflowY="hidden"
         >
-          <UserMenu onSpotifySignUp={onSpotifySignUp} />
+          <UserMenu onSpotifySignUp={onSpotifySignUp} onDiscordLink={onDiscordLink} />
           <Outlet />
         </Box>
       </Flex>

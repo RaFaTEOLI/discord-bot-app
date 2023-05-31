@@ -12,3 +12,8 @@ export * from './mock-spotify-playlist';
 export * from './mock-server';
 export * from './mock-spotify-search';
 export * from './mock-socket-client';
+export * from './mock-discord-authorize';
+export * from './mock-discord-access';
+export * from './mock-discord-request-token';
+export * from './mock-discord-load-user';
+export * from './mock-user';

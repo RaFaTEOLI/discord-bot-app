@@ -14,3 +14,7 @@ export * from './load-playlist-tracks';
 export * from './load-user-by-id';
 export * from './load-server';
 export * from './spotify-search';
+export * from './discord-authorize';
+export * from './discord-request-token';
+export * from './discord-load-user';
+export * from './save-user';
