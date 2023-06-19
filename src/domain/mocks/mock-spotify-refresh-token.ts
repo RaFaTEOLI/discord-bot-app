@@ -3,8 +3,7 @@ import { SpotifyRefreshToken } from '@/domain/usecases';
 
 export const mockSpotifyRefreshTokenParams = (): SpotifyRefreshToken.Params => {
   return {
-    refreshToken: faker.datatype.uuid(),
-    encodedAuthorization: faker.datatype.uuid()
+    refreshToken: faker.datatype.uuid()
   };
 };
 
