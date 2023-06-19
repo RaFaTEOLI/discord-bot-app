@@ -18,3 +18,4 @@ export * from './discord-authorize';
 export * from './discord-request-token';
 export * from './discord-load-user';
 export * from './save-user';
+export * from './spotify-refresh-token';
