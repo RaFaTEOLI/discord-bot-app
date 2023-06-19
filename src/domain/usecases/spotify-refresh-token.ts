@@ -5,7 +5,6 @@ export interface SpotifyRefreshToken {
 export namespace SpotifyRefreshToken {
   export type Params = {
     refreshToken: string;
-    encodedAuthorization: string;
   };
   export type Model = { accessToken: string };
 }
