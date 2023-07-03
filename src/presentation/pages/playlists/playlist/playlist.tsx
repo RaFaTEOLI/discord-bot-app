@@ -1,5 +1,5 @@
 import { AccessTokenExpiredError } from '@/domain/errors';
-import { LoadPlaylistTracks, LoadUserById, RunCommand } from '@/domain/usecases';
+import { LoadPlaylistTracks, LoadUserById, RunCommand, SpotifyRefreshToken } from '@/domain/usecases';
 import { ConfirmationModal, Error, Loading, TrackList } from '@/presentation/components';
 import { useErrorHandler } from '@/presentation/hooks';
 import {
@@ -25,9 +25,10 @@ type Props = {
   loadPlaylistTracks: LoadPlaylistTracks;
   runCommand: RunCommand;
   loadUserById: LoadUserById;
+  refreshToken: SpotifyRefreshToken;
 };
 
-export default function Playlist({ loadPlaylistTracks, runCommand, loadUserById }: Props): JSX.Element {
+export default function Playlist({ loadPlaylistTracks, runCommand, loadUserById, refreshToken }: Props): JSX.Element {
   const color = useColorModeValue('gray.600', 'gray.400');
   const resetUserPlaylistState = useResetRecoilState(userPlaylistState);
   const [state, setState] = useRecoilState(userPlaylistState);
@@ -36,7 +37,7 @@ export default function Playlist({ loadPlaylistTracks, runCommand, loadUserById 
   const toast = useToast();
   const handleError = useErrorHandler((error: Error) => {
     setState(prev => ({ ...prev, isLoading: false, error: error.message, reload: false }));
-  });
+  }, refreshToken);
 
   const reload = (): void =>
     setState(prev => ({ ...prev, playlists: [], error: '', reload: !prev.reload, isLoading: true }));
