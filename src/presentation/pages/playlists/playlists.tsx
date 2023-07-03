@@ -1,5 +1,5 @@
 import { AccessTokenExpiredError } from '@/domain/errors';
-import { LoadUserPlaylists, RunCommand } from '@/domain/usecases';
+import { LoadUserPlaylists, RunCommand, SpotifyRefreshToken } from '@/domain/usecases';
 import { Content, Error, Loading } from '@/presentation/components';
 import { useErrorHandler } from '@/presentation/hooks';
 import { Box, Flex, useToast } from '@chakra-ui/react';
@@ -11,16 +11,17 @@ import { userPlaylistsState, InputFilter, PlaylistListItem } from './components'
 type Props = {
   loadUserPlaylists: LoadUserPlaylists;
   runCommand: RunCommand;
+  refreshToken: SpotifyRefreshToken;
 };
 
-export default function Playlists({ loadUserPlaylists, runCommand }: Props): JSX.Element {
+export default function Playlists({ loadUserPlaylists, runCommand, refreshToken }: Props): JSX.Element {
   const resetUserPlaylistState = useResetRecoilState(userPlaylistsState);
   const [state, setState] = useRecoilState(userPlaylistsState);
   const navigate = useNavigate();
   const toast = useToast();
   const handleError = useErrorHandler((error: Error) => {
     setState(prev => ({ ...prev, isLoading: false, error: error.message, reload: false }));
-  });
+  }, refreshToken);
 
   const reload = (): void =>
     setState(prev => ({ ...prev, playlists: [], error: '', reload: !prev.reload, isLoading: true }));
