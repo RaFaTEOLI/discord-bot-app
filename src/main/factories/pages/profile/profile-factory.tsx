@@ -1,6 +1,6 @@
 import { Profile } from '@/presentation/pages';
-import { makeRemoteLoadUser } from '@/main/factories/usecases';
+import { makeRemoteLoadUser, makeRemoteSpotifyRefreshToken } from '@/main/factories/usecases';
 
 export const ProfileFactory = (): JSX.Element => {
-  return <Profile loadUser={makeRemoteLoadUser()} />;
+  return <Profile loadUser={makeRemoteLoadUser()} refreshToken={makeRemoteSpotifyRefreshToken()} />;
 };

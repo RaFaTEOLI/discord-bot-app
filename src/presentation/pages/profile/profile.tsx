@@ -1,5 +1,5 @@
 import { Heading, Flex, Avatar, Text, VStack, useToast } from '@chakra-ui/react';
-import { LoadUser } from '@/domain/usecases';
+import { LoadUser, SpotifyRefreshToken } from '@/domain/usecases';
 import { useEffect } from 'react';
 import { useRecoilState, useResetRecoilState } from 'recoil';
 import { userProfileState } from './components/atoms/atom';
@@ -8,9 +8,10 @@ import { Loading } from '@/presentation/components';
 
 type Props = {
   loadUser: LoadUser;
+  refreshToken: SpotifyRefreshToken;
 };
 
-export default function Profile({ loadUser }: Props): JSX.Element {
+export default function Profile({ loadUser, refreshToken }: Props): JSX.Element {
   const resetSurveyListState = useResetRecoilState(userProfileState);
   const [state, setState] = useRecoilState(userProfileState);
   const toast = useToast();
@@ -25,7 +26,7 @@ export default function Profile({ loadUser }: Props): JSX.Element {
       isClosable: true,
       position: 'top-right'
     });
-  });
+  }, refreshToken);
 
   useEffect(() => {
     (async () => {
