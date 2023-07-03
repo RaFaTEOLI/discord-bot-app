@@ -18,3 +18,4 @@ export * from './discord-authorize/remote-discord-authorize-factory';
 export * from './discord-authenticate/remote-discord-authenticate-factory';
 export * from './discord-load-user/remote-discord-load-user-factory';
 export * from './save-user/remote-save-user-factory';
+export * from './spotify-refresh-token/remote-spotify-refresh-token-factory';
