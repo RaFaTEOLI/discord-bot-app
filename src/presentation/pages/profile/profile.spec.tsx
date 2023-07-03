@@ -1,31 +1,37 @@
 import { AccessTokenExpiredError } from '@/domain/errors';
-import { LoadUserSpy } from '@/domain/mocks';
+import { LoadUserSpy, SpotifyRefreshTokenSpy } from '@/domain/mocks';
 import { renderWithHistory } from '@/presentation/mocks';
 import { screen, waitFor } from '@testing-library/react';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import { setTimeout } from 'timers/promises';
 import Profile from './profile';
+import { AccountModel } from '@/domain/models';
 
 type SutTypes = {
   history: MemoryHistory;
   loadUserSpy: LoadUserSpy;
+  refreshTokenSpy: SpotifyRefreshTokenSpy | undefined;
+  setCurrentAccountMock: (account: AccountModel) => void;
+  getCurrentAccountMock: () => AccountModel;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/profile'] });
-const makeSut = (error: Error | undefined = undefined): SutTypes => {
+const makeSut = (error: Error | undefined = undefined, refreshTokenSpy?: SpotifyRefreshTokenSpy | undefined): SutTypes => {
   const loadUserSpy = new LoadUserSpy();
   if (error) {
     jest.spyOn(loadUserSpy, 'load').mockRejectedValueOnce(error);
   }
-  renderWithHistory({
+  const { setCurrentAccountMock, getCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
+    spotifyUser: !!refreshTokenSpy,
     Page: () =>
       Profile({
-        loadUser: loadUserSpy
+        loadUser: loadUserSpy,
+        refreshToken: refreshTokenSpy ?? new SpotifyRefreshTokenSpy()
       })
   });
-  return { history, loadUserSpy };
+  return { history, loadUserSpy, refreshTokenSpy, getCurrentAccountMock, setCurrentAccountMock };
 };
 
 const mockToast = jest.fn();
@@ -76,6 +82,25 @@ describe('Profile Component', () => {
       isClosable: true,
       position: 'top-right'
     });
+  });
+
+  test('should show toast and refresh spotify access token when a refresh token is present', async () => {
+    const refreshTokenSpy = new SpotifyRefreshTokenSpy();
+    const { setCurrentAccountMock, getCurrentAccountMock } = makeSut(new AccessTokenExpiredError(), refreshTokenSpy);
+    await setTimeout(2000);
+    expect(refreshTokenSpy?.callsCount).toBe(1);
+    expect(setCurrentAccountMock).toHaveBeenCalledWith({
+      ...getCurrentAccountMock(),
+      user: {
+        ...getCurrentAccountMock().user,
+        spotify: {
+          ...getCurrentAccountMock().user.spotify,
+          accessToken: refreshTokenSpy?.access.accessToken,
+          refreshToken: ''
+        }
+      }
+    });
+    expect(history.location.pathname).toBe('/profile');
   });
 
   test('should navigate to login page if LoadUser returns AccessTokenExpiredError', async () => {
