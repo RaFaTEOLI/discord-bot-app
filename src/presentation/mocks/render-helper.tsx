@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { AccountModel } from '@/domain/models';
-import { mockAccountModel } from '@/domain/mocks';
+import { mockAccountModel, mockAccountWithSpotifyModel } from '@/domain/mocks';
 import { currentAccountState } from '@/presentation/components';
 import { act } from 'react-dom/test-utils';
 import { Router } from 'react-router-dom';
@@ -17,6 +17,7 @@ type Params = {
   useAct?: boolean;
   states?: Array<{ atom: RecoilState<any>; value: any }>;
   adminUser?: boolean;
+  spotifyUser?: boolean;
 };
 
 type Result = {
@@ -30,12 +31,14 @@ export const renderWithHistory = ({
   history,
   account = mockAccountModel(),
   states = [],
-  adminUser = false
+  adminUser = false,
+  spotifyUser = false
 }: Params): Result => {
+  const userAccount = spotifyUser ? mockAccountWithSpotifyModel() : account;
   const setCurrentAccountMock = jest.fn();
   const mockedState = {
     setCurrentAccount: setCurrentAccountMock,
-    getCurrentAccount: () => (adminUser ? { ...account, user: { ...account.user, role: 'admin' } } : account)
+    getCurrentAccount: () => (adminUser ? { ...userAccount, user: { ...userAccount.user, role: 'admin' } } : userAccount)
   };
 
   const initializeState = ({ set }: MutableSnapshot): void => {
