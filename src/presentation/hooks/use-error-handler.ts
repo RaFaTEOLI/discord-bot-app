@@ -14,18 +14,16 @@ export const useErrorHandler = (callback: CallbackType, spotifyRefreshToken?: Sp
     if (error instanceof AccessTokenExpiredError && spotifyRefreshToken && getCurrentAccount().user.spotify?.refreshToken) {
       try {
         const newSpotifyToken = await spotifyRefreshToken.refresh({
-          refreshToken: getCurrentAccount().user.spotify?.refreshToken ?? ''
+          refreshToken: getCurrentAccount().user.spotify?.refreshToken as string
         });
 
-        if (newSpotifyToken.accessToken) {
-          setCurrentAccount({
-            ...getCurrentAccount(),
-            user: {
-              ...getCurrentAccount().user,
-              spotify: { ...getCurrentAccount().user.spotify, accessToken: newSpotifyToken.accessToken, refreshToken: '' }
-            }
-          });
-        }
+        setCurrentAccount({
+          ...getCurrentAccount(),
+          user: {
+            ...getCurrentAccount().user,
+            spotify: { ...getCurrentAccount().user.spotify, accessToken: newSpotifyToken.accessToken, refreshToken: '' }
+          }
+        });
         window.location.reload();
         return;
       } catch (err) {

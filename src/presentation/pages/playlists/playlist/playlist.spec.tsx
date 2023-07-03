@@ -79,6 +79,38 @@ describe('Playlist Component', () => {
     expect(loadPlaylistTracksSpy.callsCount).toBe(1);
   });
 
+  test('should show toast and refresh spotify access token when a refresh token is present', async () => {
+    const loadPlaylistTracksSpy = new LoadPlaylistTracksSpy();
+    jest.spyOn(loadPlaylistTracksSpy, 'load').mockRejectedValueOnce(new AccessTokenExpiredError());
+    const { setCurrentAccountMock, refreshTokenSpy, getCurrentAccountMock } = makeSut(
+      loadPlaylistTracksSpy,
+      new RunCommandSpy(),
+      new LoadUserByIdSpy(),
+      new SpotifyRefreshTokenSpy()
+    );
+    await setTimeout(2000);
+    expect(refreshTokenSpy?.callsCount).toBe(1);
+    expect(setCurrentAccountMock).toHaveBeenCalledWith({
+      ...getCurrentAccountMock(),
+      user: {
+        ...getCurrentAccountMock().user,
+        spotify: {
+          ...getCurrentAccountMock().user.spotify,
+          accessToken: refreshTokenSpy?.access.accessToken,
+          refreshToken: ''
+        }
+      }
+    });
+    expect(history.location.pathname).toBe('/playlists/1');
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Access Denied',
+      description: 'Your login with spotify is either expired or invalid, please log in with spotify again!',
+      status: 'error',
+      duration: 9000,
+      isClosable: true
+    });
+  });
+
   test('should render error on UnexpectedError on LoadPlaylistTracks', async () => {
     const loadPlaylistTracksSpy = new LoadPlaylistTracksSpy();
     const error = new UnexpectedError();
@@ -107,38 +139,6 @@ describe('Playlist Component', () => {
     await setTimeout(2000);
     expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
     expect(history.location.pathname).toBe('/login');
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Access Denied',
-      description: 'Your login with spotify is either expired or invalid, please log in with spotify again!',
-      status: 'error',
-      duration: 9000,
-      isClosable: true
-    });
-  });
-
-  test('should show toast and refresh spotify access token when a refresh token is present', async () => {
-    const loadPlaylistTracksSpy = new LoadPlaylistTracksSpy();
-    jest.spyOn(loadPlaylistTracksSpy, 'load').mockRejectedValueOnce(new AccessTokenExpiredError());
-    const { setCurrentAccountMock, refreshTokenSpy, getCurrentAccountMock } = makeSut(
-      loadPlaylistTracksSpy,
-      new RunCommandSpy(),
-      new LoadUserByIdSpy(),
-      new SpotifyRefreshTokenSpy()
-    );
-    await setTimeout(2000);
-    expect(refreshTokenSpy?.callsCount).toBe(1);
-    expect(setCurrentAccountMock).toHaveBeenCalledWith({
-      ...getCurrentAccountMock(),
-      user: {
-        ...getCurrentAccountMock().user,
-        spotify: {
-          ...getCurrentAccountMock().user.spotify,
-          accessToken: refreshTokenSpy?.access.accessToken,
-          refreshToken: ''
-        }
-      }
-    });
-    expect(history.location.pathname).toBe('/playlists/1');
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Access Denied',
       description: 'Your login with spotify is either expired or invalid, please log in with spotify again!',
