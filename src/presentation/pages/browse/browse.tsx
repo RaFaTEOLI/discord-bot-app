@@ -1,4 +1,4 @@
-import { RunCommand, SpotifySearch } from '@/domain/usecases';
+import { RunCommand, SpotifyRefreshToken, SpotifySearch } from '@/domain/usecases';
 import { ConfirmationModal, Content, Error, Loading, TrackList } from '@/presentation/components';
 import { useErrorHandler } from '@/presentation/hooks';
 import { Flex, Box, useToast, Heading, chakra, useDisclosure } from '@chakra-ui/react';
@@ -10,11 +10,12 @@ import { searchState, SearchContainer } from './components';
 type Props = {
   spotifySearch: SpotifySearch;
   runCommand: RunCommand;
+  refreshToken: SpotifyRefreshToken;
 };
 
 const CHiNoSymbol = chakra(HiNoSymbol);
 
-export default function Browse({ spotifySearch, runCommand }: Props): JSX.Element {
+export default function Browse({ spotifySearch, runCommand, refreshToken }: Props): JSX.Element {
   const resetSearchState = useResetRecoilState(searchState);
   const [state, setState] = useRecoilState(searchState);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -22,7 +23,7 @@ export default function Browse({ spotifySearch, runCommand }: Props): JSX.Elemen
   const toast = useToast();
   const handleError = useErrorHandler((error: Error) => {
     setState(prev => ({ ...prev, isLoading: false, error: error.message }));
-  });
+  }, refreshToken);
 
   useEffect(() => {
     resetSearchState();
