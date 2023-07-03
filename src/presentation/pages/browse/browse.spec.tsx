@@ -1,5 +1,5 @@
-import { UnexpectedError } from '@/domain/errors';
-import { RunCommandSpy, SpotifySearchSpy } from '@/domain/mocks';
+import { AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
+import { RunCommandSpy, SpotifyRefreshTokenSpy, SpotifySearchSpy } from '@/domain/mocks';
 import { AccountModel } from '@/domain/models';
 import { renderWithHistory } from '@/presentation/mocks';
 import { screen, waitFor } from '@testing-library/react';
@@ -12,9 +12,11 @@ import { SpotifySearch } from '@/domain/usecases';
 
 type SutTypes = {
   setCurrentAccountMock: (account: AccountModel) => void;
+  getCurrentAccountMock: () => AccountModel;
   history: MemoryHistory;
   spotifySearchSpy: SpotifySearchSpy;
   runCommandSpy: RunCommandSpy;
+  refreshTokenSpy: SpotifyRefreshTokenSpy | undefined;
 };
 
 const mockToast = jest.fn();
@@ -26,14 +28,24 @@ jest.mock('@chakra-ui/react', () => {
     useToast: jest.fn().mockImplementation(() => mockToast)
   };
 });
-const history = createMemoryHistory({ initialEntries: ['/'] });
-const makeSut = (spotifySearchSpy = new SpotifySearchSpy(), runCommandSpy = new RunCommandSpy()): SutTypes => {
-  const { setCurrentAccountMock } = renderWithHistory({
+const history = createMemoryHistory({ initialEntries: ['/browse'] });
+const makeSut = (
+  spotifySearchSpy = new SpotifySearchSpy(),
+  runCommandSpy = new RunCommandSpy(),
+  refreshTokenSpy?: SpotifyRefreshTokenSpy | undefined
+): SutTypes => {
+  const { setCurrentAccountMock, getCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
-    Page: () => Browse({ spotifySearch: spotifySearchSpy, runCommand: runCommandSpy })
+    spotifyUser: !!refreshTokenSpy,
+    Page: () =>
+      Browse({
+        spotifySearch: spotifySearchSpy,
+        runCommand: runCommandSpy,
+        refreshToken: refreshTokenSpy ?? new SpotifyRefreshTokenSpy()
+      })
   });
-  return { setCurrentAccountMock, spotifySearchSpy, history, runCommandSpy };
+  return { setCurrentAccountMock, spotifySearchSpy, history, runCommandSpy, refreshTokenSpy, getCurrentAccountMock };
 };
 
 describe('Browse Component', () => {
@@ -191,5 +203,28 @@ describe('Browse Component', () => {
       isClosable: true,
       position: 'top'
     });
+  });
+
+  test('should show toast and refresh spotify access token when a refresh token is present', async () => {
+    const spotifySearchSpy = new SpotifySearchSpy();
+    jest.spyOn(spotifySearchSpy, 'search').mockRejectedValueOnce(new AccessTokenExpiredError());
+    const refreshTokenSpy = new SpotifyRefreshTokenSpy();
+    const { setCurrentAccountMock, getCurrentAccountMock } = makeSut(spotifySearchSpy, new RunCommandSpy(), refreshTokenSpy);
+    await waitFor(() => screen.getByTestId('browse-container'));
+    await userEvent.click(screen.getByTestId('search-song-button'));
+    await setTimeout(2000);
+    expect(refreshTokenSpy?.callsCount).toBe(1);
+    expect(setCurrentAccountMock).toHaveBeenCalledWith({
+      ...getCurrentAccountMock(),
+      user: {
+        ...getCurrentAccountMock().user,
+        spotify: {
+          ...getCurrentAccountMock().user.spotify,
+          accessToken: refreshTokenSpy?.access.accessToken,
+          refreshToken: ''
+        }
+      }
+    });
+    expect(history.location.pathname).toBe('/browse');
   });
 });
