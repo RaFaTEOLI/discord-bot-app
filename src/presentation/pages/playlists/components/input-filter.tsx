@@ -12,7 +12,9 @@ const InputFilter = ({ borderRightRadius }: { borderRightRadius: number }): JSX.
 
   useEffect(() => {
     const filteredPlaylists = state.playlists.filter(
-      playlist => playlist.name.includes(filterValue) || playlist.description.includes(filterValue)
+      playlist =>
+        playlist.name.toLowerCase().includes(filterValue.toLowerCase()) ||
+        playlist.description.toLowerCase().includes(filterValue.toLowerCase())
     );
     setState(prev => ({ ...prev, filteredPlaylists }));
   }, [filterValue]);
