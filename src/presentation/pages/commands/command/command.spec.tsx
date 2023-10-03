@@ -80,4 +80,15 @@ describe('Command Component', () => {
     await waitFor(() => optionsList);
     expect(optionsList.children).toHaveLength(1);
   });
+
+  test('should remove Command Option on option remove', async () => {
+    makeSut();
+    await waitFor(() => screen.getByTestId('command-content'));
+    await userEvent.click(screen.getByTestId('add-option'));
+    const optionsList = await screen.findByTestId('options-list');
+    await waitFor(() => optionsList);
+    expect(optionsList.children).toHaveLength(1);
+    await userEvent.click(screen.getByTestId('0-option-remove'));
+    expect(optionsList.children).toHaveLength(0);
+  });
 });
