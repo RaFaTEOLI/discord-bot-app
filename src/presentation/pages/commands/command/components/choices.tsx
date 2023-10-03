@@ -28,57 +28,60 @@ const Choices = ({ nestIndex, control, optionInputColor }: Props): JSX.Element =
           data-testid={`${nestIndex}-choice-add`}
           variant="solid"
           colorScheme="blue"
-          aria-label="Add Option"
+          aria-label="Add Choice"
           onClick={() => append({ name: '', value: '' })}
         >
           <FiPlus />
         </IconButton>
       </Flex>
       <Divider />
-      {fields.map((field, index) => (
-        <Stack key={field.id} p={2} borderRadius={5} position="relative">
-          <Flex gap={5}>
-            <Input bgColor={optionInputColor} type="text" name="name" placeholder="Name" icon={<NameIcon />} />
-            <Input bgColor={optionInputColor} type="text" name="value" placeholder="Value" icon={<ValueIcon />} />
-          </Flex>
 
-          <HStack position="absolute" right={3} top={0}>
-            {index > 0 && (
+      <Stack gap={2} data-testid="choices-list">
+        {fields.map((field, index) => (
+          <Stack key={field.id} p={2} borderRadius={5} position="relative">
+            <Flex gap={5}>
+              <Input bgColor={optionInputColor} type="text" name="name" placeholder="Name" icon={<NameIcon />} />
+              <Input bgColor={optionInputColor} type="text" name="value" placeholder="Value" icon={<ValueIcon />} />
+            </Flex>
+
+            <HStack position="absolute" right={3} top={0}>
+              {index > 0 && (
+                <IconButton
+                  data-testid={`${nestIndex}-choice-${index}-move-up`}
+                  variant="solid"
+                  colorScheme="yellow"
+                  aria-label="Move Up"
+                  onClick={() => move(index, index - 1)}
+                >
+                  <FiArrowUp />
+                </IconButton>
+              )}
+
+              {index + 1 < fields.length && (
+                <IconButton
+                  data-testid={`${nestIndex}-choice-${index}-move-down`}
+                  variant="solid"
+                  colorScheme="yellow"
+                  aria-label="Move Down"
+                  onClick={() => move(index, index + 1)}
+                >
+                  <FiArrowDown />
+                </IconButton>
+              )}
+
               <IconButton
-                data-testid={`${nestIndex}-choice-${index}-move-up`}
+                data-testid={`${nestIndex}-choice-${index}-remove`}
                 variant="solid"
-                colorScheme="yellow"
-                aria-label="Move Up"
-                onClick={() => move(index, index - 1)}
+                colorScheme="red"
+                aria-label="Add Option"
+                onClick={() => remove(index)}
               >
-                <FiArrowUp />
+                <FiTrash />
               </IconButton>
-            )}
-
-            {index + 1 < fields.length && (
-              <IconButton
-                data-testid={`${nestIndex}-choice-${index}-move-down`}
-                variant="solid"
-                colorScheme="yellow"
-                aria-label="Move Down"
-                onClick={() => move(index, index + 1)}
-              >
-                <FiArrowDown />
-              </IconButton>
-            )}
-
-            <IconButton
-              data-testid={`${nestIndex}-choice-${index}-remove`}
-              variant="solid"
-              colorScheme="red"
-              aria-label="Add Option"
-              onClick={() => remove(index)}
-            >
-              <FiTrash />
-            </IconButton>
-          </HStack>
-        </Stack>
-      ))}
+            </HStack>
+          </Stack>
+        ))}
+      </Stack>
     </>
   );
 };
