@@ -130,4 +130,17 @@ describe('Command Component', () => {
     const choicesList = await screen.findByTestId('choices-list');
     expect(choicesList.children).toHaveLength(1);
   });
+
+  test('should remove Command Choice on choice remove', async () => {
+    makeSut();
+    await waitFor(() => screen.getByTestId('command-content'));
+    await userEvent.click(screen.getByTestId('add-option'));
+    const optionsList = await screen.findByTestId('options-list');
+    await waitFor(() => optionsList);
+    await userEvent.click(screen.getByTestId('0-choice-add'));
+    const choicesList = await screen.findByTestId('choices-list');
+    expect(choicesList.children).toHaveLength(1);
+    await userEvent.click(screen.getByTestId('0-choice-0-remove'));
+    expect(choicesList.children).toHaveLength(0);
+  });
 });
