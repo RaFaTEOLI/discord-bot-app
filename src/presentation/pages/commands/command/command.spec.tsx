@@ -91,4 +91,18 @@ describe('Command Component', () => {
     await userEvent.click(screen.getByTestId('0-option-remove'));
     expect(optionsList.children).toHaveLength(0);
   });
+
+  test('should move down Command Option on option move down', async () => {
+    makeSut();
+    await waitFor(() => screen.getByTestId('command-content'));
+    await userEvent.click(screen.getByTestId('add-option'));
+    await userEvent.type(screen.getByTestId('options.0.name'), 'test');
+    await userEvent.click(screen.getByTestId('add-option'));
+    const optionsList = await screen.findByTestId('options-list');
+    await waitFor(() => optionsList);
+    await userEvent.click(screen.getByTestId('0-option-move-down'));
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const optionNameInput = screen.getByTestId('options.1.name') as HTMLInputElement;
+    expect(optionNameInput.value).toBe('test');
+  });
 });
