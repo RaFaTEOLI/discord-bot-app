@@ -1,78 +1,180 @@
-import { Content } from '@/presentation/components';
-import { Checkbox, Flex, Heading, Stack, chakra, useColorModeValue } from '@chakra-ui/react';
-import Input from '../components/input';
-import Select from '../components/select';
+import { Content, Loading } from '@/presentation/components';
+import { Checkbox, Flex, HStack, Heading, Stack, chakra, useColorModeValue } from '@chakra-ui/react';
+import { Choices, Input, Select, commandState } from './components';
 import { HiCommandLine, HiEnvelopeOpen, HiInformationCircle } from 'react-icons/hi2';
 import { useRecoilState } from 'recoil';
-import { commandState } from './atom';
 import { useFieldArray, useForm } from 'react-hook-form';
 import IconButton from '@/presentation/components/layout/components/icon-button';
-import { FiPlus, FiTrash } from 'react-icons/fi';
+import { FiArrowDown, FiArrowUp, FiPlus, FiTrash } from 'react-icons/fi';
+import { useEffect } from 'react';
+import { LoadCommandById, SaveCommand } from '@/domain/usecases';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { CommandModel, CommandOptionType } from '@/domain/models';
 
 const CommandsIcon = chakra(HiCommandLine);
 const DescriptionIcon = chakra(HiInformationCircle);
 const ResponseIcon = chakra(HiEnvelopeOpen);
 
-export default function Command(): JSX.Element {
+type Props = {
+  commandId: string;
+  loadCommandById: LoadCommandById;
+  saveCommand: SaveCommand;
+};
+
+const schema = yupResolver(
+  yup
+    .object()
+    .shape({
+      command: yup.string().min(2).max(25).required('Required field'),
+      description: yup.string().min(2).max(50).required('Required field'),
+      dispatcher: yup.string().required('Required field'),
+      type: yup.string().required('Required field'),
+      response: yup.string().max(255),
+      discordType: yup.string().required('Required field'),
+      options: yup.array().of(
+        yup.object({
+          name: yup.string().min(2).max(25).required('Required field'),
+          description: yup.string().min(2).max(50).required('Required field'),
+          type: yup.string().required('Required field'),
+          required: yup.boolean(),
+          choices: yup.array().of(
+            yup.object({
+              name: yup.string().required('Required field'),
+              value: yup.string().required('Required field')
+            })
+          )
+        })
+      )
+    })
+    .required()
+);
+
+export default function Command({ commandId, loadCommandById, saveCommand }: Props): JSX.Element {
   const optionColor = useColorModeValue('gray.100', 'gray.900');
-  const [state] = useRecoilState(commandState);
-  const { control, register, getValues } = useForm();
-  const { fields, append, prepend, remove, swap, move, insert } = useFieldArray({
-    control, // control props comes from useForm (optional: if you are using FormContext)
-    name: 'options' // unique name for your Field Array
+  const optionInputColor = useColorModeValue('white', 'gray.800');
+  const [state, setState] = useRecoilState(commandState);
+  const { control, register } = useForm<CommandModel>({ resolver: schema });
+  const { fields, append, remove, move } = useFieldArray({
+    control,
+    name: 'options'
   });
 
-  console.log(getValues());
+  useEffect(() => {
+    setState(prev => ({
+      ...prev,
+      register
+    }));
+  }, [register]);
+
+  useEffect(() => {
+    (async () => {
+      await loadCommandById.loadById(commandId);
+      setState(prev => ({ ...prev, isLoading: false }));
+    })();
+  }, [commandId]);
 
   return (
     <Content title="Command">
-      <Stack spacing={4} paddingRight={5}>
-        <Flex gap={2}>
-          <Input type="text" name="command" placeholder="Command" icon={<CommandsIcon />} />
-          <Input type="text" name="description" placeholder="Description" icon={<DescriptionIcon />} />
+      {state.isLoading ? (
+        <Flex alignItems="center" justifyContent="center">
+          <Loading />
         </Flex>
-        <Input type="text" name="response" placeholder="Response" icon={<ResponseIcon />} />
-        <Flex gap={2}>
-          <Select name="type" placeholder="Type" options={state.types} />
-          <Select name="dispatcher" placeholder="Dispatcher" options={state.dispatchers} />
-        </Flex>
-        <Heading size="md">Discord Properties</Heading>
-        <Select name="discordType" placeholder="Type" options={state.discordTypes} />
-        <Flex justifyContent="space-between">
-          <Heading size="sm">Options</Heading>
-          <IconButton
-            variant="solid"
-            colorScheme="blue"
-            aria-label="Add Option"
-            onClick={() => append({ name: '', type: '' })}
-          >
-            <FiPlus />
-          </IconButton>
-        </Flex>
-        {fields.map((field, index) => (
-          <Stack key={field.id} bgColor={optionColor} p={5} borderRadius={5} position="relative">
-            <Flex gap={5}>
-              <Input type="text" name={`options.${index}.name`} placeholder="Name" icon={<CommandsIcon />} />
-              <Select name={`options.${index}.type`} placeholder="Type" options={state.discordTypes} />
-              <IconButton
-                variant="solid"
-                colorScheme="red"
-                aria-label="Add Option"
-                onClick={() => remove(index)}
-                position="absolute"
-                right={4}
-                top={3}
-              >
-                <FiTrash />
-              </IconButton>
-            </Flex>
-            <Flex gap={5}>
-              <Checkbox>Required</Checkbox>
-              <Input type="text" name="description" placeholder="Description" icon={<DescriptionIcon />} />
-            </Flex>
+      ) : (
+        <Stack spacing={4} paddingRight={5} data-testid="command-content">
+          <Flex gap={2}>
+            <Input type="text" name="command" placeholder="Command" icon={<CommandsIcon />} />
+            <Input type="text" name="description" placeholder="Description" icon={<DescriptionIcon />} />
+          </Flex>
+          <Input type="text" name="response" placeholder="Response" icon={<ResponseIcon />} />
+          <Flex gap={2}>
+            <Select name="type" placeholder="Type" options={state.types} />
+            <Select name="dispatcher" placeholder="Dispatcher" options={state.dispatchers} />
+          </Flex>
+          <Heading size="md">Discord Properties</Heading>
+          <Select name="discordType" placeholder="Type" options={state.discordTypes} />
+          <Flex justifyContent="space-between">
+            <Heading size="sm">Options</Heading>
+            <IconButton
+              data-testid="add-option"
+              variant="solid"
+              colorScheme="blue"
+              aria-label="Add Option"
+              onClick={() => append({ name: '', type: CommandOptionType.SUB_COMMAND, description: '', required: false })}
+            >
+              <FiPlus />
+            </IconButton>
+          </Flex>
+
+          <Stack gap={2} data-testid="options-list">
+            {fields.map((field, index) => (
+              <Stack key={field.id} bgColor={optionColor} p={5} borderRadius={5} position="relative">
+                <Flex gap={5}>
+                  <Input
+                    bgColor={optionInputColor}
+                    type="text"
+                    name={`options.${index}.name`}
+                    placeholder="Name"
+                    icon={<CommandsIcon />}
+                  />
+                  <Select
+                    bgColor={optionInputColor}
+                    name={`options.${index}.type`}
+                    placeholder="Type"
+                    options={state.discordTypes}
+                  />
+                  <HStack position="absolute" right={4} top={3}>
+                    {index > 0 && (
+                      <IconButton
+                        data-testid={`${index}-option-move-up`}
+                        variant="solid"
+                        colorScheme="yellow"
+                        aria-label="Move Up"
+                        onClick={() => move(index, index - 1)}
+                      >
+                        <FiArrowUp />
+                      </IconButton>
+                    )}
+
+                    {index + 1 < fields.length && (
+                      <IconButton
+                        data-testid={`${index}-option-move-down`}
+                        variant="solid"
+                        colorScheme="yellow"
+                        aria-label="Move Down"
+                        onClick={() => move(index, index + 1)}
+                      >
+                        <FiArrowDown />
+                      </IconButton>
+                    )}
+
+                    <IconButton
+                      data-testid={`${index}-option-remove`}
+                      variant="solid"
+                      colorScheme="red"
+                      aria-label="Remove Option"
+                      onClick={() => remove(index)}
+                    >
+                      <FiTrash />
+                    </IconButton>
+                  </HStack>
+                </Flex>
+                <Flex gap={5} justifyContent="space-between">
+                  <Input
+                    bgColor={optionInputColor}
+                    type="text"
+                    name="description"
+                    placeholder="Description"
+                    icon={<DescriptionIcon />}
+                  />
+                  <Checkbox>Required</Checkbox>
+                </Flex>
+                <Choices optionInputColor={optionInputColor} control={control} nestIndex={index} />
+              </Stack>
+            ))}
           </Stack>
-        ))}
-      </Stack>
+        </Stack>
+      )}
     </Content>
   );
 }
