@@ -119,4 +119,15 @@ describe('Command Component', () => {
     const optionNameInput = screen.getByTestId('options.0.name') as HTMLInputElement;
     expect(optionNameInput.value).toBe('test');
   });
+
+  test('should add Command Choice on choice add', async () => {
+    makeSut();
+    await waitFor(() => screen.getByTestId('command-content'));
+    await userEvent.click(screen.getByTestId('add-option'));
+    const optionsList = await screen.findByTestId('options-list');
+    await waitFor(() => optionsList);
+    await userEvent.click(screen.getByTestId('0-choice-add'));
+    const choicesList = await screen.findByTestId('choices-list');
+    expect(choicesList.children).toHaveLength(1);
+  });
 });
