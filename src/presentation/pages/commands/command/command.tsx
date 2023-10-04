@@ -1,11 +1,11 @@
 import { Content, Loading } from '@/presentation/components';
-import { Checkbox, Flex, HStack, Heading, Stack, chakra, useColorModeValue, useToast } from '@chakra-ui/react';
-import { Choices, Input, Select, commandState } from './components';
+import { Checkbox, Flex, HStack, Heading, Stack, chakra, useColorModeValue, useToast, Divider } from '@chakra-ui/react';
+import { Choices, Input, Select, commandState, SubmitButton } from './components';
 import { HiCommandLine, HiEnvelopeOpen, HiInformationCircle } from 'react-icons/hi2';
 import { useRecoilState } from 'recoil';
 import { useFieldArray, useForm } from 'react-hook-form';
 import IconButton from '@/presentation/components/layout/components/icon-button';
-import { FiArrowDown, FiArrowUp, FiPlus, FiTrash } from 'react-icons/fi';
+import { FiArrowDown, FiArrowUp, FiCheck, FiPlus, FiTrash } from 'react-icons/fi';
 import { useEffect } from 'react';
 import { LoadCommandById, SaveCommand } from '@/domain/usecases';
 import * as yup from 'yup';
@@ -17,6 +17,7 @@ import { AccessTokenExpiredError, AccessDeniedError } from '@/domain/errors';
 const CommandsIcon = chakra(HiCommandLine);
 const DescriptionIcon = chakra(HiInformationCircle);
 const ResponseIcon = chakra(HiEnvelopeOpen);
+const CheckIcon = chakra(FiCheck);
 
 type Props = {
   commandId: string;
@@ -56,7 +57,13 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
   const optionColor = useColorModeValue('gray.100', 'gray.900');
   const optionInputColor = useColorModeValue('white', 'gray.800');
   const [state, setState] = useRecoilState(commandState);
-  const { control, register, reset } = useForm<CommandModel>({ resolver: schema });
+  const {
+    control,
+    register,
+    reset,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<CommandModel>({ resolver: schema });
   const { fields, append, remove, move } = useFieldArray({
     control,
     name: 'options'
@@ -70,9 +77,10 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
   useEffect(() => {
     setState(prev => ({
       ...prev,
-      register
+      register,
+      errors
     }));
-  }, [register, state.command]);
+  }, [register, errors, state.command]);
 
   const setCommand = (command: LoadCommandById.Model): void => {
     setState(prev => ({ ...prev, command }));
@@ -110,6 +118,27 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
     })();
   }, [commandId]);
 
+  const onSubmit = handleSubmit(async data => {
+    try {
+      setState(prev => ({ ...prev, isLoading: true }));
+      const { id, ...dataValues } = data;
+      const params = state.command.id ? Object.assign({}, dataValues, { id: state.command.id }) : dataValues;
+      await saveCommand.save(params);
+      toast({
+        title: 'Saved Command',
+        description: 'Your command was successfully saved',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
+    } catch (error: any) {
+      handleError(error);
+    } finally {
+      setState(prev => ({ ...prev, reload: true }));
+    }
+  });
+
   return (
     <Content title="Command">
       {state.isLoading ? (
@@ -117,99 +146,106 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
           <Loading />
         </Flex>
       ) : (
-        <Stack spacing={4} paddingRight={5} data-testid="command-content">
-          <Flex gap={2}>
-            <Input type="text" name="command" placeholder="Command" icon={<CommandsIcon />} />
-            <Input type="text" name="description" placeholder="Description" icon={<DescriptionIcon />} />
-          </Flex>
-          <Input type="text" name="response" placeholder="Response" icon={<ResponseIcon />} />
-          <Flex gap={2}>
-            <Select name="type" placeholder="Type" options={state.types} />
-            <Select name="dispatcher" placeholder="Dispatcher" options={state.dispatchers} />
-          </Flex>
-          <Heading size="md">Discord Properties</Heading>
-          <Select name="discordType" placeholder="Type" options={state.discordTypes} />
-          <Flex justifyContent="space-between">
-            <Heading size="sm">Options</Heading>
-            <IconButton
-              data-testid="add-option"
-              variant="solid"
-              colorScheme="blue"
-              aria-label="Add Option"
-              onClick={() => append({ name: '', type: CommandOptionType.SUB_COMMAND, description: '', required: false })}
-            >
-              <FiPlus />
-            </IconButton>
-          </Flex>
+        <form data-testid="form" onSubmit={onSubmit}>
+          <Stack spacing={4} paddingRight={5} data-testid="command-content">
+            <Flex gap={2}>
+              <Input type="text" name="command" placeholder="Command" icon={<CommandsIcon />} />
+              <Input type="text" name="description" placeholder="Description" icon={<DescriptionIcon />} />
+            </Flex>
+            <Input type="text" name="response" placeholder="Response" icon={<ResponseIcon />} />
+            <Flex gap={2}>
+              <Select name="type" placeholder="Type" options={state.types} />
+              <Select name="dispatcher" placeholder="Dispatcher" options={state.dispatchers} />
+            </Flex>
+            <Heading size="md">Discord Properties</Heading>
+            <Select name="discordType" placeholder="Type" options={state.discordTypes} />
+            <Flex justifyContent="space-between">
+              <Heading size="sm">Options</Heading>
+              <IconButton
+                data-testid="add-option"
+                variant="solid"
+                colorScheme="blue"
+                aria-label="Add Option"
+                onClick={() => append({ name: '', type: CommandOptionType.SUB_COMMAND, description: '', required: false })}
+              >
+                <FiPlus />
+              </IconButton>
+            </Flex>
 
-          <Stack gap={2} data-testid="options-list">
-            {fields.map((field, index) => (
-              <Stack key={field.id} bgColor={optionColor} p={5} borderRadius={5} position="relative">
-                <Flex gap={5}>
-                  <Input
-                    bgColor={optionInputColor}
-                    type="text"
-                    name={`options.${index}.name`}
-                    placeholder="Name"
-                    icon={<CommandsIcon />}
-                  />
-                  <Select
-                    bgColor={optionInputColor}
-                    name={`options.${index}.type`}
-                    placeholder="Type"
-                    options={state.discordTypes}
-                  />
-                  <HStack position="absolute" right={4} top={3}>
-                    {index > 0 && (
+            <Stack gap={2} data-testid="options-list">
+              {fields.map((field, index) => (
+                <Stack key={field.id} bgColor={optionColor} p={5} borderRadius={5} position="relative">
+                  <Flex gap={5}>
+                    <Input
+                      bgColor={optionInputColor}
+                      type="text"
+                      name={`options.${index}.name`}
+                      placeholder="Name"
+                      icon={<CommandsIcon />}
+                    />
+                    <Select
+                      bgColor={optionInputColor}
+                      name={`options.${index}.type`}
+                      placeholder="Type"
+                      options={state.discordTypes}
+                    />
+                    <HStack position="absolute" right={4} top={3}>
+                      {index > 0 && (
+                        <IconButton
+                          data-testid={`${index}-option-move-up`}
+                          variant="solid"
+                          colorScheme="yellow"
+                          aria-label="Move Up"
+                          onClick={() => move(index, index - 1)}
+                        >
+                          <FiArrowUp />
+                        </IconButton>
+                      )}
+
+                      {index + 1 < fields.length && (
+                        <IconButton
+                          data-testid={`${index}-option-move-down`}
+                          variant="solid"
+                          colorScheme="yellow"
+                          aria-label="Move Down"
+                          onClick={() => move(index, index + 1)}
+                        >
+                          <FiArrowDown />
+                        </IconButton>
+                      )}
+
                       <IconButton
-                        data-testid={`${index}-option-move-up`}
+                        data-testid={`${index}-option-remove`}
                         variant="solid"
-                        colorScheme="yellow"
-                        aria-label="Move Up"
-                        onClick={() => move(index, index - 1)}
+                        colorScheme="red"
+                        aria-label="Remove Option"
+                        onClick={() => remove(index)}
                       >
-                        <FiArrowUp />
+                        <FiTrash />
                       </IconButton>
-                    )}
+                    </HStack>
+                  </Flex>
+                  <Flex gap={5} justifyContent="space-between">
+                    <Input
+                      bgColor={optionInputColor}
+                      type="text"
+                      name={`options.${index}.description`}
+                      placeholder="Description"
+                      icon={<DescriptionIcon />}
+                    />
+                    <Checkbox>Required</Checkbox>
+                  </Flex>
+                  <Choices optionInputColor={optionInputColor} control={control} nestIndex={index} />
+                </Stack>
+              ))}
+            </Stack>
 
-                    {index + 1 < fields.length && (
-                      <IconButton
-                        data-testid={`${index}-option-move-down`}
-                        variant="solid"
-                        colorScheme="yellow"
-                        aria-label="Move Down"
-                        onClick={() => move(index, index + 1)}
-                      >
-                        <FiArrowDown />
-                      </IconButton>
-                    )}
-
-                    <IconButton
-                      data-testid={`${index}-option-remove`}
-                      variant="solid"
-                      colorScheme="red"
-                      aria-label="Remove Option"
-                      onClick={() => remove(index)}
-                    >
-                      <FiTrash />
-                    </IconButton>
-                  </HStack>
-                </Flex>
-                <Flex gap={5} justifyContent="space-between">
-                  <Input
-                    bgColor={optionInputColor}
-                    type="text"
-                    name="description"
-                    placeholder="Description"
-                    icon={<DescriptionIcon />}
-                  />
-                  <Checkbox>Required</Checkbox>
-                </Flex>
-                <Choices optionInputColor={optionInputColor} control={control} nestIndex={index} />
-              </Stack>
-            ))}
+            <Divider />
+            <Flex>
+              <SubmitButton text="Save" icon={<CheckIcon />} />
+            </Flex>
           </Stack>
-        </Stack>
+        </form>
       )}
     </Content>
   );
