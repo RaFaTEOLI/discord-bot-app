@@ -1,4 +1,4 @@
-import { renderWithHistory } from '@/presentation/mocks';
+import { Helper, renderWithHistory } from '@/presentation/mocks';
 import { screen, waitFor } from '@testing-library/react';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import Command from './command';
@@ -7,6 +7,8 @@ import { SaveCommandSpy, LoadCommandByIdSpy, mockCommandModel } from '@/domain/m
 import { faker } from '@faker-js/faker';
 import userEvent from '@testing-library/user-event';
 import { AccessDeniedError, AccessTokenExpiredError } from '@/domain/errors';
+import { setTimeout } from 'timers/promises';
+import { commandState, types, dispatchers, discordTypes } from './components';
 
 const mockToast = jest.fn();
 jest.mock('@chakra-ui/react', () => {
@@ -26,23 +28,69 @@ type SutTypes = {
   setCurrentAccountMock: (account: AccountModel) => void;
 };
 
+const simulateInvalidSubmit = async (): Promise<void> => {
+  const submitButton = screen.getByTestId('submit');
+  await userEvent.click(submitButton);
+};
+
+type Override = {
+  commandId?: string;
+  loadCommandByIdSpy?: LoadCommandByIdSpy;
+  saveCommandSpy?: SaveCommandSpy;
+  adminUser?: boolean;
+  invalidForm?: boolean;
+};
+
 const history = createMemoryHistory({ initialEntries: ['/commands/1'] });
-const makeSut = (
-  commandId = faker.datatype.uuid(),
-  loadCommandByIdSpy = new LoadCommandByIdSpy(),
-  saveCommandSpy = new SaveCommandSpy(),
-  adminUser = false
-): SutTypes => {
+const makeSut = (override?: Override): SutTypes => {
+  const commandId = override?.commandId ?? faker.datatype.uuid();
+  const loadCommandByIdSpy = override?.loadCommandByIdSpy ?? new LoadCommandByIdSpy();
+  const saveCommandSpy = override?.saveCommandSpy ?? new SaveCommandSpy();
+  const invalidForm = override?.invalidForm ?? false;
+
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
-    adminUser,
+    adminUser: override?.adminUser ?? false,
     Page: () =>
       Command({
         commandId,
         loadCommandById: loadCommandByIdSpy,
         saveCommand: saveCommandSpy
-      })
+      }),
+    ...(invalidForm && {
+      states: [
+        {
+          atom: commandState,
+          value: {
+            reload: false,
+            isLoading: false,
+            command: { id: '', command: '', description: '', type: '', dispatcher: '', response: '' },
+            types,
+            dispatchers,
+            discordTypes,
+            disabledForm: false,
+            errors: {
+              command: {
+                message: 'command must be at least 2 characters'
+              },
+              description: {
+                message: 'description must be at least 2 characters'
+              },
+              type: {
+                message: 'Required field'
+              },
+              dispatcher: {
+                message: 'Required field'
+              },
+              discordType: {
+                message: 'Required field'
+              }
+            }
+          }
+        }
+      ]
+    })
   });
   return {
     commandId,
@@ -97,7 +145,7 @@ describe('Command Component', () => {
     const { options, ...commandModel } = mockCommandModel();
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
     jest.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
-    makeSut(faker.datatype.uuid(), loadCommandByIdSpy);
+    makeSut({ loadCommandByIdSpy });
     await waitFor(() => screen.getByTestId('command-content'));
     await userEvent.click(screen.getByTestId('add-option'));
     await userEvent.type(screen.getByTestId('options.0.name'), 'test');
@@ -181,7 +229,7 @@ describe('Command Component', () => {
   test('should call toast with error if LoadCommandById fails', async () => {
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
     jest.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new Error());
-    makeSut(faker.datatype.uuid(), loadCommandByIdSpy);
+    makeSut({ loadCommandByIdSpy });
     await waitFor(() => screen.getByTestId('command-content'));
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Server Error',
@@ -196,7 +244,7 @@ describe('Command Component', () => {
   test('should show error toast on AccessDeniedError on LoadCommandById and send it to login', async () => {
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
     jest.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new AccessDeniedError());
-    const { setCurrentAccountMock, history } = makeSut(faker.datatype.uuid(), loadCommandByIdSpy);
+    const { setCurrentAccountMock, history } = makeSut({ loadCommandByIdSpy });
     await waitFor(() => screen.getByRole('heading'));
     expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
     expect(history.location.pathname).toBe('/login');
@@ -212,7 +260,7 @@ describe('Command Component', () => {
   test('should show error toast on AccessTokenExpiredError on LoadCommandById and send it to login', async () => {
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
     jest.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new AccessTokenExpiredError());
-    const { setCurrentAccountMock, history } = makeSut(faker.datatype.uuid(), loadCommandByIdSpy);
+    const { setCurrentAccountMock, history } = makeSut({ loadCommandByIdSpy });
     await waitFor(() => screen.getByRole('heading'));
     expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
     expect(history.location.pathname).toBe('/login');
@@ -223,5 +271,26 @@ describe('Command Component', () => {
       duration: 9000,
       isClosable: true
     });
+  });
+
+  test('should show form errors', async () => {
+    makeSut({ commandId: 'new', invalidForm: true });
+    await waitFor(() => screen.getByTestId('command-content'));
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    expect(commandForm).toBeInTheDocument();
+    await simulateInvalidSubmit();
+    await setTimeout(1500);
+    Helper.testStatusForField('command', 'command must be at least 2 characters');
+    Helper.testStatusForField('description', 'description must be at least 2 characters');
+    Helper.testStatusForField('type', 'Required field');
+    Helper.testStatusForField('dispatcher', 'Required field');
+    Helper.testStatusForField('discordType', 'Required field');
+  });
+
+  test('should not call LoadCommandById if it is a new', async () => {
+    const { loadCommandByIdSpy } = makeSut({ commandId: 'new' });
+    await waitFor(() => screen.getByTestId('command-content'));
+    expect(loadCommandByIdSpy.callsCount).toBe(0);
   });
 });
