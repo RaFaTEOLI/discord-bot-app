@@ -1,5 +1,5 @@
 import { Content, Loading } from '@/presentation/components';
-import { Checkbox, Flex, HStack, Heading, Stack, chakra, useColorModeValue } from '@chakra-ui/react';
+import { Checkbox, Flex, HStack, Heading, Stack, chakra, useColorModeValue, useToast } from '@chakra-ui/react';
 import { Choices, Input, Select, commandState } from './components';
 import { HiCommandLine, HiEnvelopeOpen, HiInformationCircle } from 'react-icons/hi2';
 import { useRecoilState } from 'recoil';
@@ -60,6 +60,8 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
     name: 'options'
   });
 
+  const toast = useToast();
+
   useEffect(() => {
     setState(prev => ({
       ...prev,
@@ -69,8 +71,20 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
 
   useEffect(() => {
     (async () => {
-      await loadCommandById.loadById(commandId);
-      setState(prev => ({ ...prev, isLoading: false }));
+      try {
+        await loadCommandById.loadById(commandId);
+      } catch (error: any) {
+        toast({
+          title: 'Error',
+          description: 'There was an error while trying to load your command',
+          status: 'success',
+          duration: 9000,
+          isClosable: true,
+          position: 'top'
+        });
+      } finally {
+        setState(prev => ({ ...prev, isLoading: false }));
+      }
     })();
   }, [commandId]);
 
