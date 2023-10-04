@@ -148,6 +148,36 @@ describe('Command Component', () => {
     expect(choicesList.children).toHaveLength(0);
   });
 
+  test('should move up Command Choice on option move down', async () => {
+    makeSut();
+    await waitFor(() => screen.getByTestId('command-content'));
+    await userEvent.click(screen.getByTestId('add-option'));
+    const optionsList = await screen.findByTestId('options-list');
+    await waitFor(() => optionsList);
+    await userEvent.click(screen.getByTestId('0-choice-add'));
+    await userEvent.click(screen.getByTestId('0-choice-add'));
+    await userEvent.type(screen.getByTestId('options[0].choices.0.name'), 'test');
+    await userEvent.click(screen.getByTestId('0-choice-0-move-down'));
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const optionNameInput = screen.getByTestId('options[0].choices.1.name') as HTMLInputElement;
+    expect(optionNameInput.value).toBe('test');
+  });
+
+  test('should move up Command Choice on option move up', async () => {
+    makeSut();
+    await waitFor(() => screen.getByTestId('command-content'));
+    await userEvent.click(screen.getByTestId('add-option'));
+    const optionsList = await screen.findByTestId('options-list');
+    await waitFor(() => optionsList);
+    await userEvent.click(screen.getByTestId('0-choice-add'));
+    await userEvent.click(screen.getByTestId('0-choice-add'));
+    await userEvent.type(screen.getByTestId('options[0].choices.1.name'), 'test');
+    await userEvent.click(screen.getByTestId('0-choice-1-move-up'));
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const optionNameInput = screen.getByTestId('options[0].choices.0.name') as HTMLInputElement;
+    expect(optionNameInput.value).toBe('test');
+  });
+
   test('should call toast with error if LoadCommandById fails', async () => {
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
     jest.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new Error());
