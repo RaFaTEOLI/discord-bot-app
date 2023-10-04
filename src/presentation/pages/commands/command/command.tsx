@@ -56,7 +56,7 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
   const optionColor = useColorModeValue('gray.100', 'gray.900');
   const optionInputColor = useColorModeValue('white', 'gray.800');
   const [state, setState] = useRecoilState(commandState);
-  const { control, register } = useForm<CommandModel>({ resolver: schema });
+  const { control, register, reset } = useForm<CommandModel>({ resolver: schema });
   const { fields, append, remove, move } = useFieldArray({
     control,
     name: 'options'
@@ -72,12 +72,18 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
       ...prev,
       register
     }));
-  }, [register]);
+  }, [register, state.command]);
+
+  const setCommand = (command: LoadCommandById.Model): void => {
+    setState(prev => ({ ...prev, command }));
+    reset(command);
+  };
 
   useEffect(() => {
     (async () => {
       try {
-        await loadCommandById.loadById(commandId);
+        const command = await loadCommandById.loadById(commandId);
+        setCommand(command);
       } catch (error: any) {
         if (error instanceof AccessTokenExpiredError || error instanceof AccessDeniedError) {
           toast({

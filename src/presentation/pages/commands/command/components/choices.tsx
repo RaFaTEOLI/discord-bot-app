@@ -36,7 +36,7 @@ const Choices = ({ nestIndex, control, optionInputColor }: Props): JSX.Element =
       </Flex>
       <Divider />
 
-      <Stack gap={2} data-testid="choices-list">
+      <Stack gap={2} data-testid={`${nestIndex}-choices-list`}>
         {fields.map((field, index) => (
           <Stack key={field.id} p={2} borderRadius={5} position="relative">
             <Flex gap={5}>
