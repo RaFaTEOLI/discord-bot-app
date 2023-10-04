@@ -3,7 +3,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import Command from './command';
 import { AccountModel } from '@/domain/models';
-import { SaveCommandSpy, LoadCommandByIdSpy } from '@/domain/mocks';
+import { SaveCommandSpy, LoadCommandByIdSpy, mockCommandModel } from '@/domain/mocks';
 import { faker } from '@faker-js/faker';
 import userEvent from '@testing-library/user-event';
 import { AccessDeniedError, AccessTokenExpiredError } from '@/domain/errors';
@@ -79,7 +79,7 @@ describe('Command Component', () => {
     await userEvent.click(screen.getByTestId('add-option'));
     const optionsList = await screen.findByTestId('options-list');
     await waitFor(() => optionsList);
-    expect(optionsList.children).toHaveLength(1);
+    expect(optionsList.children).toHaveLength(2);
   });
 
   test('should remove Command Option on option remove', async () => {
@@ -88,13 +88,16 @@ describe('Command Component', () => {
     await userEvent.click(screen.getByTestId('add-option'));
     const optionsList = await screen.findByTestId('options-list');
     await waitFor(() => optionsList);
-    expect(optionsList.children).toHaveLength(1);
+    expect(optionsList.children).toHaveLength(2);
     await userEvent.click(screen.getByTestId('0-option-remove'));
-    expect(optionsList.children).toHaveLength(0);
+    expect(optionsList.children).toHaveLength(1);
   });
 
   test('should move down Command Option on option move down', async () => {
-    makeSut();
+    const { options, ...commandModel } = mockCommandModel();
+    const loadCommandByIdSpy = new LoadCommandByIdSpy();
+    jest.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
+    makeSut(faker.datatype.uuid(), loadCommandByIdSpy);
     await waitFor(() => screen.getByTestId('command-content'));
     await userEvent.click(screen.getByTestId('add-option'));
     await userEvent.type(screen.getByTestId('options.0.name'), 'test');
@@ -128,7 +131,7 @@ describe('Command Component', () => {
     const optionsList = await screen.findByTestId('options-list');
     await waitFor(() => optionsList);
     await userEvent.click(screen.getByTestId('0-choice-add'));
-    const choicesList = await screen.findByTestId('choices-list');
+    const choicesList = await screen.findByTestId('0-choices-list');
     expect(choicesList.children).toHaveLength(1);
   });
 
@@ -139,7 +142,7 @@ describe('Command Component', () => {
     const optionsList = await screen.findByTestId('options-list');
     await waitFor(() => optionsList);
     await userEvent.click(screen.getByTestId('0-choice-add'));
-    const choicesList = await screen.findByTestId('choices-list');
+    const choicesList = await screen.findByTestId('0-choices-list');
     expect(choicesList.children).toHaveLength(1);
     await userEvent.click(screen.getByTestId('0-choice-0-remove'));
     expect(choicesList.children).toHaveLength(0);
