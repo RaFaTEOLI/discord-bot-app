@@ -11,6 +11,8 @@ import { LoadCommandById, SaveCommand } from '@/domain/usecases';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CommandModel, CommandOptionType } from '@/domain/models';
+import { useErrorHandler } from '@/presentation/hooks';
+import { AccessTokenExpiredError, AccessDeniedError } from '@/domain/errors';
 
 const CommandsIcon = chakra(HiCommandLine);
 const DescriptionIcon = chakra(HiInformationCircle);
@@ -60,6 +62,9 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
     name: 'options'
   });
 
+  // eslint-disable-next-line n/handle-callback-err
+  const handleError = useErrorHandler((error: Error) => {});
+
   const toast = useToast();
 
   useEffect(() => {
@@ -74,14 +79,25 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
       try {
         await loadCommandById.loadById(commandId);
       } catch (error: any) {
-        toast({
-          title: 'Error',
-          description: 'There was an error while trying to load your command',
-          status: 'success',
-          duration: 9000,
-          isClosable: true,
-          position: 'top'
-        });
+        if (error instanceof AccessTokenExpiredError || error instanceof AccessDeniedError) {
+          toast({
+            title: 'Access Denied',
+            description: 'Your login has expired, please log in again!',
+            status: 'error',
+            duration: 9000,
+            isClosable: true
+          });
+        } else {
+          toast({
+            title: 'Server Error',
+            description: 'There was an error while trying to load your command',
+            status: 'success',
+            duration: 9000,
+            isClosable: true,
+            position: 'top'
+          });
+        }
+        handleError(error);
       } finally {
         setState(prev => ({ ...prev, isLoading: false }));
       }
