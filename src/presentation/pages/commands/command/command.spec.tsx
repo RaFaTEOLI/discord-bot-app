@@ -2,11 +2,11 @@ import { Helper, renderWithHistory } from '@/presentation/mocks';
 import { screen, waitFor } from '@testing-library/react';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import Command from './command';
-import { AccountModel } from '@/domain/models';
-import { SaveCommandSpy, LoadCommandByIdSpy, mockCommandModel } from '@/domain/mocks';
+import { AccountModel, CommandModel } from '@/domain/models';
+import { SaveCommandSpy, LoadCommandByIdSpy, mockCommandModel, mockSaveCommandParams } from '@/domain/mocks';
 import { faker } from '@faker-js/faker';
 import userEvent from '@testing-library/user-event';
-import { AccessDeniedError, AccessTokenExpiredError } from '@/domain/errors';
+import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
 import { setTimeout } from 'timers/promises';
 import { commandState, types, dispatchers, discordTypes } from './components';
 
@@ -39,6 +39,18 @@ type Override = {
   saveCommandSpy?: SaveCommandSpy;
   adminUser?: boolean;
   invalidForm?: boolean;
+};
+
+const simulateValidSubmit = async (withId = false): Promise<Omit<CommandModel, 'id'>> => {
+  const formValues = withId ? mockCommandModel() : mockSaveCommandParams();
+  const submitButton = screen.getByTestId('submit');
+  await Helper.asyncPopulateField('command', formValues.command);
+  await Helper.asyncPopulateField('description', formValues.description);
+  await Helper.asyncPopulateField('dispatcher', formValues.dispatcher, true);
+  await Helper.asyncPopulateField('type', formValues.type, true);
+  await Helper.asyncPopulateField('response', formValues.response);
+  await userEvent.click(submitButton);
+  return formValues;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/commands/1'] });
@@ -292,5 +304,26 @@ describe('Command Component', () => {
     const { loadCommandByIdSpy } = makeSut({ commandId: 'new' });
     await waitFor(() => screen.getByTestId('command-content'));
     expect(loadCommandByIdSpy.callsCount).toBe(0);
+  });
+
+  test('should render error on UnexpectedError on SaveCommand', async () => {
+    const saveCommandSpy = new SaveCommandSpy();
+    const error = new UnexpectedError();
+    jest.spyOn(saveCommandSpy, 'save').mockRejectedValueOnce(error);
+    makeSut({ saveCommandSpy });
+    await waitFor(() => screen.getByTestId('command-content'));
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    expect(commandForm).toBeInTheDocument();
+    await simulateValidSubmit();
+    await setTimeout(500);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Server Error',
+      description: 'There was an error while trying to load your command',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
   });
 });
