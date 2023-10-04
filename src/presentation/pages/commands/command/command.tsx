@@ -90,8 +90,10 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
   useEffect(() => {
     (async () => {
       try {
-        const command = await loadCommandById.loadById(commandId);
-        setCommand(command);
+        if (commandId !== 'new') {
+          const command = await loadCommandById.loadById(commandId);
+          setCommand(command);
+        }
       } catch (error: any) {
         if (error instanceof AccessTokenExpiredError || error instanceof AccessDeniedError) {
           toast({
