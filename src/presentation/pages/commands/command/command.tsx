@@ -85,6 +85,11 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
   const setCommand = (command: LoadCommandById.Model): void => {
     setState(prev => ({ ...prev, command }));
     reset(command);
+    if (command.type === 'action') {
+      setState(prev => ({ ...prev, disabledForm: true }));
+    } else {
+      setState(prev => ({ ...prev, disabledForm: false }));
+    }
   };
 
   useEffect(() => {
@@ -118,7 +123,7 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
         setState(prev => ({ ...prev, isLoading: false }));
       }
     })();
-  }, [commandId]);
+  }, [commandId, state.reload]);
 
   const onSubmit = handleSubmit(async data => {
     try {
@@ -134,10 +139,17 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
         isClosable: true,
         position: 'top'
       });
-    } catch (error: any) {
-      handleError(error);
-    } finally {
       setState(prev => ({ ...prev, reload: true }));
+    } catch (error: any) {
+      toast({
+        title: 'Server Error',
+        description: 'There was an error while trying to load your command',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
+      handleError(error);
     }
   });
 
