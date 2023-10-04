@@ -6,6 +6,7 @@ import { AccountModel } from '@/domain/models';
 import { SaveCommandSpy, LoadCommandByIdSpy } from '@/domain/mocks';
 import { faker } from '@faker-js/faker';
 import userEvent from '@testing-library/user-event';
+import { AccessDeniedError, AccessTokenExpiredError } from '@/domain/errors';
 
 const mockToast = jest.fn();
 jest.mock('@chakra-ui/react', () => {
@@ -150,12 +151,44 @@ describe('Command Component', () => {
     makeSut(faker.datatype.uuid(), loadCommandByIdSpy);
     await waitFor(() => screen.getByTestId('command-content'));
     expect(mockToast).toHaveBeenCalledWith({
-      title: 'Error',
+      title: 'Server Error',
       description: 'There was an error while trying to load your command',
       status: 'success',
       duration: 9000,
       isClosable: true,
       position: 'top'
+    });
+  });
+
+  test('should show error toast on AccessDeniedError on LoadCommandById and send it to login', async () => {
+    const loadCommandByIdSpy = new LoadCommandByIdSpy();
+    jest.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new AccessDeniedError());
+    const { setCurrentAccountMock, history } = makeSut(faker.datatype.uuid(), loadCommandByIdSpy);
+    await waitFor(() => screen.getByRole('heading'));
+    expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
+    expect(history.location.pathname).toBe('/login');
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Access Denied',
+      description: 'Your login has expired, please log in again!',
+      status: 'error',
+      duration: 9000,
+      isClosable: true
+    });
+  });
+
+  test('should show error toast on AccessTokenExpiredError on LoadCommandById and send it to login', async () => {
+    const loadCommandByIdSpy = new LoadCommandByIdSpy();
+    jest.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new AccessTokenExpiredError());
+    const { setCurrentAccountMock, history } = makeSut(faker.datatype.uuid(), loadCommandByIdSpy);
+    await waitFor(() => screen.getByRole('heading'));
+    expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
+    expect(history.location.pathname).toBe('/login');
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Access Denied',
+      description: 'Your login has expired, please log in again!',
+      status: 'error',
+      duration: 9000,
+      isClosable: true
     });
   });
 });
