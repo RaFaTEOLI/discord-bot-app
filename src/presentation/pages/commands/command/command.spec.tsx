@@ -143,4 +143,19 @@ describe('Command Component', () => {
     await userEvent.click(screen.getByTestId('0-choice-0-remove'));
     expect(choicesList.children).toHaveLength(0);
   });
+
+  test('should call toast with error if LoadCommandById fails', async () => {
+    const loadCommandByIdSpy = new LoadCommandByIdSpy();
+    jest.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new Error());
+    makeSut(faker.datatype.uuid(), loadCommandByIdSpy);
+    await waitFor(() => screen.getByTestId('command-content'));
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Error',
+      description: 'There was an error while trying to load your command',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
+  });
 });
