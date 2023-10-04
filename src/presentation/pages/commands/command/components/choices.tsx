@@ -40,8 +40,20 @@ const Choices = ({ nestIndex, control, optionInputColor }: Props): JSX.Element =
         {fields.map((field, index) => (
           <Stack key={field.id} p={2} borderRadius={5} position="relative">
             <Flex gap={5}>
-              <Input bgColor={optionInputColor} type="text" name="name" placeholder="Name" icon={<NameIcon />} />
-              <Input bgColor={optionInputColor} type="text" name="value" placeholder="Value" icon={<ValueIcon />} />
+              <Input
+                bgColor={optionInputColor}
+                type="text"
+                name={`options[${nestIndex}].choices.${index}.name`}
+                placeholder="Name"
+                icon={<NameIcon />}
+              />
+              <Input
+                bgColor={optionInputColor}
+                type="text"
+                name={`options[${nestIndex}].choices.${index}.value`}
+                placeholder="Value"
+                icon={<ValueIcon />}
+              />
             </Flex>
 
             <HStack position="absolute" right={3} top={0}>
