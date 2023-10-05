@@ -154,7 +154,7 @@ describe('Command Component', () => {
   });
 
   test('should move down Command Option on option move down', async () => {
-    const { options, ...commandModel } = mockCommandModel();
+    const { options, ...commandModel } = mockCommandModel(faker.helpers.arrayElement(['music', 'message']));
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
     jest.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
     makeSut({ loadCommandByIdSpy });
@@ -171,7 +171,10 @@ describe('Command Component', () => {
   });
 
   test('should move up Command Option on option move up', async () => {
-    makeSut();
+    const { options, ...commandModel } = mockCommandModel(faker.helpers.arrayElement(['music', 'message']));
+    const loadCommandByIdSpy = new LoadCommandByIdSpy();
+    jest.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
+    makeSut({ loadCommandByIdSpy });
     await waitFor(() => screen.getByTestId('command-content'));
     await userEvent.click(screen.getByTestId('add-option'));
     await userEvent.click(screen.getByTestId('add-option'));
