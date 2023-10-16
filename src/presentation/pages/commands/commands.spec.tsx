@@ -165,18 +165,6 @@ describe('Commands Component', () => {
     expect(commandsList.querySelector('.command-description')).toHaveTextContent(loadCommandsSpy.commands[2].description);
   });
 
-  test('should not show delete button if it is a new command modal', async () => {
-    makeSut(new LoadCommandsSpy(), new DeleteCommandSpy(), new RunCommandSpy(), true);
-    const commandsList = await screen.findByTestId('commands-list');
-    await waitFor(() => commandsList);
-    await userEvent.click(screen.getByTestId('new-command'));
-    const commandForm = await screen.findByTestId('form');
-    await waitFor(() => commandForm);
-    expect(commandForm).toBeInTheDocument();
-    const deleteButton = screen.queryByTestId('delete-button');
-    expect(deleteButton).not.toBeInTheDocument();
-  });
-
   test('should call DeleteCommand with correct values', async () => {
     const { deleteCommandSpy, loadCommandsSpy } = makeSut(
       new LoadCommandsSpy(),
@@ -283,5 +271,27 @@ describe('Commands Component', () => {
     await userEvent.click(screen.getByTestId('close-modal'));
     await setTimeout(500);
     expect(commandForm).not.toBeInTheDocument();
+  });
+
+  test('should navigate to Command page on edit', async () => {
+    const loadCommandsSpy = new LoadCommandsSpy();
+    const { history } = makeSut(loadCommandsSpy, new DeleteCommandSpy(), new RunCommandSpy(), true);
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    await userEvent.click(commandsList.querySelectorAll('.command-view-button')[1]);
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    await setTimeout(500);
+    expect(commandForm).toBeInTheDocument();
+    userEvent.click(screen.getByTestId('custom-button'));
+    expect(history.location.pathname).toBe(`/commands/${loadCommandsSpy.commands[1].id}`);
+  });
+
+  test('should navigate to Command page on edit', async () => {
+    const { history } = makeSut(new LoadCommandsSpy(), new DeleteCommandSpy(), new RunCommandSpy(), true);
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    await userEvent.click(screen.getByTestId('new-command'));
+    expect(history.location.pathname).toBe('/commands/new');
   });
 });

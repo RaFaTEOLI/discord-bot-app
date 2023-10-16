@@ -8,6 +8,7 @@ import { DeleteCommand, LoadCommands, RunCommand } from '@/domain/usecases';
 import { useErrorHandler } from '@/presentation/hooks';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router';
 
 type Props = {
   loadCommands: LoadCommands;
@@ -16,6 +17,7 @@ type Props = {
 };
 
 export default function Commands({ loadCommands, deleteCommand, runCommand }: Props): JSX.Element {
+  const navigate = useNavigate();
   const { getCurrentAccount } = useRecoilValue(currentAccountState);
   const resetCommandsState = useResetRecoilState(commandsState);
   const [state, setState] = useRecoilState(commandsState);
@@ -155,7 +157,7 @@ export default function Commands({ loadCommands, deleteCommand, runCommand }: Pr
               {getCurrentAccount().user.role === 'admin' && (
                 <Button
                   data-testid="new-command"
-                  onClick={onOpen}
+                  onClick={() => navigate('/commands/new')}
                   leftIcon={<HiOutlinePlusCircle />}
                   borderLeftRadius={0}
                   colorScheme="blue"

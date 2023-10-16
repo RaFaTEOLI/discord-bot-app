@@ -49,6 +49,7 @@ const simulateValidSubmit = async (withId = false): Promise<Omit<CommandModel, '
   await Helper.asyncPopulateField('dispatcher', formValues.dispatcher, true);
   await Helper.asyncPopulateField('type', formValues.type, true);
   await Helper.asyncPopulateField('response', formValues.response);
+  await Helper.asyncPopulateField('discordType', formValues.discordType.toString(), true);
   await userEvent.click(submitButton);
   return formValues;
 };
@@ -319,20 +320,42 @@ describe('Command Component', () => {
     const saveCommandSpy = new SaveCommandSpy();
     const error = new UnexpectedError();
     jest.spyOn(saveCommandSpy, 'save').mockRejectedValueOnce(error);
-    makeSut({ saveCommandSpy });
+    makeSut({ saveCommandSpy, adminUser: true });
+    await waitFor(() => screen.getByTestId('command-content'));
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    expect(commandForm).toBeInTheDocument();
+    const formValues = await simulateValidSubmit();
+    console.log(formValues);
+    await setTimeout(500);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Server Error',
+      description: 'There was an error while trying to save your command',
+      status: 'success',
+      duration: 9000,
+      isClosable: true,
+      position: 'top'
+    });
+  });
+
+  test('should show error toast on AccessDeniedError on SaveCommand and send it to login', async () => {
+    const saveCommandSpy = new SaveCommandSpy();
+    jest.spyOn(saveCommandSpy, 'save').mockRejectedValueOnce(new AccessDeniedError());
+    const { setCurrentAccountMock, history } = makeSut({ saveCommandSpy, adminUser: true });
     await waitFor(() => screen.getByTestId('command-content'));
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
     expect(commandForm).toBeInTheDocument();
     await simulateValidSubmit();
-    await setTimeout(500);
+    await setTimeout(1000);
+    expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
+    expect(history.location.pathname).toBe('/login');
     expect(mockToast).toHaveBeenCalledWith({
-      title: 'Server Error',
-      description: 'There was an error while trying to load your command',
-      status: 'success',
+      title: 'Access Denied',
+      description: 'Your login has expired, please log in again!',
+      status: 'error',
       duration: 9000,
-      isClosable: true,
-      position: 'top'
+      isClosable: true
     });
   });
 });
