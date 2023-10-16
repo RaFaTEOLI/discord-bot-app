@@ -2,36 +2,20 @@ import { Content, currentAccountState, Error, Loading } from '@/presentation/com
 import { Flex, Box, Button, useDisclosure, useToast } from '@chakra-ui/react';
 import { commandsState, CommandListItem, CommandModal, InputFilter } from './components';
 import { useRecoilState, useRecoilValue, useResetRecoilState } from 'recoil';
-import { CommandModel } from '@/domain/models';
+import { CommandModel, CommandOptionType } from '@/domain/models';
 import { HiOutlinePlusCircle } from 'react-icons/hi2';
-import { DeleteCommand, LoadCommands, RunCommand, SaveCommand } from '@/domain/usecases';
+import { DeleteCommand, LoadCommands, RunCommand } from '@/domain/usecases';
 import { useErrorHandler } from '@/presentation/hooks';
-import * as yup from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 type Props = {
   loadCommands: LoadCommands;
-  saveCommand: SaveCommand;
   deleteCommand: DeleteCommand;
   runCommand: RunCommand;
 };
 
-const schema = yupResolver(
-  yup
-    .object()
-    .shape({
-      command: yup.string().min(2).max(25).required('Required field'),
-      description: yup.string().min(2).max(50).required('Required field'),
-      dispatcher: yup.string().required('Required field'),
-      type: yup.string().required('Required field'),
-      response: yup.string().max(255)
-    })
-    .required()
-);
-
-export default function Commands({ loadCommands, saveCommand, deleteCommand, runCommand }: Props): JSX.Element {
+export default function Commands({ loadCommands, deleteCommand, runCommand }: Props): JSX.Element {
   const { getCurrentAccount } = useRecoilValue(currentAccountState);
   const resetCommandsState = useResetRecoilState(commandsState);
   const [state, setState] = useRecoilState(commandsState);
@@ -45,13 +29,11 @@ export default function Commands({ loadCommands, saveCommand, deleteCommand, run
 
   const {
     register,
-    handleSubmit,
     setValue,
     reset,
     formState: { errors }
   } = useForm<CommandModel>({
-    defaultValues: state.selectedCommand,
-    resolver: schema
+    defaultValues: state.selectedCommand
   });
 
   const handleView = (command: CommandModel): void => {
@@ -100,32 +82,19 @@ export default function Commands({ loadCommands, saveCommand, deleteCommand, run
   const handleClose = (): void => {
     setState(prev => ({
       ...prev,
-      selectedCommand: { id: '', command: '', description: '', type: '', dispatcher: '', response: '' }
+      selectedCommand: {
+        id: '',
+        command: '',
+        description: '',
+        type: '',
+        dispatcher: '',
+        response: '',
+        discordType: CommandOptionType.SUB_COMMAND
+      }
     }));
     onClose();
     reset();
   };
-
-  const onSubmit = handleSubmit(async data => {
-    try {
-      setState(prev => ({ ...prev, isLoading: true }));
-      const { id, ...dataValues } = data;
-      const params = state.selectedCommand.id ? Object.assign({}, dataValues, { id: state.selectedCommand.id }) : dataValues;
-      await saveCommand.save(params);
-      setState(prev => ({ ...prev, reload: true }));
-      onClose();
-      toast({
-        title: 'Saved Command',
-        description: 'Your command was successfully saved',
-        status: 'success',
-        duration: 9000,
-        isClosable: true,
-        position: 'top'
-      });
-    } catch (error: any) {
-      handleError(error);
-    }
-  });
 
   const onDelete = async (): Promise<void> => {
     try {
@@ -209,7 +178,7 @@ export default function Commands({ loadCommands, saveCommand, deleteCommand, run
           </Flex>
         )}
       </Content>
-      <CommandModal onSubmit={onSubmit} isOpen={isOpen} onClose={handleClose} onDelete={onDelete} />
+      <CommandModal isOpen={isOpen} onClose={handleClose} onDelete={onDelete} />
     </>
   );
 }
