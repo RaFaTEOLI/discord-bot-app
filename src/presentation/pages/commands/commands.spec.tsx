@@ -283,7 +283,7 @@ describe('Commands Component', () => {
     await waitFor(() => commandForm);
     await setTimeout(500);
     expect(commandForm).toBeInTheDocument();
-    userEvent.click(screen.getByTestId('custom-button'));
+    await userEvent.click(screen.getByTestId('custom-button'));
     expect(history.location.pathname).toBe(`/commands/${loadCommandsSpy.commands[1].id}`);
   });
 
