@@ -19,6 +19,7 @@ export type CommandModel = {
   type: string;
   dispatcher: string;
   response: string;
+  discordType: CommandOptionType;
   options?: Array<{
     name: string;
     description: string;

@@ -77,7 +77,7 @@ export const discordTypes = [
 export const commandState = atom({
   key: 'commandState',
   default: {
-    reload: false,
+    reload: new Date(),
     command: { id: '', command: '', description: '', type: '', dispatcher: '', response: '' } as CommandModel,
     isLoading: true,
     error: '',

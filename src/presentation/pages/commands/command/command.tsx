@@ -13,6 +13,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { CommandModel, CommandOptionType } from '@/domain/models';
 import { useErrorHandler } from '@/presentation/hooks';
 import { AccessTokenExpiredError, AccessDeniedError } from '@/domain/errors';
+import { useNavigate } from 'react-router';
 
 const CommandsIcon = chakra(HiCommandLine);
 const DescriptionIcon = chakra(HiInformationCircle);
@@ -54,6 +55,7 @@ const schema = yupResolver(
 );
 
 export default function Command({ commandId, loadCommandById, saveCommand }: Props): JSX.Element {
+  const navigate = useNavigate();
   const optionColor = useColorModeValue('gray.100', 'gray.900');
   const optionInputColor = useColorModeValue('white', 'gray.800');
   const [state, setState] = useRecoilState(commandState);
@@ -112,7 +114,7 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
           toast({
             title: 'Server Error',
             description: 'There was an error while trying to load your command',
-            status: 'success',
+            status: 'error',
             duration: 9000,
             isClosable: true,
             position: 'top'
@@ -139,16 +141,29 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
         isClosable: true,
         position: 'top'
       });
-      setState(prev => ({ ...prev, reload: true }));
+      if (!state.command.id) {
+        navigate('/commands');
+      }
+      setState(prev => ({ ...prev, reload: new Date() }));
     } catch (error: any) {
-      toast({
-        title: 'Server Error',
-        description: 'There was an error while trying to load your command',
-        status: 'success',
-        duration: 9000,
-        isClosable: true,
-        position: 'top'
-      });
+      if (error instanceof AccessTokenExpiredError || error instanceof AccessDeniedError) {
+        toast({
+          title: 'Access Denied',
+          description: 'Your login has expired, please log in again!',
+          status: 'error',
+          duration: 9000,
+          isClosable: true
+        });
+      } else {
+        toast({
+          title: 'Server Error',
+          description: 'There was an error while trying to save your command',
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+          position: 'top'
+        });
+      }
       handleError(error);
     }
   });
