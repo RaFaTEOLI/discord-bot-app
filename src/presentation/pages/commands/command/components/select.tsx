@@ -13,17 +13,7 @@ type Props = {
 
 const Select = ({ name, placeholder, options, ...props }: Props): JSX.Element => {
   const [state, setState] = useRecoilState(commandState);
-  return (
-    <SelectBase
-      isDisabled={state.disabledForm}
-      options={options}
-      name={name}
-      placeholder={placeholder}
-      state={state}
-      setState={setState}
-      {...props}
-    />
-  );
+  return <SelectBase options={options} name={name} placeholder={placeholder} state={state} setState={setState} {...props} />;
 };
 
 export default Select;

@@ -27,7 +27,22 @@ export const dispatchers = [
   }
 ];
 
-export const discordTypes = [
+export const applicationCommandTypes = [
+  {
+    label: 'CHAT_INPUT',
+    value: '1'
+  },
+  {
+    label: 'USER',
+    value: '2'
+  },
+  {
+    label: 'MESSAGE',
+    value: '3'
+  }
+];
+
+export const commandOptionTypes = [
   {
     label: 'SUB_COMMAND',
     value: '1'
@@ -83,7 +98,8 @@ export const commandState = atom({
     error: '',
     types,
     dispatchers,
-    discordTypes,
+    applicationCommandTypes,
+    commandOptionTypes,
     disabledForm: false
   }
 });

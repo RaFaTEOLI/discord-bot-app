@@ -24,7 +24,6 @@ const makeSut = (memoryHistory: MemoryHistory = historyWithDiscordLogin, error: 
   const discordLoadUserSpy = new DiscordLoadUserSpy();
   const saveUserSpy = new SaveUserSpy();
   if (error) {
-    console.log('Throwing error');
     jest.spyOn(discordAuthenticateSpy, 'request').mockRejectedValue(error);
     jest.spyOn(discordLoadUserSpy, 'load').mockRejectedValue(error);
     jest.spyOn(saveUserSpy, 'save').mockRejectedValue(error);

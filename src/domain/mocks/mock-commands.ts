@@ -1,8 +1,15 @@
 import { DeleteCommand, LoadCommands, RunCommand, SaveCommand, LoadCommandById } from '@/domain/usecases';
 import { faker } from '@faker-js/faker';
-import { CommandOptionType } from '../models';
+import { ApplicationCommandType, CommandOptionType } from '../models';
 
-const mockDiscordType = (): CommandOptionType =>
+export const mockApplicationCommandDiscordType = (): ApplicationCommandType =>
+  faker.helpers.arrayElement([
+    ApplicationCommandType.CHAT_INPUT,
+    ApplicationCommandType.MESSAGE,
+    ApplicationCommandType.USER
+  ]);
+
+const mockCommandOptionDiscordType = (): CommandOptionType =>
   faker.helpers.arrayElement([
     CommandOptionType.SUB_COMMAND,
     CommandOptionType.SUB_COMMAND_GROUP,
@@ -24,13 +31,13 @@ export const mockCommandModel = (type = faker.helpers.arrayElement(['music', 'ac
   dispatcher: faker.helpers.arrayElement(['client', 'message']),
   type,
   response: faker.lorem.words(2),
-  discordType: mockDiscordType(),
+  discordType: mockApplicationCommandDiscordType(),
   options: [
     {
       name: faker.word.verb(),
       description: faker.lorem.words(3),
       required: faker.datatype.boolean(),
-      type: mockDiscordType()
+      type: mockCommandOptionDiscordType()
     }
   ]
 });
@@ -41,14 +48,14 @@ export const mockSaveCommandParams = (withOptions?: boolean): SaveCommand.Params
   dispatcher: faker.helpers.arrayElement(['client', 'message']),
   type: faker.helpers.arrayElement(['music', 'action', 'message']),
   response: faker.lorem.words(2),
-  discordType: mockDiscordType(),
+  discordType: mockApplicationCommandDiscordType(),
   ...(withOptions && {
     options: [
       {
         name: faker.word.verb(),
         description: faker.lorem.words(3),
         required: faker.datatype.boolean(),
-        type: mockDiscordType()
+        type: mockCommandOptionDiscordType()
       }
     ]
   })

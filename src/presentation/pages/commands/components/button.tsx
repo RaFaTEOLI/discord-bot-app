@@ -11,14 +11,7 @@ type Props = {
 const CustomButton = ({ text, icon, onClick }: Props): JSX.Element => {
   const state = useRecoilValue(commandsState);
   return (
-    <Button
-      data-testid="custom-button"
-      w="full"
-      onClick={onClick}
-      isDisabled={state.disabledForm}
-      isLoading={state.isLoading}
-      leftIcon={icon}
-    >
+    <Button data-testid="custom-button" w="full" onClick={onClick} isLoading={state.isLoading} leftIcon={icon}>
       {text}
     </Button>
   );

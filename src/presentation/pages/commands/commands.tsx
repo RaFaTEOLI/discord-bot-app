@@ -2,7 +2,7 @@ import { Content, currentAccountState, Error, Loading } from '@/presentation/com
 import { Flex, Box, Button, useDisclosure, useToast } from '@chakra-ui/react';
 import { commandsState, CommandListItem, CommandModal, InputFilter } from './components';
 import { useRecoilState, useRecoilValue, useResetRecoilState } from 'recoil';
-import { CommandModel, CommandOptionType } from '@/domain/models';
+import { ApplicationCommandType, CommandModel } from '@/domain/models';
 import { HiOutlinePlusCircle } from 'react-icons/hi2';
 import { DeleteCommand, LoadCommands, RunCommand } from '@/domain/usecases';
 import { useErrorHandler } from '@/presentation/hooks';
@@ -91,7 +91,7 @@ export default function Commands({ loadCommands, deleteCommand, runCommand }: Pr
         type: '',
         dispatcher: '',
         response: '',
-        discordType: CommandOptionType.SUB_COMMAND
+        discordType: ApplicationCommandType.CHAT_INPUT
       }
     }));
     onClose();

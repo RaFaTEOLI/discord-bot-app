@@ -8,13 +8,14 @@ type Props = {
   placeholder: string;
   icon?: JSX.Element | undefined;
   bgColor?: string;
+  isDisabled?: boolean;
 };
 
-const Input = ({ type, name, placeholder, icon, ...props }: Props): JSX.Element => {
+const Input = ({ type, name, placeholder, icon, isDisabled, ...props }: Props): JSX.Element => {
   const [state] = useRecoilState(commandState);
   return (
     <InputBase
-      isDisabled={state.disabledForm}
+      isDisabled={isDisabled}
       type={type}
       name={name}
       placeholder={placeholder}

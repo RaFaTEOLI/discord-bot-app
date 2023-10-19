@@ -34,7 +34,7 @@ const schema = yupResolver(
       description: yup.string().min(2).max(50).required('Required field'),
       dispatcher: yup.string().required('Required field'),
       type: yup.string().required('Required field'),
-      response: yup.string().max(255),
+      response: yup.string().max(255).nullable(),
       discordType: yup.string().required('Required field'),
       options: yup.array().of(
         yup.object({
@@ -87,11 +87,6 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
   const setCommand = (command: LoadCommandById.Model): void => {
     setState(prev => ({ ...prev, command }));
     reset(command);
-    if (command.type === 'action') {
-      setState(prev => ({ ...prev, disabledForm: true }));
-    } else {
-      setState(prev => ({ ...prev, disabledForm: false }));
-    }
   };
 
   useEffect(() => {
@@ -178,16 +173,39 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
         <form data-testid="form" onSubmit={onSubmit}>
           <Stack spacing={4} paddingRight={5} data-testid="command-content">
             <Flex gap={2}>
-              <Input type="text" name="command" placeholder="Command" icon={<CommandsIcon />} />
-              <Input type="text" name="description" placeholder="Description" icon={<DescriptionIcon />} />
+              <Input
+                isDisabled={state.command.type === 'action'}
+                type="text"
+                name="command"
+                placeholder="Command"
+                icon={<CommandsIcon />}
+              />
+              <Input
+                isDisabled={state.command.type === 'action'}
+                type="text"
+                name="description"
+                placeholder="Description"
+                icon={<DescriptionIcon />}
+              />
             </Flex>
-            <Input type="text" name="response" placeholder="Response" icon={<ResponseIcon />} />
+            <Input
+              isDisabled={state.command.type === 'action'}
+              type="text"
+              name="response"
+              placeholder="Response"
+              icon={<ResponseIcon />}
+            />
             <Flex gap={2}>
-              <Select name="type" placeholder="Type" options={state.types} />
-              <Select name="dispatcher" placeholder="Dispatcher" options={state.dispatchers} />
+              <Select isDisabled={state.command.type === 'action'} name="type" placeholder="Type" options={state.types} />
+              <Select
+                isDisabled={state.command.type === 'action'}
+                name="dispatcher"
+                placeholder="Dispatcher"
+                options={state.dispatchers}
+              />
             </Flex>
             <Heading size="md">Discord Properties</Heading>
-            <Select name="discordType" placeholder="Type" options={state.discordTypes} />
+            <Select name="discordType" placeholder="Type" options={state.applicationCommandTypes} />
             <Flex justifyContent="space-between">
               <Heading size="sm">Options</Heading>
               <IconButton
@@ -216,7 +234,7 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
                       bgColor={optionInputColor}
                       name={`options.${index}.type`}
                       placeholder="Type"
-                      options={state.discordTypes}
+                      options={state.commandOptionTypes}
                     />
                     <HStack position="absolute" right={4} top={3}>
                       {index > 0 && (

@@ -8,7 +8,7 @@ import { faker } from '@faker-js/faker';
 import userEvent from '@testing-library/user-event';
 import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
 import { setTimeout } from 'timers/promises';
-import { commandState, types, dispatchers, discordTypes } from './components';
+import { commandState, types, dispatchers, applicationCommandTypes, commandOptionTypes } from './components';
 
 const mockToast = jest.fn();
 jest.mock('@chakra-ui/react', () => {
@@ -102,7 +102,8 @@ const makeSut = (override?: Override): SutTypes => {
             command: { id: '', command: '', description: '', type: '', dispatcher: '', response: '' },
             types,
             dispatchers,
-            discordTypes,
+            applicationCommandTypes,
+            commandOptionTypes,
             disabledForm: false,
             errors: {
               command: {

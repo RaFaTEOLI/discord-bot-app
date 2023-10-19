@@ -1,3 +1,9 @@
+export enum ApplicationCommandType {
+  CHAT_INPUT = 1,
+  USER = 2,
+  MESSAGE = 3
+}
+
 export enum CommandOptionType {
   SUB_COMMAND = 1,
   SUB_COMMAND_GROUP = 2,
@@ -19,7 +25,7 @@ export type CommandModel = {
   type: string;
   dispatcher: string;
   response: string;
-  discordType: CommandOptionType;
+  discordType: ApplicationCommandType;
   options?: Array<{
     name: string;
     description: string;
