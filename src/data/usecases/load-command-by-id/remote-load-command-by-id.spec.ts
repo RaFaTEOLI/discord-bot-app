@@ -71,7 +71,8 @@ describe('RemoteLoadCommandById', () => {
       dispatcher: httpResult.dispatcher,
       type: httpResult.type,
       response: httpResult.response,
-      options: httpResult.options
+      options: httpResult.options,
+      discordType: httpResult.discordType
     });
   });
 

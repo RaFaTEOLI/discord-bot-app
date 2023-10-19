@@ -41,8 +41,12 @@ type Override = {
   invalidForm?: boolean;
 };
 
-const simulateValidSubmit = async (withId = false): Promise<Omit<CommandModel, 'id'>> => {
-  const formValues = withId ? mockCommandModel() : mockSaveCommandParams();
+type FormValues = Omit<CommandModel, 'id'> & {
+  discordType: string;
+};
+
+const simulateValidSubmit = async (): Promise<FormValues> => {
+  const formValues = mockSaveCommandParams();
   const submitButton = screen.getByTestId('submit');
   await Helper.asyncPopulateField('command', formValues.command);
   await Helper.asyncPopulateField('description', formValues.description);
@@ -51,7 +55,24 @@ const simulateValidSubmit = async (withId = false): Promise<Omit<CommandModel, '
   await Helper.asyncPopulateField('response', formValues.response);
   await Helper.asyncPopulateField('discordType', formValues.discordType.toString(), true);
   await userEvent.click(submitButton);
-  return formValues;
+  const { discordType, ...restValues } = formValues;
+  return { discordType: discordType.toString(), ...restValues } as FormValues;
+};
+
+const simulateValidSubmit2 = async (): Promise<FormValues> => {
+  await setTimeout(1000);
+  const formValues = mockSaveCommandParams();
+  Helper.populateField('command', formValues.command);
+  Helper.populateField('description', formValues.description);
+  Helper.populateField('dispatcher', formValues.dispatcher, true);
+  Helper.populateField('type', formValues.type, true);
+  Helper.populateField('response', formValues.response);
+  Helper.populateField('discordType', formValues.discordType.toString(), true);
+  const submitButton = await waitFor(() => screen.getByTestId('submit'));
+  await userEvent.click(submitButton);
+  await setTimeout(500);
+  const { discordType, ...restValues } = formValues;
+  return { discordType: discordType.toString(), ...restValues } as FormValues;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/commands/1'] });
@@ -256,7 +277,7 @@ describe('Command Component', () => {
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Server Error',
       description: 'There was an error while trying to load your command',
-      status: 'success',
+      status: 'error',
       duration: 9000,
       isClosable: true,
       position: 'top'
@@ -316,6 +337,38 @@ describe('Command Component', () => {
     expect(loadCommandByIdSpy.callsCount).toBe(0);
   });
 
+  test('should call SaveCommand on success from edit page', async () => {
+    const loadCommandByIdSpy = new LoadCommandByIdSpy();
+    const commandModel = mockCommandModel('message');
+    jest.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
+    const { saveCommandSpy } = makeSut({ adminUser: true, loadCommandByIdSpy });
+    await waitFor(() => screen.getByTestId('command-content'));
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    expect(commandForm).toBeInTheDocument();
+    const formValues = await simulateValidSubmit2();
+    expect(saveCommandSpy.params).toEqual(
+      Object.assign({}, formValues, {
+        id: commandModel.id,
+        // eslint-disable-next-line
+        // @ts-ignore
+        options: [{ ...commandModel.options[0], type: commandModel.options[0].type.toString(), choices: [] }]
+      })
+    );
+  });
+
+  test('should call SaveCommand on success from new page and navigate to commands', async () => {
+    const { saveCommandSpy } = makeSut({ commandId: 'new', adminUser: true });
+    await waitFor(() => screen.getByTestId('command-content'));
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    expect(commandForm).toBeInTheDocument();
+    const formValues = await simulateValidSubmit();
+    await setTimeout(500);
+    expect(saveCommandSpy.params).toEqual(Object.assign({}, formValues, { options: [] }));
+    expect(history.location.pathname).toBe('/commands');
+  });
+
   test('should render error on UnexpectedError on SaveCommand', async () => {
     const saveCommandSpy = new SaveCommandSpy();
     const error = new UnexpectedError();
@@ -325,13 +378,12 @@ describe('Command Component', () => {
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
     expect(commandForm).toBeInTheDocument();
-    const formValues = await simulateValidSubmit();
-    console.log(formValues);
+    await simulateValidSubmit();
     await setTimeout(500);
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Server Error',
       description: 'There was an error while trying to save your command',
-      status: 'success',
+      status: 'error',
       duration: 9000,
       isClosable: true,
       position: 'top'

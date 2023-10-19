@@ -2,6 +2,21 @@ import { DeleteCommand, LoadCommands, RunCommand, SaveCommand, LoadCommandById }
 import { faker } from '@faker-js/faker';
 import { CommandOptionType } from '../models';
 
+const mockDiscordType = (): CommandOptionType =>
+  faker.helpers.arrayElement([
+    CommandOptionType.SUB_COMMAND,
+    CommandOptionType.SUB_COMMAND_GROUP,
+    CommandOptionType.STRING,
+    CommandOptionType.INTEGER,
+    CommandOptionType.BOOLEAN,
+    CommandOptionType.USER,
+    CommandOptionType.CHANNEL,
+    CommandOptionType.ROLE,
+    CommandOptionType.MENTIONABLE,
+    CommandOptionType.NUMBER,
+    CommandOptionType.ATTACHMENT
+  ]);
+
 export const mockCommandModel = (type = faker.helpers.arrayElement(['music', 'action', 'message'])): LoadCommands.Model => ({
   id: faker.datatype.uuid(),
   command: faker.word.verb(),
@@ -9,24 +24,13 @@ export const mockCommandModel = (type = faker.helpers.arrayElement(['music', 'ac
   dispatcher: faker.helpers.arrayElement(['client', 'message']),
   type,
   response: faker.lorem.words(2),
+  discordType: mockDiscordType(),
   options: [
     {
       name: faker.word.verb(),
       description: faker.lorem.words(3),
       required: faker.datatype.boolean(),
-      type: faker.helpers.arrayElement([
-        CommandOptionType.SUB_COMMAND,
-        CommandOptionType.SUB_COMMAND_GROUP,
-        CommandOptionType.STRING,
-        CommandOptionType.INTEGER,
-        CommandOptionType.BOOLEAN,
-        CommandOptionType.USER,
-        CommandOptionType.CHANNEL,
-        CommandOptionType.ROLE,
-        CommandOptionType.MENTIONABLE,
-        CommandOptionType.NUMBER,
-        CommandOptionType.ATTACHMENT
-      ])
+      type: mockDiscordType()
     }
   ]
 });
@@ -37,25 +41,14 @@ export const mockSaveCommandParams = (withOptions?: boolean): SaveCommand.Params
   dispatcher: faker.helpers.arrayElement(['client', 'message']),
   type: faker.helpers.arrayElement(['music', 'action', 'message']),
   response: faker.lorem.words(2),
+  discordType: mockDiscordType(),
   ...(withOptions && {
     options: [
       {
         name: faker.word.verb(),
         description: faker.lorem.words(3),
         required: faker.datatype.boolean(),
-        type: faker.helpers.arrayElement([
-          CommandOptionType.SUB_COMMAND,
-          CommandOptionType.SUB_COMMAND_GROUP,
-          CommandOptionType.STRING,
-          CommandOptionType.INTEGER,
-          CommandOptionType.BOOLEAN,
-          CommandOptionType.USER,
-          CommandOptionType.CHANNEL,
-          CommandOptionType.ROLE,
-          CommandOptionType.MENTIONABLE,
-          CommandOptionType.NUMBER,
-          CommandOptionType.ATTACHMENT
-        ])
+        type: mockDiscordType()
       }
     ]
   })
