@@ -7,21 +7,12 @@ type Props = {
   name: string;
   placeholder: string;
   icon?: JSX.Element | undefined;
+  isDisabled?: boolean;
 };
 
 const Input = ({ type, name, placeholder, icon, ...props }: Props): JSX.Element => {
   const [state] = useRecoilState(commandsState);
-  return (
-    <InputBase
-      isDisabled={state.disabledForm}
-      type={type}
-      name={name}
-      placeholder={placeholder}
-      state={state}
-      icon={icon}
-      {...props}
-    />
-  );
+  return <InputBase type={type} name={name} placeholder={placeholder} state={state} icon={icon} {...props} />;
 };
 
 export default Input;

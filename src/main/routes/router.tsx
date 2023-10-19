@@ -4,6 +4,7 @@ import {
   SignUpFactory,
   HomeFactory,
   CommandsFactory,
+  CommandFactory,
   ProfileFactory,
   PlaylistsFactory,
   PlaylistFactory,
@@ -37,8 +38,11 @@ const Router = (): JSX.Element => {
             >
               <Route path="/" element={<HomeFactory />} />
               <Route path="/commands" element={<CommandsFactory />} />
+              <Route path="/commands/:id" element={<CommandFactory />} />
+
               <Route path="/playlists" element={<PlaylistsFactory />} />
               <Route path="/playlists/:id" element={<PlaylistFactory />} />
+
               <Route path="/profile" element={<ProfileFactory />} />
               <Route path="/browse" element={<BrowseFactory />} />
             </Route>

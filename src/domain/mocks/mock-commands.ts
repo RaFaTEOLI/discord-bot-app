@@ -1,5 +1,28 @@
-import { DeleteCommand, LoadCommands, RunCommand, SaveCommand } from '@/domain/usecases';
+import { DeleteCommand, LoadCommands, RunCommand, SaveCommand, LoadCommandById } from '@/domain/usecases';
 import { faker } from '@faker-js/faker';
+import { ApplicationCommandType, CommandOptionType } from '../models';
+
+export const mockApplicationCommandDiscordType = (): ApplicationCommandType =>
+  faker.helpers.arrayElement([
+    ApplicationCommandType.CHAT_INPUT,
+    ApplicationCommandType.MESSAGE,
+    ApplicationCommandType.USER
+  ]);
+
+const mockCommandOptionDiscordType = (): CommandOptionType =>
+  faker.helpers.arrayElement([
+    CommandOptionType.SUB_COMMAND,
+    CommandOptionType.SUB_COMMAND_GROUP,
+    CommandOptionType.STRING,
+    CommandOptionType.INTEGER,
+    CommandOptionType.BOOLEAN,
+    CommandOptionType.USER,
+    CommandOptionType.CHANNEL,
+    CommandOptionType.ROLE,
+    CommandOptionType.MENTIONABLE,
+    CommandOptionType.NUMBER,
+    CommandOptionType.ATTACHMENT
+  ]);
 
 export const mockCommandModel = (type = faker.helpers.arrayElement(['music', 'action', 'message'])): LoadCommands.Model => ({
   id: faker.datatype.uuid(),
@@ -7,15 +30,35 @@ export const mockCommandModel = (type = faker.helpers.arrayElement(['music', 'ac
   description: faker.lorem.words(3),
   dispatcher: faker.helpers.arrayElement(['client', 'message']),
   type,
-  response: faker.lorem.words(2)
+  response: faker.lorem.words(2),
+  discordType: mockApplicationCommandDiscordType(),
+  options: [
+    {
+      name: faker.word.verb(),
+      description: faker.lorem.words(3),
+      required: faker.datatype.boolean(),
+      type: mockCommandOptionDiscordType()
+    }
+  ]
 });
 
-export const mockSaveCommandParams = (): SaveCommand.Params => ({
+export const mockSaveCommandParams = (withOptions?: boolean): SaveCommand.Params => ({
   command: faker.word.verb(),
   description: faker.lorem.words(3),
   dispatcher: faker.helpers.arrayElement(['client', 'message']),
   type: faker.helpers.arrayElement(['music', 'action', 'message']),
-  response: faker.lorem.words(2)
+  response: faker.lorem.words(2),
+  discordType: mockApplicationCommandDiscordType(),
+  ...(withOptions && {
+    options: [
+      {
+        name: faker.word.verb(),
+        description: faker.lorem.words(3),
+        required: faker.datatype.boolean(),
+        type: mockCommandOptionDiscordType()
+      }
+    ]
+  })
 });
 
 export const mockCommandListModel = (): LoadCommands.Model[] => [
@@ -65,5 +108,17 @@ export class RunCommandSpy implements RunCommand {
     this.callsCount++;
     this.command = command;
     return Promise.resolve();
+  }
+}
+
+export class LoadCommandByIdSpy implements LoadCommandById {
+  callsCount = 0;
+  commandId = '';
+  command = mockCommandModel();
+
+  async loadById(id: string): Promise<LoadCommandById.Model> {
+    this.callsCount++;
+    this.commandId = id;
+    return Promise.resolve(this.command);
   }
 }

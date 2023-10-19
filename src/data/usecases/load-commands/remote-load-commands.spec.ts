@@ -69,7 +69,8 @@ describe('RemoteLoadCommands', () => {
         description: httpResult[0].description,
         dispatcher: httpResult[0].dispatcher,
         type: httpResult[0].type,
-        response: httpResult[0].response
+        response: httpResult[0].response,
+        discordType: httpResult[0].discordType
       },
       {
         id: httpResult[1].id,
@@ -77,7 +78,8 @@ describe('RemoteLoadCommands', () => {
         description: httpResult[1].description,
         dispatcher: httpResult[1].dispatcher,
         type: httpResult[1].type,
-        response: httpResult[1].response
+        response: httpResult[1].response,
+        discordType: httpResult[1].discordType
       },
       {
         id: httpResult[2].id,
@@ -85,7 +87,8 @@ describe('RemoteLoadCommands', () => {
         description: httpResult[2].description,
         dispatcher: httpResult[2].dispatcher,
         type: httpResult[2].type,
-        response: httpResult[2].response
+        response: httpResult[2].response,
+        discordType: httpResult[2].discordType
       }
     ]);
   });
