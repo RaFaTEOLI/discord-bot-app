@@ -7,6 +7,7 @@ import { setTimeout } from 'timers/promises';
 import { InvalidCredentialsError } from '@/domain/errors';
 import { DiscordAuthenticateSpy, DiscordLoadUserSpy, SaveUserSpy } from '@/domain/mocks';
 import { AccountModel } from '@/domain/models';
+import { describe, test, expect, vi } from 'vitest';
 
 type SutTypes = {
   setCurrentAccountMock: (account: Authentication.Model) => void;
@@ -24,9 +25,9 @@ const makeSut = (memoryHistory: MemoryHistory = historyWithDiscordLogin, error: 
   const discordLoadUserSpy = new DiscordLoadUserSpy();
   const saveUserSpy = new SaveUserSpy();
   if (error) {
-    jest.spyOn(discordAuthenticateSpy, 'request').mockRejectedValue(error);
-    jest.spyOn(discordLoadUserSpy, 'load').mockRejectedValue(error);
-    jest.spyOn(saveUserSpy, 'save').mockRejectedValue(error);
+    vi.spyOn(discordAuthenticateSpy, 'request').mockRejectedValue(error);
+    vi.spyOn(discordLoadUserSpy, 'load').mockRejectedValue(error);
+    vi.spyOn(saveUserSpy, 'save').mockRejectedValue(error);
   }
   const { setCurrentAccountMock, getCurrentAccountMock } = renderWithHistory({
     history: memoryHistory,
@@ -40,20 +41,19 @@ const makeSut = (memoryHistory: MemoryHistory = historyWithDiscordLogin, error: 
   return { setCurrentAccountMock, discordAuthenticateSpy, discordLoadUserSpy, getCurrentAccountMock, saveUserSpy };
 };
 
-const mockToast = jest.fn();
-jest.mock('@chakra-ui/react', () => {
-  const originalModule = jest.requireActual('@chakra-ui/react');
+const mockToast = vi.fn();
+vi.mock('@chakra-ui/react', async () => {
+  const actual = await vi.importActual('@chakra-ui/react');
   return {
-    __esModule: true,
-    ...originalModule,
-    useToast: jest.fn().mockImplementation(() => mockToast)
+    // eslint-disable-next-line
+    ...(actual as any),
+    useToast: vi.fn().mockImplementation(() => mockToast)
   };
 });
-jest.setTimeout(20000);
 
 describe('Discord Container Component', () => {
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   test('should show toast error if discord fails', async () => {
@@ -85,8 +85,8 @@ describe('Discord Container Component', () => {
   test('should load user from Discord and then save it', async () => {
     const { discordAuthenticateSpy, setCurrentAccountMock, discordLoadUserSpy, getCurrentAccountMock, saveUserSpy } =
       makeSut();
-    const saveSpy = jest.spyOn(saveUserSpy, 'save');
-    const loadUserSpy = jest.spyOn(discordLoadUserSpy, 'load');
+    const saveSpy = vi.spyOn(saveUserSpy, 'save');
+    const loadUserSpy = vi.spyOn(discordLoadUserSpy, 'load');
     await setTimeout(3000);
     expect(discordAuthenticateSpy.callsCount).toBe(1);
     expect(loadUserSpy).toHaveBeenCalledWith(discordAuthenticateSpy.access.access_token);

@@ -3,6 +3,7 @@ import { RemoteLoadCommands } from '@/data/usecases';
 import { HttpStatusCode } from '@/data/protocols/http';
 import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
 import { faker } from '@faker-js/faker';
+import { describe, test, expect } from 'vitest';
 
 type SutTypes = {
   sut: RemoteLoadCommands;

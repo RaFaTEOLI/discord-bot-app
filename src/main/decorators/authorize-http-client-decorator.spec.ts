@@ -4,6 +4,7 @@ import { HttpRequest } from '@/data/protocols/http';
 import { mockAccountModel, mockAccountWithSpotifyModel } from '@/domain/mocks';
 import { faker } from '@faker-js/faker';
 import { AccountModel } from '@/domain/models';
+import { describe, test, expect } from 'vitest';
 
 type SutTypes = {
   sut: AuthorizeHttpClientDecorator;

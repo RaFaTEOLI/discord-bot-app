@@ -9,14 +9,14 @@ import userEvent from '@testing-library/user-event';
 import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
 import { setTimeout } from 'timers/promises';
 import { commandState, types, dispatchers, applicationCommandTypes, commandOptionTypes } from './components';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 
-const mockToast = jest.fn();
-jest.mock('@chakra-ui/react', () => {
-  const originalModule = jest.requireActual('@chakra-ui/react');
+const mockToast = vi.fn();
+vi.mock('@chakra-ui/react', async () => {
+  const actual = await vi.importActual('@chakra-ui/react');
   return {
-    __esModule: true,
-    ...originalModule,
-    useToast: jest.fn().mockImplementation(() => mockToast)
+    ...(actual as any),
+    useToast: vi.fn().mockImplementation(() => mockToast)
   };
 });
 
@@ -138,7 +138,8 @@ const makeSut = (override?: Override): SutTypes => {
 
 describe('Command Component', () => {
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.clearAllMocks();
   });
 
   test('should have command page content', () => {
@@ -146,7 +147,7 @@ describe('Command Component', () => {
     const pageContent = screen.getByRole('heading', {
       name: 'Command'
     });
-    expect(pageContent).toBeInTheDocument();
+    expect(pageContent).toBeTruthy();
   });
 
   test('should call LoadCommandById', async () => {
@@ -179,7 +180,7 @@ describe('Command Component', () => {
   test('should move down Command Option on option move down', async () => {
     const { options, ...commandModel } = mockCommandModel(faker.helpers.arrayElement(['music', 'message']));
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
-    jest.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
+    vi.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
     makeSut({ loadCommandByIdSpy });
     await waitFor(() => screen.getByTestId('command-content'));
     await userEvent.click(screen.getByTestId('add-option'));
@@ -196,7 +197,7 @@ describe('Command Component', () => {
   test('should move up Command Option on option move up', async () => {
     const { options, ...commandModel } = mockCommandModel(faker.helpers.arrayElement(['music', 'message']));
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
-    jest.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
+    vi.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
     makeSut({ loadCommandByIdSpy });
     await waitFor(() => screen.getByTestId('command-content'));
     await userEvent.click(screen.getByTestId('add-option'));
@@ -237,7 +238,7 @@ describe('Command Component', () => {
   test('should move up Command Choice on option move down', async () => {
     const { options, ...commandModel } = mockCommandModel(faker.helpers.arrayElement(['music', 'message']));
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
-    jest.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
+    vi.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
     makeSut({ loadCommandByIdSpy });
     await waitFor(() => screen.getByTestId('command-content'));
     await userEvent.click(screen.getByTestId('add-option'));
@@ -255,7 +256,7 @@ describe('Command Component', () => {
   test('should move up Command Choice on option move up', async () => {
     const { options, ...commandModel } = mockCommandModel(faker.helpers.arrayElement(['music', 'message']));
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
-    jest.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
+    vi.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
     makeSut({ loadCommandByIdSpy });
     await waitFor(() => screen.getByTestId('command-content'));
     await userEvent.click(screen.getByTestId('add-option'));
@@ -272,7 +273,7 @@ describe('Command Component', () => {
 
   test('should call toast with error if LoadCommandById fails', async () => {
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
-    jest.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new Error());
+    vi.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new Error());
     makeSut({ loadCommandByIdSpy });
     await waitFor(() => screen.getByTestId('command-content'));
     expect(mockToast).toHaveBeenCalledWith({
@@ -287,9 +288,10 @@ describe('Command Component', () => {
 
   test('should show error toast on AccessDeniedError on LoadCommandById and send it to login', async () => {
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
-    jest.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new AccessDeniedError());
+    vi.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new AccessDeniedError());
     const { setCurrentAccountMock, history } = makeSut({ loadCommandByIdSpy });
     await waitFor(() => screen.getByRole('heading'));
+    await setTimeout(1000);
     expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
     expect(history.location.pathname).toBe('/login');
     expect(mockToast).toHaveBeenCalledWith({
@@ -303,9 +305,10 @@ describe('Command Component', () => {
 
   test('should show error toast on AccessTokenExpiredError on LoadCommandById and send it to login', async () => {
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
-    jest.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new AccessTokenExpiredError());
+    vi.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new AccessTokenExpiredError());
     const { setCurrentAccountMock, history } = makeSut({ loadCommandByIdSpy });
     await waitFor(() => screen.getByRole('heading'));
+    await setTimeout(1000);
     expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
     expect(history.location.pathname).toBe('/login');
     expect(mockToast).toHaveBeenCalledWith({
@@ -322,7 +325,7 @@ describe('Command Component', () => {
     await waitFor(() => screen.getByTestId('command-content'));
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
-    expect(commandForm).toBeInTheDocument();
+    expect(commandForm).toBeTruthy();
     await simulateInvalidSubmit();
     await setTimeout(1500);
     Helper.testStatusForField('command', 'command must be at least 2 characters');
@@ -341,12 +344,12 @@ describe('Command Component', () => {
   test('should call SaveCommand on success from edit page', async () => {
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
     const commandModel = mockCommandModel('message');
-    jest.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
+    vi.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
     const { saveCommandSpy } = makeSut({ adminUser: true, loadCommandByIdSpy });
     await waitFor(() => screen.getByTestId('command-content'));
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
-    expect(commandForm).toBeInTheDocument();
+    expect(commandForm).toBeTruthy();
     const formValues = await simulateValidSubmit2();
     expect(saveCommandSpy.params).toEqual(
       Object.assign({}, formValues, {
@@ -363,7 +366,7 @@ describe('Command Component', () => {
     await waitFor(() => screen.getByTestId('command-content'));
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
-    expect(commandForm).toBeInTheDocument();
+    expect(commandForm).toBeTruthy();
     const formValues = await simulateValidSubmit();
     await setTimeout(500);
     expect(saveCommandSpy.params).toEqual(Object.assign({}, formValues, { options: [] }));
@@ -373,12 +376,12 @@ describe('Command Component', () => {
   test('should render error on UnexpectedError on SaveCommand', async () => {
     const saveCommandSpy = new SaveCommandSpy();
     const error = new UnexpectedError();
-    jest.spyOn(saveCommandSpy, 'save').mockRejectedValueOnce(error);
+    vi.spyOn(saveCommandSpy, 'save').mockRejectedValueOnce(error);
     makeSut({ saveCommandSpy, adminUser: true });
     await waitFor(() => screen.getByTestId('command-content'));
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
-    expect(commandForm).toBeInTheDocument();
+    expect(commandForm).toBeTruthy();
     await simulateValidSubmit();
     await setTimeout(500);
     expect(mockToast).toHaveBeenCalledWith({
@@ -393,12 +396,12 @@ describe('Command Component', () => {
 
   test('should show error toast on AccessDeniedError on SaveCommand and send it to login', async () => {
     const saveCommandSpy = new SaveCommandSpy();
-    jest.spyOn(saveCommandSpy, 'save').mockRejectedValueOnce(new AccessDeniedError());
+    vi.spyOn(saveCommandSpy, 'save').mockRejectedValueOnce(new AccessDeniedError());
     const { setCurrentAccountMock, history } = makeSut({ saveCommandSpy, adminUser: true });
     await waitFor(() => screen.getByTestId('command-content'));
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
-    expect(commandForm).toBeInTheDocument();
+    expect(commandForm).toBeTruthy();
     await simulateValidSubmit();
     await setTimeout(1000);
     expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);

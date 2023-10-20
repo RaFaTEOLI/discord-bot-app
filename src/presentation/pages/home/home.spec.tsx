@@ -6,6 +6,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import Home from './home';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 
 type SutTypes = {
   setCurrentAccountMock: (account: AccountModel) => void;
@@ -13,13 +14,12 @@ type SutTypes = {
   loadServerSpy: LoadServerSpy;
 };
 
-const mockToast = jest.fn();
-jest.mock('@chakra-ui/react', () => {
-  const originalModule = jest.requireActual('@chakra-ui/react');
+const mockToast = vi.fn();
+vi.mock('@chakra-ui/react', async () => {
+  const actual = await vi.importActual('@chakra-ui/react');
   return {
-    __esModule: true,
-    ...originalModule,
-    useToast: jest.fn().mockImplementation(() => mockToast)
+    ...(actual as any),
+    useToast: vi.fn().mockImplementation(() => mockToast)
   };
 });
 const history = createMemoryHistory({ initialEntries: ['/'] });
@@ -34,7 +34,7 @@ const makeSut = (loadServerSpy = new LoadServerSpy()): SutTypes => {
 
 describe('Home Component', () => {
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   test('should have home page content', () => {
@@ -42,7 +42,7 @@ describe('Home Component', () => {
     const pageContent = screen.getByRole('heading', {
       name: 'Home'
     });
-    expect(pageContent).toBeInTheDocument();
+    expect(pageContent).toBeTruthy();
   });
 
   test('should call LoadServer', () => {
@@ -61,30 +61,30 @@ describe('Home Component', () => {
     const { loadServerSpy } = makeSut();
     const membersList = await screen.findByTestId('members-list');
     await waitFor(() => membersList);
-    expect(screen.getByTestId('server-name')).toHaveTextContent(loadServerSpy.server.name);
+    expect(screen.getByTestId('server-name').textContent).toBe(loadServerSpy.server.name);
     expect(membersList.children).toHaveLength(loadServerSpy.server.members.length);
-    expect(membersList.querySelectorAll('.user-status')[0]).toHaveTextContent(
+    expect(membersList.querySelectorAll('.user-status')[0].textContent).toBe(
       loadServerSpy.server.members[0].game?.name as string
     );
-    expect(membersList.querySelectorAll('.user-status')[1]).toHaveTextContent(
+    expect(membersList.querySelectorAll('.user-status')[1].textContent).toBe(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       loadServerSpy.server.members[1].game?.name as string
     );
-    expect(membersList.querySelectorAll('.user-status')[2]).toHaveTextContent('Online');
-    expect(membersList.querySelectorAll('.user-status')[3]).toHaveTextContent('Do Not Disturb');
-    expect(membersList.querySelectorAll('.user-status')[4]).toHaveTextContent('Idle');
+    expect(membersList.querySelectorAll('.user-status')[2].textContent).toBe('Online');
+    expect(membersList.querySelectorAll('.user-status')[3].textContent).toBe('Do Not Disturb');
+    expect(membersList.querySelectorAll('.user-status')[4].textContent).toBe('Idle');
   });
 
   test('should render error on UnexpectedError on LoadServer', async () => {
     const loadServerSpy = new LoadServerSpy();
     const error = new UnexpectedError();
-    jest.spyOn(loadServerSpy, 'load').mockRejectedValueOnce(error);
+    vi.spyOn(loadServerSpy, 'load').mockRejectedValueOnce(error);
     makeSut(loadServerSpy);
     await waitFor(() => screen.getByTestId('error'));
-    expect(screen.queryByTestId('server-container')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('server-container')).not.toBeTruthy();
     const errorWrap = await screen.findByTestId('error');
-    expect(errorWrap).toHaveTextContent(error.message);
+    expect(errorWrap.textContent).toBe(`${error.message}Try again`);
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Server Error',
       description: 'Something went wrong while trying to load server info',
@@ -96,7 +96,7 @@ describe('Home Component', () => {
 
   test('should call LoadServer on reload', async () => {
     const loadServerSpy = new LoadServerSpy();
-    jest.spyOn(loadServerSpy, 'load').mockRejectedValueOnce(new UnexpectedError());
+    vi.spyOn(loadServerSpy, 'load').mockRejectedValueOnce(new UnexpectedError());
     makeSut(loadServerSpy);
     await waitFor(() => screen.getByTestId('error'));
     await userEvent.click(screen.getByTestId('reload'));

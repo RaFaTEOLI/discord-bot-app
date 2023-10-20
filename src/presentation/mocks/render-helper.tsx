@@ -8,6 +8,7 @@ import { Router } from 'react-router-dom';
 import { MemoryHistory } from 'history';
 import { render } from '@testing-library/react';
 import { MutableSnapshot, RecoilRoot, RecoilState } from 'recoil';
+import { vi } from 'vitest';
 
 type Params = {
   Page: React.FC;
@@ -35,7 +36,7 @@ export const renderWithHistory = ({
   spotifyUser = false
 }: Params): Result => {
   const userAccount = spotifyUser ? mockAccountWithSpotifyModel() : account;
-  const setCurrentAccountMock = jest.fn();
+  const setCurrentAccountMock = vi.fn();
   const mockedState = {
     setCurrentAccount: setCurrentAccountMock,
     getCurrentAccount: () => (adminUser ? { ...userAccount, user: { ...userAccount.user, role: 'admin' } } : userAccount)

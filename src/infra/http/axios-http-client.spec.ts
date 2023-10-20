@@ -2,12 +2,13 @@ import { AxiosHttpClient } from './axios-http-client';
 import { mockAxios, mockHttpResponse } from '@/infra/mocks';
 import { mockHttpRequest, mockHttpRequestWithParams } from '@/data/mocks';
 import axios from 'axios';
+import { describe, test, expect, vi, MockedObject } from 'vitest';
 
-jest.mock('axios');
+vi.mock('axios');
 
 type SutTypes = {
   sut: AxiosHttpClient;
-  mockedAxios: jest.Mocked<typeof axios>;
+  mockedAxios: MockedObject<typeof axios>;
 };
 
 const makeSut = (): SutTypes => {

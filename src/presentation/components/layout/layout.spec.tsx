@@ -24,6 +24,7 @@ import { setTimeout } from 'timers/promises';
 import { faker } from '@faker-js/faker';
 import { AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
 import { Socket } from 'socket.io-client';
+import { describe, test, expect, vi } from 'vitest';
 
 type SutTypes = {
   history: MemoryHistory;
@@ -76,21 +77,20 @@ const makeSut = (
   };
 };
 
-const mockToast = jest.fn();
-jest.mock('@chakra-ui/react', () => {
-  const originalModule = jest.requireActual('@chakra-ui/react');
+const mockToast = vi.fn();
+vi.mock('@chakra-ui/react', async () => {
+  const actual = await vi.importActual('@chakra-ui/react');
   return {
-    __esModule: true,
-    ...originalModule,
-    useToast: jest.fn().mockImplementation(() => mockToast)
+    // eslint-disable-next-line prettier/prettier
+    ...(actual as any),
+    useToast: vi.fn().mockImplementation(() => mockToast)
   };
 });
 
-jest.setTimeout(60000);
 describe('Layout Component', () => {
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-    jest.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.clearAllMocks();
   });
 
   afterEach(cleanup);
@@ -100,12 +100,11 @@ describe('Layout Component', () => {
     const homeNavItem = screen.getByTestId('home');
     const homeNavText = screen.getByTestId('home-text');
     const homeNavFlex = screen.getByTestId('nav-flex');
-    expect(homeNavItem).toBeInTheDocument();
-    expect(homeNavItem).toHaveAttribute('data-status', 'active');
-    expect(homeNavItem).toHaveAttribute('data-size', 'large');
-    expect(homeNavText).toHaveTextContent('Home');
-    expect(homeNavText).toHaveStyle('display: flex');
-    expect(homeNavFlex).toHaveAttribute('data-status', 'large');
+    expect(homeNavItem.getAttribute('data-status')).toBe('active');
+    expect(homeNavItem.getAttribute('data-size')).toBe('large');
+    expect(homeNavText.textContent).toBe('Home');
+    expect(homeNavText.getAttribute('data-display')).toBe('flex');
+    expect(homeNavFlex.getAttribute('data-status')).toBe('large');
   });
 
   test('should load spotify user into currentAccount state', async () => {
@@ -132,21 +131,21 @@ describe('Layout Component', () => {
   test('should have page outlet', () => {
     makeSut();
     const pageOutlet = screen.getByTestId('page-outlet');
-    expect(pageOutlet).toBeInTheDocument();
+    expect(pageOutlet).toBeTruthy();
   });
 
   test('should show toggle sidebar on bot name click', async () => {
     makeSut();
     const botName = screen.getByTestId('bot-name');
     await userEvent.click(botName);
-    expect(screen.getByTestId('nav-flex')).toHaveAttribute('data-status', 'small');
+    expect(screen.getByTestId('nav-flex').getAttribute('data-status')).toBe('small');
   });
 
   test('should show toggle sidebar on bot logo click', async () => {
     makeSut();
     const botName = screen.getByTestId('bot-logo');
     await userEvent.click(botName);
-    expect(screen.getByTestId('nav-flex')).toHaveAttribute('data-status', 'small');
+    expect(screen.getByTestId('nav-flex').getAttribute('data-status')).toBe('small');
   });
 
   test('should have user menu', () => {
@@ -155,9 +154,9 @@ describe('Layout Component', () => {
     const userMenu = screen.getByTestId('user-menu');
     const iconChevronDown = screen.getByTestId('user-menu-down');
     const userName = screen.getByTestId('user-name');
-    expect(userMenu).toBeInTheDocument();
-    expect(iconChevronDown).toBeInTheDocument();
-    expect(userName).toHaveTextContent(account.user.name.split(' ')[0]);
+    expect(userMenu).toBeTruthy();
+    expect(iconChevronDown).toBeTruthy();
+    expect(userName.textContent).toBe(account.user.name.split(' ')[0]);
   });
 
   test('should show user menu items', async () => {
@@ -166,8 +165,8 @@ describe('Layout Component', () => {
     await userEvent.click(userMenu);
     const userMenuList = screen.getByTestId('user-menu-list');
     const iconChevronUp = screen.getByTestId('user-menu-up');
-    expect(userMenuList).toBeInTheDocument();
-    expect(iconChevronUp).toBeInTheDocument();
+    expect(userMenuList).toBeTruthy();
+    expect(iconChevronUp).toBeTruthy();
   });
 
   test('should navigate to user profile', async () => {
@@ -187,9 +186,9 @@ describe('Layout Component', () => {
   test('should show render small layout', () => {
     window = Object.assign(window, { innerWidth: 766 });
     makeSut();
-    expect(screen.getByTestId('nav-flex')).toHaveAttribute('data-status', 'small');
-    expect(screen.getByTestId('home')).toHaveAttribute('data-size', 'small');
-    expect(screen.getByTestId('home-text')).toHaveStyle('display: none');
+    expect(screen.getByTestId('nav-flex').getAttribute('data-status')).toBe('small');
+    expect(screen.getByTestId('home').getAttribute('data-size')).toBe('small');
+    expect(screen.getByTestId('home-text').getAttribute('data-display')).toBe('none');
   });
 
   test('should redirect user to spotify authorize login url on spotify link', async () => {
@@ -207,31 +206,31 @@ describe('Layout Component', () => {
     const musicThumbnail = await screen.findByTestId('music-thumbnail');
     await waitFor(() => musicThumbnail);
     const song = loadMusicSpy.music?.name.split('-') as string[];
-    expect(screen.getByTestId('music-name')).toHaveTextContent(song[1].trim());
-    expect(screen.getByTestId('music-author')).toHaveTextContent(song[0].trim());
-    expect(screen.getByTestId('music-thumbnail')).toHaveAttribute('src', loadMusicSpy.music?.thumbnail as string);
+    expect(screen.getByTestId('music-name').textContent).toBe(song[1].trim());
+    expect(screen.getByTestId('music-author').textContent).toBe(song[0].trim());
+    expect(screen.getByTestId('music-thumbnail').getAttribute('src')).toBe(loadMusicSpy.music?.thumbnail as string);
   });
 
   test('should call load music and render music with name, author and fallback thumbnail', async () => {
     const loadMusicSpy = new LoadMusicSpy();
     const musicModel = mockMusicModel();
     delete musicModel?.thumbnail;
-    jest.spyOn(loadMusicSpy, 'load').mockResolvedValueOnce(musicModel);
+    vi.spyOn(loadMusicSpy, 'load').mockResolvedValueOnce(musicModel);
     makeSut(mockAccountModel(), loadMusicSpy);
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
     const musicThumbnail = await screen.findByTestId('music-thumbnail');
     await waitFor(() => musicThumbnail);
     const song = musicModel?.name.split('-') as string[];
-    expect(screen.getByTestId('music-name')).toHaveTextContent(song[1].trim());
-    expect(screen.getByTestId('music-author')).toHaveTextContent(song[0].trim());
-    expect(screen.getByTestId('music-thumbnail')).toHaveAttribute('src', 'https://via.placeholder.com/150');
+    expect(screen.getByTestId('music-name').textContent).toBe(song[1].trim());
+    expect(screen.getByTestId('music-author').textContent).toBe(song[0].trim());
+    expect(screen.getByTestId('music-thumbnail').getAttribute('src')).toBe('https://via.placeholder.com/150');
   });
 
   test('should render music with name and author unknown if no - is found', async () => {
     const loadMusicSpy = new LoadMusicSpy();
     const songName = faker.name.firstName();
-    jest.spyOn(loadMusicSpy, 'load').mockResolvedValueOnce(
+    vi.spyOn(loadMusicSpy, 'load').mockResolvedValueOnce(
       Object.assign({}, mockMusicModel(), {
         name: songName
       })
@@ -241,14 +240,14 @@ describe('Layout Component', () => {
     await waitFor(() => player);
     const musicThumbnail = await screen.findByTestId('music-thumbnail');
     await waitFor(() => musicThumbnail);
-    expect(screen.getByTestId('music-name')).toHaveTextContent(songName);
-    expect(screen.getByTestId('music-author')).toHaveTextContent('Unknown');
+    expect(screen.getByTestId('music-name').textContent).toBe(songName);
+    expect(screen.getByTestId('music-author').textContent).toBe('Unknown');
   });
 
   test('should render music with long name with only 40 characters', async () => {
     const loadMusicSpy = new LoadMusicSpy();
     const songName = faker.random.alphaNumeric(41);
-    jest.spyOn(loadMusicSpy, 'load').mockResolvedValueOnce(
+    vi.spyOn(loadMusicSpy, 'load').mockResolvedValueOnce(
       Object.assign({}, mockMusicModel(), {
         name: songName
       })
@@ -258,22 +257,22 @@ describe('Layout Component', () => {
     await waitFor(() => player);
     const musicThumbnail = await screen.findByTestId('music-thumbnail');
     await waitFor(() => musicThumbnail);
-    expect(screen.getByTestId('music-name')).toHaveTextContent(`${songName.substring(0, 40)}...`);
-    expect(screen.getByTestId('music-author')).toHaveTextContent('Unknown');
+    expect(screen.getByTestId('music-name').textContent).toBe(`${songName.substring(0, 40)}...`);
+    expect(screen.getByTestId('music-author').textContent).toBe('Unknown');
   });
 
   test('should not set music with name and author if load music returns null', async () => {
     const loadMusicSpy = new LoadMusicSpy();
-    jest.spyOn(loadMusicSpy, 'load').mockResolvedValueOnce(null);
+    vi.spyOn(loadMusicSpy, 'load').mockResolvedValueOnce(null);
     makeSut(mockAccountModel(), loadMusicSpy);
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
-    expect(screen.getByTestId('empty-song')).toBeInTheDocument();
+    expect(screen.getByTestId('empty-song')).toBeTruthy();
   });
 
   test('should show toast and redirect user to login if spotify access token is expired', async () => {
     const loadMusicSpy = new LoadMusicSpy();
-    jest.spyOn(loadMusicSpy, 'load').mockRejectedValueOnce(new AccessTokenExpiredError());
+    vi.spyOn(loadMusicSpy, 'load').mockRejectedValueOnce(new AccessTokenExpiredError());
     const { setCurrentAccountMock } = makeSut(mockAccountModel(), loadMusicSpy);
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
@@ -291,7 +290,7 @@ describe('Layout Component', () => {
 
   test('should show toast when LoadMusic throws UnexpectedError', async () => {
     const loadMusicSpy = new LoadMusicSpy();
-    jest.spyOn(loadMusicSpy, 'load').mockRejectedValueOnce(new UnexpectedError());
+    vi.spyOn(loadMusicSpy, 'load').mockRejectedValueOnce(new UnexpectedError());
     makeSut(mockAccountModel(), loadMusicSpy);
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
@@ -307,7 +306,7 @@ describe('Layout Component', () => {
 
   test('should call RunCommand with pause when pause is clicked', async () => {
     const { runCommandSpy } = makeSut();
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('play-pause-music'));
@@ -326,7 +325,7 @@ describe('Layout Component', () => {
 
   test('should show toast if RunCommand with pause fails', async () => {
     const { runCommandSpy } = makeSut();
-    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    vi.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('play-pause-music'));
@@ -343,7 +342,7 @@ describe('Layout Component', () => {
 
   test('should call RunCommand with resume when play is clicked', async () => {
     const { runCommandSpy } = makeSut();
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('play-pause-music'));
@@ -368,7 +367,7 @@ describe('Layout Component', () => {
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('play-pause-music'));
     await setTimeout(500);
-    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    vi.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
     await userEvent.click(screen.getByTestId('play-pause-music'));
     await setTimeout(500);
     expect(mockToast).toHaveBeenCalledWith({
@@ -383,7 +382,7 @@ describe('Layout Component', () => {
 
   test('should call RunCommand with shuffle when shuffle is clicked', async () => {
     const { runCommandSpy, loadQueueSpy } = makeSut();
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('shuffle-music'));
@@ -404,7 +403,7 @@ describe('Layout Component', () => {
 
   test('should show toast if RunCommand with shuffle fails', async () => {
     const { runCommandSpy } = makeSut();
-    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    vi.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('shuffle-music'));
@@ -421,7 +420,7 @@ describe('Layout Component', () => {
 
   test('should call RunCommand with skip when skip is clicked', async () => {
     const { runCommandSpy } = makeSut();
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('skip-music'));
@@ -440,7 +439,7 @@ describe('Layout Component', () => {
 
   test('should show toast if RunCommand with skip fails', async () => {
     const { runCommandSpy } = makeSut();
-    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    vi.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('skip-music'));
@@ -457,7 +456,7 @@ describe('Layout Component', () => {
 
   test('should call RunCommand with setVolume with correct volume when mute is clicked', async () => {
     const { runCommandSpy } = makeSut();
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('music-volume'));
@@ -476,7 +475,7 @@ describe('Layout Component', () => {
 
   test('should call RunCommand with setVolume with correct volume when mute is clicked again', async () => {
     const { runCommandSpy } = makeSut();
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('music-volume'));
@@ -498,7 +497,7 @@ describe('Layout Component', () => {
 
   test('should call RunCommand with setVolume with correct volume when volume slider is changed', async () => {
     const { runCommandSpy } = makeSut();
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('volume-slider'));
@@ -517,7 +516,7 @@ describe('Layout Component', () => {
 
   test('should show toast if RunCommand with setVolume fails', async () => {
     const { runCommandSpy } = makeSut();
-    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    vi.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('music-volume'));
@@ -538,18 +537,18 @@ describe('Layout Component', () => {
     const queueList = await screen.findByTestId('queue-list');
     await waitFor(() => queueList);
     expect(queueList.children).toHaveLength(8);
-    expect(queueList.querySelector('.queue-song-name')).toHaveTextContent(loadQueueSpy.queue[1].name);
+    expect(queueList.querySelector('.queue-song-name')?.textContent).toBe(loadQueueSpy.queue[1].name);
   });
 
   test('should not set queue if load queue returns empty array', async () => {
     const loadQueueSpy = new LoadQueueSpy();
-    jest.spyOn(loadQueueSpy, 'all').mockResolvedValueOnce([]);
+    vi.spyOn(loadQueueSpy, 'all').mockResolvedValueOnce([]);
     makeSut(mockAccountModel(), new LoadMusicSpy(), new RunCommandSpy(), loadQueueSpy);
     await userEvent.click(screen.getByTestId('show-queue'));
     const queueList = await screen.findByTestId('queue-list');
     await waitFor(() => queueList);
     expect(queueList.children).toHaveLength(1);
-    expect(screen.getByTestId('empty-queue')).toHaveTextContent('Queue is empty');
+    expect(screen.getByTestId('empty-queue').textContent).toBe('Queue is empty');
   });
 
   test('should fetch music and queue on music change', async () => {
@@ -577,12 +576,12 @@ describe('Layout Component', () => {
     makeSut();
     const botName = screen.getByTestId('bot-logo');
     await userEvent.click(botName);
-    expect(screen.getByTestId('nav-flex')).toHaveAttribute('data-status', 'large');
+    expect(screen.getByTestId('nav-flex').getAttribute('data-status')).toBe('large');
   });
 
   test('should call RunCommand with skip with index when skip is from Queue', async () => {
     const { runCommandSpy } = makeSut();
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const player = await screen.findByTestId('player');
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('show-queue'));
@@ -604,7 +603,7 @@ describe('Layout Component', () => {
   test('should show account linked with discord when user is linked', async () => {
     makeSut(mockAccountWithDiscordModel());
     const discordButton = screen.getByTestId('link-discord');
-    expect(discordButton).toHaveTextContent('Linked with Discord');
+    expect(discordButton.textContent).toBe('Linked with Discord');
   });
 
   test('should redirect user to discord authorize login url on discord link', async () => {

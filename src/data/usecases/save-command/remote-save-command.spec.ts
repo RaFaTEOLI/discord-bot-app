@@ -4,6 +4,7 @@ import { HttpStatusCode } from '@/data/protocols/http';
 import { mockSaveCommandParams } from '@/domain/mocks';
 import { ForbiddenError, UnexpectedError } from '@/domain/errors';
 import { faker } from '@faker-js/faker';
+import { describe, test, expect } from 'vitest';
 
 type SutTypes = {
   sut: RemoteSaveCommand;

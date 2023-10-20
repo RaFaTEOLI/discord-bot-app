@@ -1,6 +1,7 @@
 import { mockSpotifyAuthorizeParams } from '@/domain/mocks';
 import { faker } from '@faker-js/faker';
 import { RemoteSpotifyAuthorize } from './remote-spotify-authorize';
+import { describe, test, expect } from 'vitest';
 
 type SutTypes = {
   sut: RemoteSpotifyAuthorize;

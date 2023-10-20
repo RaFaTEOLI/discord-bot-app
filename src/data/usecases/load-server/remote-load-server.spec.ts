@@ -4,6 +4,7 @@ import { HttpStatusCode } from '@/data/protocols/http';
 import { UnexpectedError } from '@/domain/errors';
 import { faker } from '@faker-js/faker';
 import { mockServerModel, mockSpotifyUser } from '@/domain/mocks';
+import { describe, test, expect } from 'vitest';
 
 type SutTypes = {
   sut: RemoteLoadServer;

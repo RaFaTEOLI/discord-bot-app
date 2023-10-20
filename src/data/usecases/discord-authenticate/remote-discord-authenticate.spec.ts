@@ -4,6 +4,7 @@ import { mockDiscordAuthenticateParams, mockDiscordAuthorizeParams, mockDiscordA
 import { AccessDeniedError, InvalidCredentialsError, UnexpectedError } from '@/domain/errors';
 import { HttpStatusCode } from '@/data/protocols/http';
 import { faker } from '@faker-js/faker';
+import { describe, test, expect } from 'vitest';
 
 type SutTypes = {
   sut: RemoteDiscordAuthenticate;

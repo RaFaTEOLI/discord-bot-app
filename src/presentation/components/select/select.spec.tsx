@@ -1,6 +1,7 @@
 import { render, RenderResult } from '@testing-library/react';
 import { faker } from '@faker-js/faker';
 import { SelectBase } from '@/presentation/components';
+import { describe, test, expect } from 'vitest';
 
 const makeSut = (fieldName: string, placeholder = ''): RenderResult => {
   return render(
@@ -19,7 +20,7 @@ describe('Select Component', () => {
     const field = faker.database.column();
     const sut = makeSut(field, field);
     const label = sut.getByTestId(`${field}-label`);
-    expect(label).toBeInTheDocument();
+    expect(label).toBeTruthy();
     expect(label.innerHTML).toBe(field);
   });
 });

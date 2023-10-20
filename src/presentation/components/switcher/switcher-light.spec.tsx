@@ -1,18 +1,16 @@
 import { render, RenderResult } from '@testing-library/react';
 import Switcher from './switcher';
+import { describe, test, expect, vi } from 'vitest';
 
 const makeSut = (): RenderResult => {
   return render(<Switcher />);
 };
 
-jest.mock('@chakra-ui/react', () => {
-  // --> Original module
-  const originalModule = jest.requireActual('@chakra-ui/react');
-
+vi.mock('@chakra-ui/react', async () => {
+  const actual = await vi.importActual('@chakra-ui/react');
   return {
-    __esModule: true,
-    ...originalModule,
-    useColorMode: jest.fn().mockImplementation(() => {
+    ...(actual as any),
+    useColorMode: vi.fn().mockImplementation(() => {
       return {
         colorMode: 'light',
         toggleColorMode: () => {}
@@ -24,6 +22,6 @@ jest.mock('@chakra-ui/react', () => {
 describe('Switcher Component', () => {
   test('should change theme mode to light', async () => {
     const sut = makeSut();
-    expect(sut.getByTestId('sun')).toBeInTheDocument();
+    expect(sut.getByTestId('sun')).toBeTruthy();
   });
 });

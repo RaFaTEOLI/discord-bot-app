@@ -6,6 +6,7 @@ import { createMemoryHistory, MemoryHistory } from 'history';
 import { setTimeout } from 'timers/promises';
 import Profile from './profile';
 import { AccountModel } from '@/domain/models';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 
 type SutTypes = {
   history: MemoryHistory;
@@ -19,7 +20,7 @@ const history = createMemoryHistory({ initialEntries: ['/profile'] });
 const makeSut = (error: Error | undefined = undefined, refreshTokenSpy?: SpotifyRefreshTokenSpy | undefined): SutTypes => {
   const loadUserSpy = new LoadUserSpy();
   if (error) {
-    jest.spyOn(loadUserSpy, 'load').mockRejectedValueOnce(error);
+    vi.spyOn(loadUserSpy, 'load').mockRejectedValueOnce(error);
   }
   const { setCurrentAccountMock, getCurrentAccountMock } = renderWithHistory({
     history,
@@ -34,19 +35,18 @@ const makeSut = (error: Error | undefined = undefined, refreshTokenSpy?: Spotify
   return { history, loadUserSpy, refreshTokenSpy, getCurrentAccountMock, setCurrentAccountMock };
 };
 
-const mockToast = jest.fn();
-jest.mock('@chakra-ui/react', () => {
-  const originalModule = jest.requireActual('@chakra-ui/react');
+const mockToast = vi.fn();
+vi.mock('@chakra-ui/react', async () => {
+  const actual = await vi.importActual('@chakra-ui/react');
   return {
-    __esModule: true,
-    ...originalModule,
-    useToast: jest.fn().mockImplementation(() => mockToast)
+    ...(actual as any),
+    useToast: vi.fn().mockImplementation(() => mockToast)
   };
 });
 
 describe('Profile Component', () => {
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   test('should have profile page content', () => {
@@ -55,8 +55,8 @@ describe('Profile Component', () => {
       name: 'Profile'
     });
     const loading = screen.getByTestId('loading');
-    expect(pageContent).toBeInTheDocument();
-    expect(loading).toBeInTheDocument();
+    expect(pageContent).toBeTruthy();
+    expect(loading).toBeTruthy();
   });
 
   test('should call LoadUser on load', () => {
@@ -67,8 +67,8 @@ describe('Profile Component', () => {
   test('should show user info', async () => {
     const { loadUserSpy } = makeSut();
     await waitFor(() => screen.getByTestId('info'));
-    expect(screen.getByTestId('name')).toHaveTextContent(loadUserSpy.spotifyUser.display_name);
-    expect(screen.getByTestId('email')).toHaveTextContent(loadUserSpy.spotifyUser.email);
+    expect(screen.getByTestId('name').textContent).toBe(loadUserSpy.spotifyUser.display_name);
+    expect(screen.getByTestId('email').textContent).toBe(loadUserSpy.spotifyUser.email);
   });
 
   test('should show error if LoadUser fails', async () => {

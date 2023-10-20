@@ -4,6 +4,7 @@ import { HttpStatusCode } from '@/data/protocols/http';
 import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
 import { faker } from '@faker-js/faker';
 import { SpotifySearchModel } from '@/domain/models';
+import { describe, test, expect } from 'vitest';
 
 type SutTypes = {
   sut: RemoteLoadMusic;

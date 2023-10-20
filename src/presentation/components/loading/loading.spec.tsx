@@ -1,5 +1,6 @@
 import { render, RenderResult } from '@testing-library/react';
 import Loading from './loading';
+import { describe, test, expect } from 'vitest';
 
 const makeSut = (): RenderResult => {
   return render(<Loading />);
@@ -8,6 +9,6 @@ const makeSut = (): RenderResult => {
 describe('Loading Component', () => {
   test('should show loading', () => {
     const sut = makeSut();
-    expect(sut.getByTestId('loading')).toBeInTheDocument();
+    expect(sut.getByTestId('loading')).toBeTruthy();
   });
 });

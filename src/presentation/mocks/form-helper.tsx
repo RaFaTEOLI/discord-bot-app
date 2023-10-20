@@ -6,14 +6,15 @@ export const testStatusForField = (fieldName: string, validationError = ''): voi
   const wrap = screen.getByTestId(`${fieldName}-wrap`);
   const field = screen.getByTestId(`${fieldName}`);
   const label = screen.getByTestId(`${fieldName}-label`);
-  expect(wrap).toHaveAttribute('data-status', validationError ? 'invalid' : 'valid');
+  expect(wrap.getAttribute('data-status')).toBe(validationError ? 'invalid' : 'valid');
   expect(field).toHaveProperty('title', validationError);
   expect(label).toHaveProperty('title', validationError);
 };
 
 export const testValueForField = (fieldId: string, value: string): void => {
-  const field = screen.getByTestId(fieldId);
-  expect(field).toHaveValue(value);
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  const field = screen.getByTestId(fieldId) as HTMLInputElement;
+  expect(field.value).toBe(value);
 };
 
 export const populateField = (fieldName: string, value = faker.random.word(), select = false): void => {

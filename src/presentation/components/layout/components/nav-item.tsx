@@ -56,6 +56,7 @@ const NavItem = ({ navSize, icon, title, active, to, testName }: INavItemProps):
                 fontSize="sm"
                 fontWeight={500}
                 display={navSize === 'small' ? 'none' : 'flex'}
+                data-display={navSize === 'small' ? 'none' : 'flex'}
                 data-testid={`${testName}-text`}
               >
                 {title}

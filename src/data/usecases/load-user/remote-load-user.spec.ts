@@ -4,6 +4,7 @@ import { HttpStatusCode } from '@/data/protocols/http';
 import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
 import { faker } from '@faker-js/faker';
 import { mockSpotifyUser } from '@/domain/mocks';
+import { describe, test, expect } from 'vitest';
 
 type SutTypes = {
   sut: RemoteLoadUser;

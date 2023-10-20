@@ -1,6 +1,7 @@
 import { mockDiscordAuthorizeParams } from '@/domain/mocks';
 import { faker } from '@faker-js/faker';
 import { RemoteDiscordAuthorize } from './remote-discord-authorize';
+import { describe, test, expect } from 'vitest';
 
 type SutTypes = {
   sut: RemoteDiscordAuthorize;
