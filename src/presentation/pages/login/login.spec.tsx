@@ -8,6 +8,7 @@ import { AuthenticationSpy, SpotifyAuthorizeSpy } from '@/domain/mocks';
 import { Authentication } from '@/domain/usecases';
 import userEvent from '@testing-library/user-event';
 import { loginState } from './components';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 
 type SutTypes = {
   authenticationSpy: AuthenticationSpy;
@@ -64,7 +65,7 @@ const simulateInvalidSubmit = async (): Promise<void> => {
 
 describe('Login Component', () => {
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   it('should not render spinner and error on start', () => {
@@ -120,9 +121,9 @@ describe('Login Component', () => {
   test('should present error if Authentication fails', async () => {
     const { authenticationSpy } = makeSut();
     const error = new InvalidCredentialsError();
-    jest.spyOn(authenticationSpy, 'auth').mockRejectedValueOnce(error);
+    vi.spyOn(authenticationSpy, 'auth').mockRejectedValueOnce(error);
     await simulateValidSubmit();
-    expect(screen.getByTestId('main-error')).toHaveTextContent(error.message);
+    expect(screen.getByTestId('main-error').textContent).toBe(error.message);
     expect(screen.getByTestId('error-wrap').children).toHaveLength(1);
   });
 

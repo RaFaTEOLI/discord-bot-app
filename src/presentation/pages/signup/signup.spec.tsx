@@ -8,6 +8,7 @@ import { AddAccountSpy, SpotifyAuthorizeSpy } from '@/domain/mocks';
 import { AddAccount } from '@/domain/usecases';
 import { signUpState } from './components';
 import userEvent from '@testing-library/user-event';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 
 type SutTypes = {
   addAccountSpy: AddAccountSpy;
@@ -72,7 +73,7 @@ const simulateInvalidSubmit = async (): Promise<void> => {
 
 describe('SignUp Component', () => {
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   test('should start with initial state', () => {
@@ -144,9 +145,9 @@ describe('SignUp Component', () => {
   test('should present error if AddAccount fails', async () => {
     const { addAccountSpy } = makeSut();
     const error = new EmailAlreadyBeingUsedError();
-    jest.spyOn(addAccountSpy, 'add').mockRejectedValueOnce(error);
+    vi.spyOn(addAccountSpy, 'add').mockRejectedValueOnce(error);
     await simulateValidSubmit();
-    expect(screen.getByTestId('main-error')).toHaveTextContent(error.message);
+    expect(screen.getByTestId('main-error').textContent).toBe(error.message);
     expect(screen.getByTestId('error-wrap').children).toHaveLength(1);
   });
 

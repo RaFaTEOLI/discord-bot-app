@@ -1,6 +1,7 @@
 import { fireEvent, render, RenderResult } from '@testing-library/react';
 import { faker } from '@faker-js/faker';
 import { InputBase } from '@/presentation/components';
+import { describe, test, expect } from 'vitest';
 
 const makeSut = (fieldName: string, placeholder = ''): RenderResult => {
   return render(<InputBase name={fieldName} state={{}} placeholder={placeholder} />);
@@ -26,7 +27,7 @@ describe('Input Component', () => {
     const field = faker.database.column();
     const sut = makeSut(field, field);
     const label = sut.getByTestId(`${field}-label`);
-    expect(label).toBeInTheDocument();
+    expect(label).toBeTruthy();
     expect(label.innerHTML).toBe(field);
   });
 });

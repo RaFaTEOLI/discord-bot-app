@@ -3,6 +3,7 @@ import { RemoteRunCommand } from '@/data/usecases';
 import { HttpStatusCode } from '@/data/protocols/http';
 import { faker } from '@faker-js/faker';
 import { UnexpectedError } from '@/domain/errors';
+import { describe, test, expect } from 'vitest';
 
 type SutTypes = {
   sut: RemoteRunCommand;

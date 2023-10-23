@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { render, RenderResult } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { describe, test, expect, vi } from 'vitest';
 
 import ConfirmationModal from './confirmation-modal';
 
@@ -11,8 +12,8 @@ type SutTypes = {
 };
 
 const makeSut = (loading = false, description: string | null = null): SutTypes => {
-  const onClose = jest.fn();
-  const onConfirm = jest.fn();
+  const onClose = vi.fn();
+  const onConfirm = vi.fn();
   const isOpen = true;
 
   const sut = render(
@@ -30,7 +31,7 @@ describe('ConfirmationModal', () => {
   test('should render ConfirmationModal component', () => {
     const { sut } = makeSut();
     const modalHeader = sut.getByTestId('confirmation-modal-header');
-    expect(modalHeader).toBeInTheDocument();
+    expect(modalHeader).toBeTruthy();
     expect(modalHeader.innerHTML).toBe('Are you sure?');
   });
 
@@ -38,7 +39,7 @@ describe('ConfirmationModal', () => {
     const description = faker.random.word();
     const { sut } = makeSut(false, description);
     const modalDescription = sut.getByTestId('confirmation-modal-description');
-    expect(modalDescription).toBeInTheDocument();
+    expect(modalDescription).toBeTruthy();
     expect(modalDescription.innerHTML).toBe(description);
   });
 
@@ -59,12 +60,12 @@ describe('ConfirmationModal', () => {
   test('should show spinner if loading is true', async () => {
     const { sut } = makeSut(true);
     const loadingSpinner = sut.getByTestId('loading-spinner');
-    expect(loadingSpinner).toBeInTheDocument();
+    expect(loadingSpinner).toBeTruthy();
   });
 
   test('should not show spinner if loading is false', async () => {
     const { sut } = makeSut();
     const loadingSpinner = sut.queryByTestId('loading-spinner');
-    expect(loadingSpinner).not.toBeInTheDocument();
+    expect(loadingSpinner).not.toBeTruthy();
   });
 });

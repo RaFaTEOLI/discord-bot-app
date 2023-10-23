@@ -9,6 +9,7 @@ import Browse from './browse';
 import { setTimeout } from 'timers/promises';
 import { faker } from '@faker-js/faker';
 import { SpotifySearch } from '@/domain/usecases';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 
 type SutTypes = {
   setCurrentAccountMock: (account: AccountModel) => void;
@@ -19,13 +20,12 @@ type SutTypes = {
   refreshTokenSpy: SpotifyRefreshTokenSpy | undefined;
 };
 
-const mockToast = jest.fn();
-jest.mock('@chakra-ui/react', () => {
-  const originalModule = jest.requireActual('@chakra-ui/react');
+const mockToast = vi.fn();
+vi.mock('@chakra-ui/react', async () => {
+  const actual = await vi.importActual('@chakra-ui/react');
   return {
-    __esModule: true,
-    ...originalModule,
-    useToast: jest.fn().mockImplementation(() => mockToast)
+    ...(actual as any),
+    useToast: vi.fn().mockImplementation(() => mockToast)
   };
 });
 const history = createMemoryHistory({ initialEntries: ['/browse'] });
@@ -50,7 +50,7 @@ const makeSut = (
 
 describe('Browse Component', () => {
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   test('should have browse page content', () => {
@@ -58,7 +58,7 @@ describe('Browse Component', () => {
     const pageContent = screen.getByRole('heading', {
       name: 'Browse'
     });
-    expect(pageContent).toBeInTheDocument();
+    expect(pageContent).toBeTruthy();
   });
 
   test('should call SpotifySearch', async () => {
@@ -71,7 +71,7 @@ describe('Browse Component', () => {
   test('should render error on UnexpectedError on SpotifySearch', async () => {
     const spotifySearchSpy = new SpotifySearchSpy();
     const error = new UnexpectedError();
-    jest.spyOn(spotifySearchSpy, 'search').mockRejectedValueOnce(error);
+    vi.spyOn(spotifySearchSpy, 'search').mockRejectedValueOnce(error);
     makeSut(spotifySearchSpy);
     await waitFor(() => screen.getByTestId('browse-container'));
     await userEvent.click(screen.getByTestId('search-song-button'));
@@ -100,7 +100,7 @@ describe('Browse Component', () => {
 
   test('should show no tracks', async () => {
     const spotifySearchSpy = new SpotifySearchSpy();
-    jest.spyOn(spotifySearchSpy, 'search').mockResolvedValueOnce(undefined as unknown as SpotifySearch.Model);
+    vi.spyOn(spotifySearchSpy, 'search').mockResolvedValueOnce(undefined as unknown as SpotifySearch.Model);
     makeSut(spotifySearchSpy);
     const searchInput = screen.getByTestId('search-song-input');
     const noun = faker.word.noun();
@@ -110,7 +110,7 @@ describe('Browse Component', () => {
     const noContent = screen.getByRole('heading', {
       name: 'Nothing to show...'
     });
-    expect(noContent).toBeInTheDocument();
+    expect(noContent).toBeTruthy();
   });
 
   test('should show track from TracksList', async () => {
@@ -124,8 +124,8 @@ describe('Browse Component', () => {
     const artistName = spotifySearchSpy.spotifySearch.tracks.items[0].artists[0].name;
     const trackName = spotifySearchSpy.spotifySearch.tracks.items[0].name;
     expect(tracksList.children).toHaveLength(1);
-    expect(tracksList.querySelector('.track-name')).toHaveTextContent(trackName);
-    expect(tracksList.querySelector('.track-artist')).toHaveTextContent(artistName);
+    expect(tracksList.querySelector('.track-name')?.textContent).toBe(trackName);
+    expect(tracksList.querySelector('.track-artist')?.textContent).toBe(artistName);
   });
 
   test('should call RunCommand with song', async () => {
@@ -134,7 +134,7 @@ describe('Browse Component', () => {
     const noun = faker.word.noun();
     await userEvent.type(searchInput, noun);
     await userEvent.click(screen.getByTestId('search-song-button'));
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const tracksList = await screen.findByTestId('tracks-list');
     await waitFor(() => tracksList);
     await userEvent.click(tracksList.querySelectorAll('.song-play-button')[0]);
@@ -156,7 +156,7 @@ describe('Browse Component', () => {
 
   test('should call toast with error values if RunCommand with song fails', async () => {
     const runCommandSpy = new RunCommandSpy();
-    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    vi.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
     makeSut(new SpotifySearchSpy(), runCommandSpy);
     const searchInput = screen.getByTestId('search-song-input');
     const noun = faker.word.noun();
@@ -185,7 +185,7 @@ describe('Browse Component', () => {
     const noun = faker.word.noun();
     await userEvent.type(searchInput, noun);
     await userEvent.click(screen.getByTestId('search-song-button'));
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const tracksList = await screen.findByTestId('tracks-list');
     await waitFor(() => tracksList);
     await userEvent.click(tracksList.querySelectorAll('.song-play-button')[0]);
@@ -207,7 +207,7 @@ describe('Browse Component', () => {
 
   test('should show toast and refresh spotify access token when a refresh token is present', async () => {
     const spotifySearchSpy = new SpotifySearchSpy();
-    jest.spyOn(spotifySearchSpy, 'search').mockRejectedValueOnce(new AccessTokenExpiredError());
+    vi.spyOn(spotifySearchSpy, 'search').mockRejectedValueOnce(new AccessTokenExpiredError());
     const refreshTokenSpy = new SpotifyRefreshTokenSpy();
     const { setCurrentAccountMock, getCurrentAccountMock } = makeSut(spotifySearchSpy, new RunCommandSpy(), refreshTokenSpy);
     await waitFor(() => screen.getByTestId('browse-container'));

@@ -79,6 +79,7 @@ export default function PlaylistListItem({ playlists, handleView, handlePlay }: 
               >
                 <IconButton
                   display={currentHover === playlist.id ? 'flex' : 'none'}
+                  data-display={currentHover === playlist.id ? 'flex' : 'none'}
                   position="absolute"
                   right={3}
                   bottom={0}

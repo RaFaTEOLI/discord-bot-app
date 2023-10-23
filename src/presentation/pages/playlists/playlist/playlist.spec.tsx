@@ -13,6 +13,7 @@ import { createMemoryHistory, MemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import { setTimeout } from 'timers/promises';
 import Playlist from './playlist';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 
 type SutTypes = {
   setCurrentAccountMock: (account: AccountModel) => void;
@@ -24,13 +25,12 @@ type SutTypes = {
   refreshTokenSpy: SpotifyRefreshTokenSpy | undefined;
 };
 
-const mockToast = jest.fn();
-jest.mock('@chakra-ui/react', () => {
-  const originalModule = jest.requireActual('@chakra-ui/react');
+const mockToast = vi.fn();
+vi.mock('@chakra-ui/react', async () => {
+  const actual = await vi.importActual('@chakra-ui/react');
   return {
-    __esModule: true,
-    ...originalModule,
-    useToast: jest.fn().mockImplementation(() => mockToast)
+    ...(actual as any),
+    useToast: vi.fn().mockImplementation(() => mockToast)
   };
 });
 const history = createMemoryHistory({ initialEntries: ['/playlists/1'] });
@@ -65,13 +65,13 @@ const makeSut = (
 
 describe('Playlist Component', () => {
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   test('should have playlist page content', () => {
     makeSut();
     const pageContent = screen.getByTestId('playlist-container');
-    expect(pageContent).toBeInTheDocument();
+    expect(pageContent).toBeTruthy();
   });
 
   test('should call LoadPlaylistTracks', () => {
@@ -81,7 +81,7 @@ describe('Playlist Component', () => {
 
   test('should show toast and refresh spotify access token when a refresh token is present', async () => {
     const loadPlaylistTracksSpy = new LoadPlaylistTracksSpy();
-    jest.spyOn(loadPlaylistTracksSpy, 'load').mockRejectedValueOnce(new AccessTokenExpiredError());
+    vi.spyOn(loadPlaylistTracksSpy, 'load').mockRejectedValueOnce(new AccessTokenExpiredError());
     const { setCurrentAccountMock, refreshTokenSpy, getCurrentAccountMock } = makeSut(
       loadPlaylistTracksSpy,
       new RunCommandSpy(),
@@ -114,17 +114,17 @@ describe('Playlist Component', () => {
   test('should render error on UnexpectedError on LoadPlaylistTracks', async () => {
     const loadPlaylistTracksSpy = new LoadPlaylistTracksSpy();
     const error = new UnexpectedError();
-    jest.spyOn(loadPlaylistTracksSpy, 'load').mockRejectedValueOnce(error);
+    vi.spyOn(loadPlaylistTracksSpy, 'load').mockRejectedValueOnce(error);
     makeSut(loadPlaylistTracksSpy);
     await waitFor(() => screen.getByTestId('error'));
-    expect(screen.queryByTestId('playlists-list')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('playlists-list')).not.toBeTruthy();
     const errorWrap = await screen.findByTestId('error');
-    expect(errorWrap).toHaveTextContent(error.message);
+    expect(errorWrap.textContent).toBe(`${error.message}Try again`);
   });
 
   test('should render error on AccessDeniedError on LoadPlaylistTracks', async () => {
     const loadPlaylistTracksSpy = new LoadPlaylistTracksSpy();
-    jest.spyOn(loadPlaylistTracksSpy, 'load').mockRejectedValueOnce(new AccessDeniedError());
+    vi.spyOn(loadPlaylistTracksSpy, 'load').mockRejectedValueOnce(new AccessDeniedError());
     const { setCurrentAccountMock, history } = makeSut(loadPlaylistTracksSpy);
     await waitFor(() => screen.getByTestId('playlist-container'));
     await setTimeout(500);
@@ -134,7 +134,7 @@ describe('Playlist Component', () => {
 
   test('should show toast and redirect user to login if spotify access token is expired and no refreshToken is present', async () => {
     const loadPlaylistTracksSpy = new LoadPlaylistTracksSpy();
-    jest.spyOn(loadPlaylistTracksSpy, 'load').mockRejectedValueOnce(new AccessTokenExpiredError());
+    vi.spyOn(loadPlaylistTracksSpy, 'load').mockRejectedValueOnce(new AccessTokenExpiredError());
     const { setCurrentAccountMock } = makeSut(loadPlaylistTracksSpy);
     await setTimeout(2000);
     expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
@@ -150,7 +150,7 @@ describe('Playlist Component', () => {
 
   test('should call LoadPlaylistTracks on reload', async () => {
     const loadPlaylistTracksSpy = new LoadPlaylistTracksSpy();
-    jest.spyOn(loadPlaylistTracksSpy, 'load').mockRejectedValueOnce(new UnexpectedError());
+    vi.spyOn(loadPlaylistTracksSpy, 'load').mockRejectedValueOnce(new UnexpectedError());
     makeSut(loadPlaylistTracksSpy);
     await waitFor(() => screen.getByTestId('error'));
     await userEvent.click(screen.getByTestId('reload'));
@@ -162,16 +162,17 @@ describe('Playlist Component', () => {
     const { loadPlaylistTracksSpy } = makeSut();
     const playlistHeader = await screen.findByTestId('playlist-header');
     await waitFor(() => playlistHeader);
-    expect(screen.getByTestId('playlist-image-url')).toHaveAttribute(
-      'src',
+    expect(screen.getByTestId('playlist-image-url').getAttribute('src')).toBe(
       loadPlaylistTracksSpy.spotifyUserPlaylists.images[0].url
     );
-    expect(screen.getByTestId('playlist-name')).toHaveTextContent(loadPlaylistTracksSpy.spotifyUserPlaylists.name);
-    expect(screen.getByTestId('playlist-description')).toHaveTextContent(
+    expect(screen.getByTestId('playlist-name').textContent).toBe(loadPlaylistTracksSpy.spotifyUserPlaylists.name);
+    expect(screen.getByTestId('playlist-description').textContent).toBe(
       loadPlaylistTracksSpy.spotifyUserPlaylists.description
     );
-    expect(screen.getByTestId('playlist-song-count')).toHaveTextContent(
-      loadPlaylistTracksSpy.spotifyUserPlaylists.tracks.total.toString()
+    expect(screen.getByTestId('playlist-song-count').textContent).toBe(
+      `${
+        loadPlaylistTracksSpy.spotifyUserPlaylists.owner.display_name
+      } • ${loadPlaylistTracksSpy.spotifyUserPlaylists.tracks.total.toString()} Songs`
     );
   });
 
@@ -203,14 +204,14 @@ describe('Playlist Component', () => {
       const trackName = loadPlaylistTracksSpy.spotifyUserPlaylists.tracks?.items[2].track.name;
       await userEvent.type(inputFilter, artistName);
       expect(tracksList.children).toHaveLength(1);
-      expect(tracksList.querySelector('.track-name')).toHaveTextContent(trackName);
-      expect(tracksList.querySelector('.track-artist')).toHaveTextContent(artistName);
+      expect(tracksList.querySelector('.track-name')?.textContent).toBe(trackName);
+      expect(tracksList.querySelector('.track-artist')?.textContent).toBe(artistName);
     }
   });
 
   test('should call RunCommand with playlist', async () => {
     const { runCommandSpy, loadPlaylistTracksSpy } = makeSut();
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const playlistHeader = await screen.findByTestId('playlist-header');
     await waitFor(() => playlistHeader);
     await userEvent.click(screen.getByTestId('playlist-play-button'));
@@ -232,7 +233,7 @@ describe('Playlist Component', () => {
 
   test('should call toast with error values if RunCommand fails', async () => {
     const runCommandSpy = new RunCommandSpy();
-    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    vi.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
     makeSut(new LoadPlaylistTracksSpy(), runCommandSpy);
     const playlistsHeader = await screen.findByTestId('playlist-header');
     await waitFor(() => playlistsHeader);
@@ -253,7 +254,7 @@ describe('Playlist Component', () => {
 
   test('should call RunCommand with song', async () => {
     const { runCommandSpy, loadPlaylistTracksSpy } = makeSut();
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const tracksList = await screen.findByTestId('tracks-list');
     await waitFor(() => tracksList);
     await userEvent.click(tracksList.querySelectorAll('.song-play-button')[1]);
@@ -277,7 +278,7 @@ describe('Playlist Component', () => {
 
   test('should call toast with error values if RunCommand with song fails', async () => {
     const runCommandSpy = new RunCommandSpy();
-    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    vi.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
     makeSut(new LoadPlaylistTracksSpy(), runCommandSpy);
     const tracksList = await screen.findByTestId('tracks-list');
     await waitFor(() => tracksList);
@@ -298,7 +299,7 @@ describe('Playlist Component', () => {
 
   test('should call RunCommand with stop and playlist', async () => {
     const { runCommandSpy, loadPlaylistTracksSpy } = makeSut();
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const playlistHeader = await screen.findByTestId('playlist-header');
     await waitFor(() => playlistHeader);
     await userEvent.click(screen.getByTestId('playlist-play-button'));
@@ -320,7 +321,7 @@ describe('Playlist Component', () => {
 
   test('should call RunCommand with stop and song', async () => {
     const { runCommandSpy, loadPlaylistTracksSpy } = makeSut();
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const tracksList = await screen.findByTestId('tracks-list');
     await waitFor(() => tracksList);
     await userEvent.click(tracksList.querySelectorAll('.song-play-button')[1]);
@@ -347,15 +348,15 @@ describe('Playlist Component', () => {
     const playlistHeader = await screen.findByTestId('playlist-header');
     await waitFor(() => playlistHeader);
     expect(loadUserByIdSpy.callsCount).toBe(1);
-    expect(screen.getByTestId('playlist-owner-image-url')).toBeInTheDocument();
+    expect(screen.getByTestId('playlist-owner-image-url')).toBeTruthy();
   });
 
   test('should call LoadUserById and show fallback avatar when user does not have one', async () => {
     const loadUserByIdSpy = new LoadUserByIdSpy();
-    jest.spyOn(loadUserByIdSpy, 'loadById').mockResolvedValueOnce(Object.assign({}, mockSpotifyUserById(), { images: [] }));
+    vi.spyOn(loadUserByIdSpy, 'loadById').mockResolvedValueOnce(Object.assign({}, mockSpotifyUserById(), { images: [] }));
     makeSut(new LoadPlaylistTracksSpy(), new RunCommandSpy(), loadUserByIdSpy);
     const playlistHeader = await screen.findByTestId('playlist-header');
     await waitFor(() => playlistHeader);
-    expect(screen.getByTestId('playlist-owner-image-url')).toBeInTheDocument();
+    expect(screen.getByTestId('playlist-owner-image-url')).toBeTruthy();
   });
 });

@@ -6,6 +6,7 @@ import { SpotifyAuthenticateSpy } from '@/domain/mocks';
 import { Authentication } from '@/domain/usecases';
 import { setTimeout } from 'timers/promises';
 import { InvalidCredentialsError } from '@/domain/errors';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 
 type SutTypes = {
   setCurrentAccountMock: (account: Authentication.Model) => void;
@@ -22,8 +23,8 @@ const makeSut = (memoryHistory: MemoryHistory = historyWithLoginSpotifyLogin, er
   const spotifyAuthenticateLoginSpy = new SpotifyAuthenticateSpy();
   const spotifyAuthenticateSignUpSpy = new SpotifyAuthenticateSpy();
   if (error) {
-    jest.spyOn(spotifyAuthenticateLoginSpy, 'request').mockRejectedValueOnce(error);
-    jest.spyOn(spotifyAuthenticateSignUpSpy, 'request').mockRejectedValueOnce(error);
+    vi.spyOn(spotifyAuthenticateLoginSpy, 'request').mockRejectedValueOnce(error);
+    vi.spyOn(spotifyAuthenticateSignUpSpy, 'request').mockRejectedValueOnce(error);
   }
   const { setCurrentAccountMock } = renderWithHistory({
     history: memoryHistory,
@@ -36,19 +37,18 @@ const makeSut = (memoryHistory: MemoryHistory = historyWithLoginSpotifyLogin, er
   return { setCurrentAccountMock, spotifyAuthenticateLoginSpy, spotifyAuthenticateSignUpSpy };
 };
 
-const mockToast = jest.fn();
-jest.mock('@chakra-ui/react', () => {
-  const originalModule = jest.requireActual('@chakra-ui/react');
+const mockToast = vi.fn();
+vi.mock('@chakra-ui/react', async () => {
+  const actual = await vi.importActual('@chakra-ui/react');
   return {
-    __esModule: true,
-    ...originalModule,
-    useToast: jest.fn().mockImplementation(() => mockToast)
+    ...(actual as any),
+    useToast: vi.fn().mockImplementation(() => mockToast)
   };
 });
 
 describe('Spotify Container Component', () => {
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   test('should login into spotify if redirect is received from login page', async () => {

@@ -4,6 +4,7 @@ import { EmailAlreadyBeingUsedError, UnexpectedError } from '@/domain/errors';
 import { mockAddAccountParams, mockAddAccountModel } from '@/domain/mocks';
 import { RemoteAddAccount } from '@/data/usecases';
 import { faker } from '@faker-js/faker';
+import { describe, test, expect } from 'vitest';
 
 type SutTypes = {
   sut: RemoteAddAccount;

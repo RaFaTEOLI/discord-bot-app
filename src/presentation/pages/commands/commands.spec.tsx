@@ -7,14 +7,14 @@ import Commands from './commands';
 import { AccountModel } from '@/domain/models';
 import { RunCommandSpy, DeleteCommandSpy, LoadCommandsSpy } from '@/domain/mocks';
 import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 
-const mockToast = jest.fn();
-jest.mock('@chakra-ui/react', () => {
-  const originalModule = jest.requireActual('@chakra-ui/react');
+const mockToast = vi.fn();
+vi.mock('@chakra-ui/react', async () => {
+  const actual = await vi.importActual('@chakra-ui/react');
   return {
-    __esModule: true,
-    ...originalModule,
-    useToast: jest.fn().mockImplementation(() => mockToast)
+    ...(actual as any),
+    useToast: vi.fn().mockImplementation(() => mockToast)
   };
 });
 
@@ -55,7 +55,7 @@ const makeSut = (
 
 describe('Commands Component', () => {
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   test('should have commands page content', () => {
@@ -63,7 +63,7 @@ describe('Commands Component', () => {
     const pageContent = screen.getByRole('heading', {
       name: 'Commands'
     });
-    expect(pageContent).toBeInTheDocument();
+    expect(pageContent).toBeTruthy();
   });
 
   test('should render Commands on success', async () => {
@@ -71,7 +71,7 @@ describe('Commands Component', () => {
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
     expect(commandsList.children).toHaveLength(3);
-    expect(screen.queryByTestId('error')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('error')).not.toBeTruthy();
   });
 
   test('should render CommandModal on command view click', async () => {
@@ -81,7 +81,7 @@ describe('Commands Component', () => {
     await userEvent.click(commandsList.querySelector('.command-view-button') as Element);
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
-    expect(commandForm).toBeInTheDocument();
+    expect(commandForm).toBeTruthy();
     Helper.testValueForField('command', loadCommandsSpy.commands[0].command);
     Helper.testValueForField('description', loadCommandsSpy.commands[0].description);
     Helper.testValueForField('type', loadCommandsSpy.commands[0].type);
@@ -97,17 +97,17 @@ describe('Commands Component', () => {
   test('should render error on UnexpectedError on LoadCommands', async () => {
     const loadCommandsSpy = new LoadCommandsSpy();
     const error = new UnexpectedError();
-    jest.spyOn(loadCommandsSpy, 'all').mockRejectedValueOnce(error);
+    vi.spyOn(loadCommandsSpy, 'all').mockRejectedValueOnce(error);
     makeSut(loadCommandsSpy);
     await waitFor(() => screen.getByTestId('error'));
-    expect(screen.queryByTestId('commands-list')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('commands-list')).not.toBeTruthy();
     const errorWrap = await screen.findByTestId('error');
-    expect(errorWrap).toHaveTextContent(error.message);
+    expect(errorWrap.textContent).toBe(`${error.message}Try again`);
   });
 
   test('should render error on AccessDeniedError on LoadCommands', async () => {
     const loadCommandsSpy = new LoadCommandsSpy();
-    jest.spyOn(loadCommandsSpy, 'all').mockRejectedValueOnce(new AccessDeniedError());
+    vi.spyOn(loadCommandsSpy, 'all').mockRejectedValueOnce(new AccessDeniedError());
     const { setCurrentAccountMock, history } = makeSut(loadCommandsSpy);
     await waitFor(() => screen.getByRole('heading'));
     await setTimeout(500);
@@ -117,7 +117,7 @@ describe('Commands Component', () => {
 
   test('should call LoadSurveyList on reload', async () => {
     const loadCommandsSpy = new LoadCommandsSpy();
-    jest.spyOn(loadCommandsSpy, 'all').mockRejectedValueOnce(new UnexpectedError());
+    vi.spyOn(loadCommandsSpy, 'all').mockRejectedValueOnce(new UnexpectedError());
     makeSut(loadCommandsSpy);
     await waitFor(() => screen.getByTestId('error'));
     await userEvent.click(screen.getByTestId('reload'));
@@ -132,8 +132,8 @@ describe('Commands Component', () => {
     const inputFilter = screen.getByTestId('filter-command-input');
     await userEvent.type(inputFilter, loadCommandsSpy.commands[1].command);
     expect(commandsList.children).toHaveLength(1);
-    expect(commandsList.querySelector('.command-name')).toHaveTextContent(`!${loadCommandsSpy.commands[1].command}`);
-    expect(commandsList.querySelector('.command-description')).toHaveTextContent(loadCommandsSpy.commands[1].description);
+    expect(commandsList.querySelector('.command-name')?.textContent).toBe(`!${loadCommandsSpy.commands[1].command}`);
+    expect(commandsList.querySelector('.command-description')?.textContent).toBe(loadCommandsSpy.commands[1].description);
   });
 
   test('should show all commands from CommandList if empty filter is provided', async () => {
@@ -161,8 +161,8 @@ describe('Commands Component', () => {
     const inputFilter = screen.getByTestId('filter-command-input');
     await userEvent.type(inputFilter, loadCommandsSpy.commands[2].description);
     expect(commandsList.children).toHaveLength(1);
-    expect(commandsList.querySelector('.command-name')).toHaveTextContent(`!${loadCommandsSpy.commands[2].command}`);
-    expect(commandsList.querySelector('.command-description')).toHaveTextContent(loadCommandsSpy.commands[2].description);
+    expect(commandsList.querySelector('.command-name')?.textContent).toBe(`!${loadCommandsSpy.commands[2].command}`);
+    expect(commandsList.querySelector('.command-description')?.textContent).toBe(loadCommandsSpy.commands[2].description);
   });
 
   test('should call DeleteCommand with correct values', async () => {
@@ -172,7 +172,7 @@ describe('Commands Component', () => {
       new RunCommandSpy(),
       true
     );
-    const deleteSpy = jest.spyOn(deleteCommandSpy, 'delete');
+    const deleteSpy = vi.spyOn(deleteCommandSpy, 'delete');
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
     await userEvent.click(commandsList.querySelectorAll('.command-view-button')[1]);
@@ -185,7 +185,7 @@ describe('Commands Component', () => {
     await setTimeout(500);
     expect(deleteCommandSpy.callsCount).toBe(1);
     expect(deleteSpy).toHaveBeenCalledWith(loadCommandsSpy.commands[1].id);
-    expect(commandForm).not.toBeInTheDocument();
+    expect(screen.queryByTestId('form')).toBeFalsy();
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Deleted Command',
       description: 'Your command was successfully deleted',
@@ -199,7 +199,7 @@ describe('Commands Component', () => {
   test('should render error on UnexpectedError on DeleteCommand', async () => {
     const deleteCommandSpy = new DeleteCommandSpy();
     const error = new UnexpectedError();
-    jest.spyOn(deleteCommandSpy, 'delete').mockRejectedValueOnce(error);
+    vi.spyOn(deleteCommandSpy, 'delete').mockRejectedValueOnce(error);
     makeSut(new LoadCommandsSpy(), deleteCommandSpy, new RunCommandSpy(), true);
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
@@ -211,11 +211,11 @@ describe('Commands Component', () => {
     await waitFor(() => confirmButton);
     await userEvent.click(confirmButton);
     await setTimeout(1000);
-    expect(commandForm).not.toBeInTheDocument();
+    expect(screen.queryByTestId('form')).toBeFalsy();
     await waitFor(() => screen.getByTestId('error'));
-    expect(screen.queryByTestId('commands-list')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('commands-list')).toBeFalsy();
     const errorWrap = await screen.findByTestId('error');
-    expect(errorWrap).toHaveTextContent(error.message);
+    expect(errorWrap.textContent).toBe(`${error.message}Try again`);
   });
 
   test('should call RunCommand with correct values', async () => {
@@ -225,7 +225,7 @@ describe('Commands Component', () => {
       new RunCommandSpy(),
       true
     );
-    const runSpy = jest.spyOn(runCommandSpy, 'run');
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
     await userEvent.click(commandsList.querySelectorAll('.command-run-button')[1]);
@@ -244,7 +244,7 @@ describe('Commands Component', () => {
 
   test('should call toast with error values if RunCommand fails', async () => {
     const runCommandSpy = new RunCommandSpy();
-    jest.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    vi.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
     makeSut(new LoadCommandsSpy(), new DeleteCommandSpy(), runCommandSpy, true);
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
@@ -267,10 +267,10 @@ describe('Commands Component', () => {
     userEvent.click(commandsList.querySelector('.command-view-button') as Element);
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
-    expect(commandForm).toBeInTheDocument();
+    expect(commandForm).toBeTruthy();
     await userEvent.click(screen.getByTestId('close-modal'));
     await setTimeout(500);
-    expect(commandForm).not.toBeInTheDocument();
+    expect(screen.queryByTestId('form')).toBeFalsy();
   });
 
   test('should navigate to Command page on edit', async () => {
@@ -282,7 +282,7 @@ describe('Commands Component', () => {
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
     await setTimeout(500);
-    expect(commandForm).toBeInTheDocument();
+    expect(commandForm).toBeTruthy();
     await userEvent.click(screen.getByTestId('custom-button'));
     expect(history.location.pathname).toBe(`/commands/${loadCommandsSpy.commands[1].id}`);
   });
