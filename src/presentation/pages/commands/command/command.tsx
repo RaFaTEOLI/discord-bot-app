@@ -136,6 +136,7 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
         isClosable: true,
         position: 'top'
       });
+      reset();
       if (!state.command.id) {
         navigate('/commands');
       }
