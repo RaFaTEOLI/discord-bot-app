@@ -383,7 +383,7 @@ describe('Command Component', () => {
     await waitFor(() => commandForm);
     expect(commandForm).toBeTruthy();
     await simulateValidSubmit();
-    await setTimeout(500);
+    await waitFor(() => expect(screen.queryByTestId('loading')).toBeFalsy());
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Server Error',
       description: 'There was an error while trying to save your command',
@@ -392,7 +392,6 @@ describe('Command Component', () => {
       isClosable: true,
       position: 'top'
     });
-    expect(screen.queryByTestId('loading')).toBeFalsy();
   });
 
   test('should show error toast on AccessDeniedError on SaveCommand and send it to login', async () => {
