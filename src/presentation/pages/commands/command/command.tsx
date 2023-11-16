@@ -137,6 +137,7 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
         position: 'top'
       });
       if (!state.command.id) {
+        reset();
         navigate('/commands');
       }
       setState(prev => ({ ...prev, reload: new Date() }));
@@ -160,6 +161,8 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
         });
       }
       handleError(error);
+    } finally {
+      setState(prev => ({ ...prev, isLoading: false }));
     }
   });
 

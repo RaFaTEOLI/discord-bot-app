@@ -383,7 +383,7 @@ describe('Command Component', () => {
     await waitFor(() => commandForm);
     expect(commandForm).toBeTruthy();
     await simulateValidSubmit();
-    await setTimeout(500);
+    await waitFor(() => expect(screen.queryByTestId('loading')).toBeFalsy());
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Server Error',
       description: 'There was an error while trying to save your command',

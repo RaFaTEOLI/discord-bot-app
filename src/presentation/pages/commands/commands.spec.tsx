@@ -185,7 +185,7 @@ describe('Commands Component', () => {
     await setTimeout(500);
     expect(deleteCommandSpy.callsCount).toBe(1);
     expect(deleteSpy).toHaveBeenCalledWith(loadCommandsSpy.commands[1].id);
-    expect(screen.queryByTestId('form')).toBeFalsy();
+    await waitFor(() => expect(screen.queryByTestId('form')).toBeFalsy());
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Deleted Command',
       description: 'Your command was successfully deleted',
@@ -211,7 +211,7 @@ describe('Commands Component', () => {
     await waitFor(() => confirmButton);
     await userEvent.click(confirmButton);
     await setTimeout(1000);
-    expect(screen.queryByTestId('form')).toBeFalsy();
+    await waitFor(() => expect(screen.queryByTestId('form')).toBeFalsy());
     await waitFor(() => screen.getByTestId('error'));
     expect(screen.queryByTestId('commands-list')).toBeFalsy();
     const errorWrap = await screen.findByTestId('error');
