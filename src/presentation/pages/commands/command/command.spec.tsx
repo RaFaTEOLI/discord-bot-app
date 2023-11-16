@@ -392,6 +392,7 @@ describe('Command Component', () => {
       isClosable: true,
       position: 'top'
     });
+    expect(screen.queryByTestId('loading')).toBeFalsy();
   });
 
   test('should show error toast on AccessDeniedError on SaveCommand and send it to login', async () => {
