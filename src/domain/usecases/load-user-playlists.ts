@@ -1,6 +1,6 @@
 import { SpotifyPlaylistListModel } from '@/domain/models';
 export interface LoadUserPlaylists {
-  all: () => Promise<LoadUserPlaylists.Model>;
+  all: (offset?: number) => Promise<LoadUserPlaylists.Model>;
 }
 
 export namespace LoadUserPlaylists {
