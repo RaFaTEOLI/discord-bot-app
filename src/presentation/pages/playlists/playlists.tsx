@@ -3,7 +3,7 @@ import { LoadUserPlaylists, RunCommand, SpotifyRefreshToken } from '@/domain/use
 import { Content, Error, Loading } from '@/presentation/components';
 import { useErrorHandler } from '@/presentation/hooks';
 import { Box, Flex, useToast } from '@chakra-ui/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useRecoilState, useResetRecoilState } from 'recoil';
 import { userPlaylistsState, InputFilter, PlaylistListItem } from './components';
@@ -26,12 +26,20 @@ export default function Playlists({ loadUserPlaylists, runCommand, refreshToken 
   const reload = (): void =>
     setState(prev => ({ ...prev, playlists: [], error: '', reload: !prev.reload, isLoading: true }));
 
+  const [offset, setOffset] = useState<number>(0);
+
   useEffect(() => {
     (async () => {
       resetUserPlaylistState();
       try {
-        const { items } = await loadUserPlaylists.all();
-        setState(prev => ({ ...prev, playlists: items, isLoading: false }));
+        const response = await loadUserPlaylists.all(offset);
+        setState(prev => ({
+          ...prev,
+          playlists: response.items,
+          isLoading: false,
+          currentOffset: response.offset,
+          hasNext: !!response.next
+        }));
       } catch (error: any) {
         if (error instanceof AccessTokenExpiredError) {
           toast({
@@ -53,7 +61,7 @@ export default function Playlists({ loadUserPlaylists, runCommand, refreshToken 
         handleError(error);
       }
     })();
-  }, [state.reload]);
+  }, [state.reload, offset]);
 
   const onPlay = async (url: string, clearQueue = false): Promise<void> => {
     try {
@@ -105,6 +113,7 @@ export default function Playlists({ loadUserPlaylists, runCommand, refreshToken 
                 handleView={(id: string) => navigate(`/playlists/${id}`)}
                 handlePlay={onPlay}
                 playlists={state.filteredPlaylists}
+                setOffset={setOffset}
               />
             )}
           </Flex>

@@ -9,6 +9,9 @@ export const userPlaylistsState = atom({
     error: '',
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     playlists: [] as SpotifyPlaylistModel[],
-    filteredPlaylists: [] as SpotifyPlaylistModel[]
+    filteredPlaylists: [] as SpotifyPlaylistModel[],
+    currentOffset: 0,
+    offset: 0,
+    hasNext: false
   }
 });
