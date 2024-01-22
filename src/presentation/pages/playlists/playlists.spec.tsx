@@ -307,4 +307,16 @@ describe('Playlists Component', () => {
       expect(playlistsList.querySelectorAll('.playlist-play-button')[0].getAttribute('data-display')).toBe('none');
     });
   });
+
+  test('should call LoadUserPlaylist with offset 50 when clicking on next page button', async () => {
+    const loadUserPlaylistsSpy = new LoadUserPlaylistsSpy(0, 50, 'next', 57);
+    makeSut(loadUserPlaylistsSpy);
+    const nextPageButton = await screen.findByTestId('next-page-button');
+    await waitFor(() => nextPageButton);
+    await userEvent.click(nextPageButton);
+    await waitFor(() => {
+      expect(loadUserPlaylistsSpy.callsCount).toBe(2);
+      expect(loadUserPlaylistsSpy.offset).toBe(50);
+    });
+  });
 });

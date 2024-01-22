@@ -135,21 +135,32 @@ export const mockSpotifyPlaylist = (): SpotifyPlaylistModel => ({
   uri: `spotify:playlist:${faker.datatype.uuid()}`
 });
 
-export const mockSpotifyPlaylistList = (): LoadUserPlaylists.Model => ({
-  href: `${faker.internet.url()}/?offset=0&limit=50`,
-  items: [mockSpotifyPlaylist(), mockSpotifyPlaylist(), mockSpotifyPlaylist(), mockSpotifyPlaylist(), mockSpotifyPlaylist()],
+export const mockSpotifyPlaylistList = (
+  offset = 0,
+  limit = 50,
+  next: string | null = null,
+  total = 5
+): LoadUserPlaylists.Model => ({
+  href: `${faker.internet.url()}/?offset=${offset}&limit=${limit}`,
+  items: Array.from({ length: total > limit ? limit : total }, () => mockSpotifyPlaylist()),
   limit: 50,
-  next: null,
+  next,
   offset: 0,
   previous: null,
-  total: 5
+  total
 });
 
 export class LoadUserPlaylistsSpy implements LoadUserPlaylists {
-  spotifyUserPlaylists = mockSpotifyPlaylistList();
+  spotifyUserPlaylists: LoadUserPlaylists.Model;
   callsCount = 0;
+  offset = 0;
 
-  async all(): Promise<LoadUserPlaylists.Model> {
+  constructor(offset?: number, limit?: number, next?: string, total?: number) {
+    this.spotifyUserPlaylists = mockSpotifyPlaylistList(offset, limit, next, total);
+  }
+
+  async all(offset?: number): Promise<LoadUserPlaylists.Model> {
+    this.offset = offset ?? 0;
     this.callsCount++;
     return Promise.resolve(this.spotifyUserPlaylists);
   }
