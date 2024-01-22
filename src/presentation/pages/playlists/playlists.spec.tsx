@@ -319,4 +319,23 @@ describe('Playlists Component', () => {
       expect(loadUserPlaylistsSpy.offset).toBe(50);
     });
   });
+
+  test('should call LoadUserPlaylist with offset 0 when clicking on previous page button', async () => {
+    const loadUserPlaylistsSpy = new LoadUserPlaylistsSpy(50, 50, 'next', 57);
+    makeSut(loadUserPlaylistsSpy);
+    const nextPageButton = await screen.findByTestId('next-page-button');
+    await waitFor(() => nextPageButton);
+    await userEvent.click(nextPageButton);
+    await waitFor(() => {
+      expect(loadUserPlaylistsSpy.callsCount).toBe(2);
+      expect(loadUserPlaylistsSpy.offset).toBe(100);
+    });
+    const previousPageButton = await screen.findByTestId('previous-page-button');
+    await waitFor(() => previousPageButton);
+    await userEvent.click(previousPageButton);
+    await waitFor(() => {
+      expect(loadUserPlaylistsSpy.callsCount).toBe(3);
+      expect(loadUserPlaylistsSpy.offset).toBe(0);
+    });
+  });
 });

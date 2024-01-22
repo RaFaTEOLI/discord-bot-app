@@ -143,9 +143,9 @@ export const mockSpotifyPlaylistList = (
 ): LoadUserPlaylists.Model => ({
   href: `${faker.internet.url()}/?offset=${offset}&limit=${limit}`,
   items: Array.from({ length: total > limit ? limit : total }, () => mockSpotifyPlaylist()),
-  limit: 50,
+  limit,
   next,
-  offset: 0,
+  offset,
   previous: null,
   total
 });
