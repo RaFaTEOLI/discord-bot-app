@@ -31,6 +31,7 @@ describe('RemoteLoadUserPlaylists', () => {
     };
     await sut.all();
     expect(httpClientSpy.url).toBe(url);
+    expect(httpClientSpy.params).toEqual({ offset: 0, limit: 50 });
     expect(httpClientSpy.method).toBe('get');
     expect(httpClientSpy.headers).toEqual({ 'Content-Type': 'application/json' });
   });
@@ -88,5 +89,20 @@ describe('RemoteLoadUserPlaylists', () => {
       previous: httpResult.previous,
       total: httpResult.total
     });
+  });
+
+  test('should call HttpClient with correct offset when provided', async () => {
+    const url = faker.internet.url();
+    const { sut, httpClientSpy } = makeSut(url);
+    httpClientSpy.response = {
+      statusCode: HttpStatusCode.success,
+      body: mockSpotifyPlaylistList()
+    };
+    const offset = faker.datatype.number();
+    await sut.all(offset);
+    expect(httpClientSpy.url).toBe(url);
+    expect(httpClientSpy.params).toEqual({ offset, limit: 50 });
+    expect(httpClientSpy.method).toBe('get');
+    expect(httpClientSpy.headers).toEqual({ 'Content-Type': 'application/json' });
   });
 });
