@@ -4,7 +4,6 @@ import { AccountModel } from '@/domain/models';
 import { renderWithHistory } from '@/presentation/mocks';
 import { screen, waitFor } from '@testing-library/react';
 import { createMemoryHistory, MemoryHistory } from 'history';
-import { setTimeout } from 'timers/promises';
 import userEvent from '@testing-library/user-event';
 import Playlists from './playlists';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
@@ -73,26 +72,27 @@ describe('Playlists Component', () => {
       new RunCommandSpy(),
       refreshTokenSpy
     );
-    await setTimeout(2000);
-    expect(refreshTokenSpy?.callsCount).toBe(1);
-    expect(setCurrentAccountMock).toHaveBeenCalledWith({
-      ...getCurrentAccountMock(),
-      user: {
-        ...getCurrentAccountMock().user,
-        spotify: {
-          ...getCurrentAccountMock().user.spotify,
-          accessToken: refreshTokenSpy?.access.accessToken,
-          refreshToken: ''
+    await waitFor(() => {
+      expect(refreshTokenSpy?.callsCount).toBe(1);
+      expect(setCurrentAccountMock).toHaveBeenCalledWith({
+        ...getCurrentAccountMock(),
+        user: {
+          ...getCurrentAccountMock().user,
+          spotify: {
+            ...getCurrentAccountMock().user.spotify,
+            accessToken: refreshTokenSpy?.access.accessToken,
+            refreshToken: ''
+          }
         }
-      }
-    });
-    expect(history.location.pathname).toBe('/playlists');
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Access Denied',
-      description: 'Your login with spotify is either expired or invalid, please log in with spotify again!',
-      status: 'error',
-      duration: 9000,
-      isClosable: true
+      });
+      expect(history.location.pathname).toBe('/playlists');
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Access Denied',
+        description: 'Your login with spotify is either expired or invalid, please log in with spotify again!',
+        status: 'error',
+        duration: 9000,
+        isClosable: true
+      });
     });
   });
 
@@ -112,24 +112,26 @@ describe('Playlists Component', () => {
     vi.spyOn(loadUserPlaylistsSpy, 'all').mockRejectedValueOnce(new AccessDeniedError());
     const { setCurrentAccountMock, history } = makeSut(loadUserPlaylistsSpy);
     await waitFor(() => screen.getByRole('heading'));
-    await setTimeout(500);
-    expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
-    expect(history.location.pathname).toBe('/login');
+    await waitFor(() => {
+      expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
+      expect(history.location.pathname).toBe('/login');
+    });
   });
 
   test('should show toast and redirect user to login if spotify access token is expired', async () => {
     const loadUserPlaylistsSpy = new LoadUserPlaylistsSpy();
     vi.spyOn(loadUserPlaylistsSpy, 'all').mockRejectedValueOnce(new AccessTokenExpiredError());
     const { setCurrentAccountMock } = makeSut(loadUserPlaylistsSpy);
-    await setTimeout(2000);
-    expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
-    expect(history.location.pathname).toBe('/login');
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Access Denied',
-      description: 'Your login with spotify is either expired or invalid, please log in with spotify again!',
-      status: 'error',
-      duration: 9000,
-      isClosable: true
+    await waitFor(() => {
+      expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
+      expect(history.location.pathname).toBe('/login');
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Access Denied',
+        description: 'Your login with spotify is either expired or invalid, please log in with spotify again!',
+        status: 'error',
+        duration: 9000,
+        isClosable: true
+      });
     });
   });
 
@@ -139,14 +141,15 @@ describe('Playlists Component', () => {
     const refreshTokenSpy = new SpotifyRefreshTokenSpy();
     vi.spyOn(refreshTokenSpy, 'refresh').mockRejectedValueOnce(new Error());
     makeSut(loadUserPlaylistsSpy, new RunCommandSpy(), refreshTokenSpy);
-    await setTimeout(2000);
-    expect(history.location.pathname).toBe('/login');
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Access Denied',
-      description: 'Your login with spotify is either expired or invalid, please log in with spotify again!',
-      status: 'error',
-      duration: 9000,
-      isClosable: true
+    await waitFor(() => {
+      expect(history.location.pathname).toBe('/login');
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Access Denied',
+        description: 'Your login with spotify is either expired or invalid, please log in with spotify again!',
+        status: 'error',
+        duration: 9000,
+        isClosable: true
+      });
     });
   });
 
@@ -167,12 +170,10 @@ describe('Playlists Component', () => {
     const inputFilter = screen.getByTestId('filter-playlist-input');
     await userEvent.type(inputFilter, loadUserPlaylistsSpy.spotifyUserPlaylists.items[0].name);
     expect(playlistsList.children).toHaveLength(1);
-    expect(playlistsList.querySelector('.playlist-name').textContent).toBe(
-      loadUserPlaylistsSpy.spotifyUserPlaylists.items[0].name
-    );
-    expect(playlistsList.querySelector('.playlist-description').textContent).toBe(
-      loadUserPlaylistsSpy.spotifyUserPlaylists.items[0].description
-    );
+    const playlistNameElement = playlistsList.querySelector('.playlist-name');
+    expect(playlistNameElement?.textContent).toBe(loadUserPlaylistsSpy.spotifyUserPlaylists.items[0].name);
+    const playlistDescriptionElement = playlistsList.querySelector('.playlist-description');
+    expect(playlistDescriptionElement?.textContent).toBe(loadUserPlaylistsSpy.spotifyUserPlaylists.items[0].description);
   });
 
   test('should show all playlists from PlaylistList if empty filter is provided', async () => {
@@ -214,21 +215,21 @@ describe('Playlists Component', () => {
     const playlistsList = await screen.findByTestId('playlists-list');
     await waitFor(() => playlistsList);
     await userEvent.click(playlistsList.querySelectorAll('.playlist-play-button')[1]);
-    await setTimeout(1000);
     await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
     await userEvent.click(screen.getByTestId('confirmation-confirm-button'));
-    await setTimeout(1000);
-    expect(runCommandSpy.callsCount).toBe(2);
-    expect(runSpy).toHaveBeenCalledWith(
-      `playlist ${loadUserPlaylistsSpy.spotifyUserPlaylists.items[1].external_urls.spotify}`
-    );
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Playlist Added',
-      description: 'Your playlist was successfully added to the queue',
-      status: 'success',
-      duration: 9000,
-      isClosable: true,
-      position: 'top'
+    await waitFor(() => {
+      expect(runCommandSpy.callsCount).toBe(2);
+      expect(runSpy).toHaveBeenCalledWith(
+        `playlist ${loadUserPlaylistsSpy.spotifyUserPlaylists.items[1].external_urls.spotify}`
+      );
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Playlist Added',
+        description: 'Your playlist was successfully added to the queue',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
     });
   });
 
@@ -238,21 +239,21 @@ describe('Playlists Component', () => {
     const playlistsList = await screen.findByTestId('playlists-list');
     await waitFor(() => playlistsList);
     await userEvent.click(playlistsList.querySelectorAll('.playlist-play-button')[1]);
-    await setTimeout(1000);
     await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
     await userEvent.click(screen.getByTestId('confirmation-cancel-button'));
-    await setTimeout(1000);
-    expect(runCommandSpy.callsCount).toBe(1);
-    expect(runSpy).toHaveBeenCalledWith(
-      `playlist ${loadUserPlaylistsSpy.spotifyUserPlaylists.items[1].external_urls.spotify}`
-    );
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Playlist Added',
-      description: 'Your playlist was successfully added to the queue',
-      status: 'success',
-      duration: 9000,
-      isClosable: true,
-      position: 'top'
+    await waitFor(() => {
+      expect(runCommandSpy.callsCount).toBe(1);
+      expect(runSpy).toHaveBeenCalledWith(
+        `playlist ${loadUserPlaylistsSpy.spotifyUserPlaylists.items[1].external_urls.spotify}`
+      );
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Playlist Added',
+        description: 'Your playlist was successfully added to the queue',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
     });
   });
 
@@ -263,17 +264,17 @@ describe('Playlists Component', () => {
     const playlistsList = await screen.findByTestId('playlists-list');
     await waitFor(() => playlistsList);
     await userEvent.click(playlistsList.querySelectorAll('.playlist-play-button')[1]);
-    await setTimeout(1000);
     await waitFor(async () => await screen.findByTestId('confirmation-modal-header'));
     await userEvent.click(screen.getByTestId('confirmation-cancel-button'));
-    await setTimeout(1000);
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Add Playlist Error',
-      description: 'There was an error while trying to add your playlist to the queue',
-      status: 'error',
-      duration: 9000,
-      position: 'top',
-      isClosable: true
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Add Playlist Error',
+        description: 'There was an error while trying to add your playlist to the queue',
+        status: 'error',
+        duration: 9000,
+        position: 'top',
+        isClosable: true
+      });
     });
   });
 
@@ -290,8 +291,9 @@ describe('Playlists Component', () => {
     const playlistsList = await screen.findByTestId('playlists-list');
     await waitFor(() => playlistsList);
     await userEvent.hover(playlistsList.querySelectorAll('.playlist-play-button')[0]);
-    await setTimeout(1000);
-    expect(playlistsList.querySelectorAll('.playlist-play-button')[0].getAttribute('data-display')).toBe('flex');
+    await waitFor(() => {
+      expect(playlistsList.querySelectorAll('.playlist-play-button')[0].getAttribute('data-display')).toBe('flex');
+    });
   });
 
   test('should show play icon then hide after unhovering playlist card', async () => {
@@ -299,9 +301,10 @@ describe('Playlists Component', () => {
     const playlistsList = await screen.findByTestId('playlists-list');
     await waitFor(() => playlistsList);
     await userEvent.hover(playlistsList.querySelectorAll('.playlist-play-button')[0]);
-    await setTimeout(1000);
-    expect(playlistsList.querySelectorAll('.playlist-play-button')[0].getAttribute('data-display')).toBe('flex');
-    await userEvent.unhover(playlistsList.querySelectorAll('.playlist-play-button')[0]);
-    expect(playlistsList.querySelectorAll('.playlist-play-button')[0].getAttribute('data-display')).toBe('none');
+    await waitFor(async () => {
+      expect(playlistsList.querySelectorAll('.playlist-play-button')[0].getAttribute('data-display')).toBe('flex');
+      await userEvent.unhover(playlistsList.querySelectorAll('.playlist-play-button')[0]);
+      expect(playlistsList.querySelectorAll('.playlist-play-button')[0].getAttribute('data-display')).toBe('none');
+    });
   });
 });
