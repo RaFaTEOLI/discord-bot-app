@@ -387,13 +387,15 @@ describe('Command Component', () => {
     expect(commandForm).toBeTruthy();
     await simulateValidSubmit();
     await waitFor(() => expect(screen.queryByTestId('loading')).toBeFalsy());
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Server Error',
-      description: 'There was an error while trying to save your command',
-      status: 'error',
-      duration: 9000,
-      isClosable: true,
-      position: 'top'
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Server Error',
+        description: 'There was an error while trying to save your command',
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
     });
   });
 
