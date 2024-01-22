@@ -160,7 +160,7 @@ export default function Playlist({ loadPlaylistTracks, runCommand, loadUserById,
                   {state.playlist.name}
                 </Text>
                 <Text color={color} fontSize="sm" data-testid="playlist-description">
-                  {state.playlist.description}
+                  <div dangerouslySetInnerHTML={{ __html: state.playlist.description }} />
                 </Text>
                 <Flex
                   justifyContent="space-between"

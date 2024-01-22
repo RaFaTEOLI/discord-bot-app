@@ -1,5 +1,5 @@
 import { SpotifyPlaylistModel } from '@/domain/models';
-import { Box, Flex, IconButton, Image, useColorModeValue, useDisclosure } from '@chakra-ui/react';
+import { Box, Flex, Grid, IconButton, Image, useColorModeValue, useDisclosure } from '@chakra-ui/react';
 import { MouseEvent, useState } from 'react';
 import { HiArrowLeftCircle, HiArrowRightCircle, HiPlay } from 'react-icons/hi2';
 import { motion } from 'framer-motion';
@@ -62,14 +62,25 @@ export default function PlaylistListItem({ playlists, handleView, handlePlay, se
   };
 
   return (
-    <>
-      <Flex direction={['column', 'row']} flexWrap="wrap" gap={5} data-testid="playlists-list">
+    <Flex direction="column" pr={9}>
+      <Grid
+        templateColumns={[
+          'repeat(1, 1fr)',
+          'repeat(1, 1fr)',
+          'repeat(2, 1fr)',
+          'repeat(3, 1fr)',
+          'repeat(4, 1fr)',
+          'repeat(5, 1fr)'
+        ]}
+        gap={6}
+        data-testid="playlists-list"
+      >
         {playlists.map(playlist => (
           <Box
             bgColor={currentHover === playlist.id ? hoverColor : color}
             key={playlist.id}
-            w={[230, 280]}
-            h={[250, 370]}
+            w="100%"
+            h="full"
             borderWidth="1px"
             borderRadius="lg"
             overflow="hidden"
@@ -81,7 +92,7 @@ export default function PlaylistListItem({ playlists, handleView, handlePlay, se
           >
             <Box p="6">
               <Box display="flex" justifyContent="center" position="relative">
-                <Image width={225} height={225} src={playlist.images[0].url} alt={`Album ${playlist.name}`} />
+                <Image w={350} h="full" src={playlist.images[0].url} alt={`Album ${playlist.name}`} />
 
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -112,7 +123,7 @@ export default function PlaylistListItem({ playlists, handleView, handlePlay, se
 
               <Flex flexDir="column" justifyContent="space-between">
                 <Box mt={2} className="playlist-description" h="2.5rem" noOfLines={2} fontSize={14}>
-                  {playlist.description}
+                  <div dangerouslySetInnerHTML={{ __html: playlist.description }} />
                 </Box>
               </Flex>
             </Box>
@@ -127,7 +138,7 @@ export default function PlaylistListItem({ playlists, handleView, handlePlay, se
           reject={reject}
           description={'Do you want to clear the queue before playing?'}
         />
-      </Flex>
+      </Grid>
       <Flex justifyContent="space-between" mt={5}>
         <Button
           isDisabled={state.currentOffset === 0}
@@ -144,6 +155,6 @@ export default function PlaylistListItem({ playlists, handleView, handlePlay, se
           onClick={onNextPage}
         />
       </Flex>
-    </>
+    </Flex>
   );
 }
