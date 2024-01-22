@@ -7,7 +7,6 @@ import { SaveCommandSpy, LoadCommandByIdSpy, mockCommandModel, mockSaveCommandPa
 import { faker } from '@faker-js/faker';
 import userEvent from '@testing-library/user-event';
 import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
-import { setTimeout } from 'timers/promises';
 import { commandState, types, dispatchers, applicationCommandTypes, commandOptionTypes } from './components';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 
@@ -60,7 +59,6 @@ const simulateValidSubmit = async (): Promise<FormValues> => {
 };
 
 const simulateValidSubmit2 = async (): Promise<FormValues> => {
-  await setTimeout(1000);
   const formValues = mockSaveCommandParams();
   Helper.populateField('command', formValues.command);
   Helper.populateField('description', formValues.description);
@@ -70,7 +68,6 @@ const simulateValidSubmit2 = async (): Promise<FormValues> => {
   Helper.populateField('discordType', formValues.discordType.toString(), true);
   const submitButton = await waitFor(() => screen.getByTestId('submit'));
   await userEvent.click(submitButton);
-  await setTimeout(500);
   const { discordType, ...restValues } = formValues;
   return { discordType: discordType.toString(), ...restValues } as FormValues;
 };
@@ -291,15 +288,16 @@ describe('Command Component', () => {
     vi.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new AccessDeniedError());
     const { setCurrentAccountMock, history } = makeSut({ loadCommandByIdSpy });
     await waitFor(() => screen.getByRole('heading'));
-    await setTimeout(1000);
-    expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
-    expect(history.location.pathname).toBe('/login');
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Access Denied',
-      description: 'Your login has expired, please log in again!',
-      status: 'error',
-      duration: 9000,
-      isClosable: true
+    await waitFor(() => {
+      expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
+      expect(history.location.pathname).toBe('/login');
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Access Denied',
+        description: 'Your login has expired, please log in again!',
+        status: 'error',
+        duration: 9000,
+        isClosable: true
+      });
     });
   });
 
@@ -308,15 +306,16 @@ describe('Command Component', () => {
     vi.spyOn(loadCommandByIdSpy, 'loadById').mockRejectedValueOnce(new AccessTokenExpiredError());
     const { setCurrentAccountMock, history } = makeSut({ loadCommandByIdSpy });
     await waitFor(() => screen.getByRole('heading'));
-    await setTimeout(1000);
-    expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
-    expect(history.location.pathname).toBe('/login');
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Access Denied',
-      description: 'Your login has expired, please log in again!',
-      status: 'error',
-      duration: 9000,
-      isClosable: true
+    await waitFor(() => {
+      expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
+      expect(history.location.pathname).toBe('/login');
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Access Denied',
+        description: 'Your login has expired, please log in again!',
+        status: 'error',
+        duration: 9000,
+        isClosable: true
+      });
     });
   });
 
@@ -327,12 +326,13 @@ describe('Command Component', () => {
     await waitFor(() => commandForm);
     expect(commandForm).toBeTruthy();
     await simulateInvalidSubmit();
-    await setTimeout(1500);
-    Helper.testStatusForField('command', 'command must be at least 2 characters');
-    Helper.testStatusForField('description', 'description must be at least 2 characters');
-    Helper.testStatusForField('type', 'Required field');
-    Helper.testStatusForField('dispatcher', 'Required field');
-    Helper.testStatusForField('discordType', 'Required field');
+    await waitFor(() => {
+      Helper.testStatusForField('command', 'command must be at least 2 characters');
+      Helper.testStatusForField('description', 'description must be at least 2 characters');
+      Helper.testStatusForField('type', 'Required field');
+      Helper.testStatusForField('dispatcher', 'Required field');
+      Helper.testStatusForField('discordType', 'Required field');
+    });
   });
 
   test('should not call LoadCommandById if it is a new', async () => {
@@ -351,14 +351,16 @@ describe('Command Component', () => {
     await waitFor(() => commandForm);
     expect(commandForm).toBeTruthy();
     const formValues = await simulateValidSubmit2();
-    expect(saveCommandSpy.params).toEqual(
-      Object.assign({}, formValues, {
-        id: commandModel.id,
-        // eslint-disable-next-line
-        // @ts-ignore
-        options: [{ ...commandModel.options[0], type: commandModel.options[0].type.toString(), choices: [] }]
-      })
-    );
+    await waitFor(() => {
+      expect(saveCommandSpy.params).toEqual(
+        Object.assign({}, formValues, {
+          id: commandModel.id,
+          // eslint-disable-next-line
+          // @ts-ignore
+          options: [{ ...commandModel.options[0], type: commandModel.options[0].type.toString(), choices: [] }]
+        })
+      );
+    });
   });
 
   test('should call SaveCommand on success from new page and navigate to commands', async () => {
@@ -368,9 +370,10 @@ describe('Command Component', () => {
     await waitFor(() => commandForm);
     expect(commandForm).toBeTruthy();
     const formValues = await simulateValidSubmit();
-    await setTimeout(500);
-    expect(saveCommandSpy.params).toEqual(Object.assign({}, formValues, { options: [] }));
-    expect(history.location.pathname).toBe('/commands');
+    await waitFor(() => {
+      expect(saveCommandSpy.params).toEqual(Object.assign({}, formValues, { options: [] }));
+      expect(history.location.pathname).toBe('/commands');
+    });
   });
 
   test('should render error on UnexpectedError on SaveCommand', async () => {
@@ -403,15 +406,16 @@ describe('Command Component', () => {
     await waitFor(() => commandForm);
     expect(commandForm).toBeTruthy();
     await simulateValidSubmit();
-    await setTimeout(1000);
-    expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
-    expect(history.location.pathname).toBe('/login');
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Access Denied',
-      description: 'Your login has expired, please log in again!',
-      status: 'error',
-      duration: 9000,
-      isClosable: true
+    await waitFor(() => {
+      expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
+      expect(history.location.pathname).toBe('/login');
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Access Denied',
+        description: 'Your login has expired, please log in again!',
+        status: 'error',
+        duration: 9000,
+        isClosable: true
+      });
     });
   });
 });
