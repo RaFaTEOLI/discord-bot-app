@@ -18,6 +18,12 @@ export enum CommandOptionType {
   ATTACHMENT = 11 // Attachment object
 }
 
+export enum CommandDiscordStatus {
+  SENT = 'SENT',
+  RECEIVED = 'RECEIVED',
+  FAILED = 'FAILED'
+}
+
 export type CommandModel = {
   id: string;
   command: string;
@@ -26,7 +32,7 @@ export type CommandModel = {
   dispatcher: string;
   response: string;
   discordType: ApplicationCommandType;
-  discordStatus?: 'SENT' | 'RECEIVED' | 'FAILED';
+  discordStatus?: CommandDiscordStatus;
   options?: Array<{
     name: string;
     description: string;
