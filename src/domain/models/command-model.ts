@@ -26,6 +26,7 @@ export type CommandModel = {
   dispatcher: string;
   response: string;
   discordType: ApplicationCommandType;
+  discordStatus?: 'SENT' | 'RECEIVED' | 'FAILED';
   options?: Array<{
     name: string;
     description: string;

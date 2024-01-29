@@ -208,6 +208,7 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
               />
             </Flex>
             <Heading size="md">Discord Properties</Heading>
+            <p data-testid="discord-status">{state.command.discordStatus}</p>
             <Select name="discordType" placeholder="Type" options={state.applicationCommandTypes} />
             <Flex justifyContent="space-between">
               <Heading size="sm">Options</Heading>
