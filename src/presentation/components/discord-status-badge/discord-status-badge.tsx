@@ -1,7 +1,8 @@
+import { CommandDiscordStatus } from '@/domain/models';
 import { Badge } from '@chakra-ui/react';
 
 type Props = {
-  value: 'SENT' | 'RECEIVED' | 'FAILED';
+  value: CommandDiscordStatus | null;
 };
 
 const DiscordStatusBadge = ({ value }: Props): JSX.Element => {
@@ -25,7 +26,7 @@ const DiscordStatusBadge = ({ value }: Props): JSX.Element => {
         </Badge>
       );
     default:
-      return <Badge data-testid="discord-status-badge">NOT SENT</Badge>;
+      return <Badge data-testid="discord-status-badge">Not Sent</Badge>;
   }
 };
 
