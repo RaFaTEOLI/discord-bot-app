@@ -1,32 +1,32 @@
 import { CommandDiscordStatus } from '@/domain/models';
-import { Badge } from '@chakra-ui/react';
+import { Badge, Flex, chakra } from '@chakra-ui/react';
+import { FaDiscord } from 'react-icons/fa';
+
+const CFaDiscord = chakra(FaDiscord);
 
 export type Props = {
   value: CommandDiscordStatus | undefined;
 };
 
+const CustomBadge = ({ children, ...props }: { children: string; colorScheme?: string }): JSX.Element => (
+  <Badge {...props} data-testid="discord-status-badge" p={2} borderRadius={5}>
+    <Flex alignItems="center" gap={2}>
+      <CFaDiscord />
+      {children}
+    </Flex>
+  </Badge>
+);
+
 const DiscordStatusBadge = ({ value }: Props): JSX.Element => {
   switch (value) {
     case 'SENT':
-      return (
-        <Badge colorScheme="green" data-testid="discord-status-badge">
-          Sent
-        </Badge>
-      );
+      return <CustomBadge colorScheme="green">Sent</CustomBadge>;
     case 'RECEIVED':
-      return (
-        <Badge colorScheme="blue" data-testid="discord-status-badge">
-          Received
-        </Badge>
-      );
+      return <CustomBadge colorScheme="blue">Received</CustomBadge>;
     case 'FAILED':
-      return (
-        <Badge colorScheme="red" data-testid="discord-status-badge">
-          Failed
-        </Badge>
-      );
+      return <CustomBadge colorScheme="red">Failed</CustomBadge>;
     default:
-      return <Badge data-testid="discord-status-badge">Not Sent</Badge>;
+      return <CustomBadge>Not Sent</CustomBadge>;
   }
 };
 
