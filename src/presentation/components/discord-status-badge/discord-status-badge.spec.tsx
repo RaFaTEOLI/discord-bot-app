@@ -19,4 +19,9 @@ describe('DiscordStatusBadge Component', () => {
     const screen = makeSut(CommandDiscordStatus.RECEIVED);
     expect(screen.getByTestId('discord-status-badge').textContent).toBe('Received');
   });
+
+  test('should render FAILED badge', async () => {
+    const screen = makeSut(CommandDiscordStatus.FAILED);
+    expect(screen.getByTestId('discord-status-badge').textContent).toBe('Failed');
+  });
 });
