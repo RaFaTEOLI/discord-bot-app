@@ -2,7 +2,7 @@ import DiscordStatusBadge from './discord-status-badge';
 import { RenderResult, render } from '@testing-library/react';
 import { CommandDiscordStatus } from '@/domain/models';
 
-const makeSut = (value: CommandDiscordStatus | null): RenderResult => {
+const makeSut = (value: CommandDiscordStatus | undefined): RenderResult => {
   return render(<DiscordStatusBadge value={value} />);
 };
 
@@ -23,7 +23,7 @@ describe('DiscordStatusBadge Component', () => {
   });
 
   test('should render DEFAULT badge', async () => {
-    const screen = makeSut(null);
+    const screen = makeSut(undefined);
     expect(screen.getByTestId('discord-status-badge').textContent).toBe('Not Sent');
   });
 });

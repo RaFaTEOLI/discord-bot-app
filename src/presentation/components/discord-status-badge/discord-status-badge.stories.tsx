@@ -15,7 +15,7 @@ export default {
 
 export const Default: StoryObj<Props> = {
   args: {
-    value: null
+    value: undefined
   }
 };
 

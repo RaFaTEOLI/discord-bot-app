@@ -1,8 +1,8 @@
 import { CommandDiscordStatus } from '@/domain/models';
 import { Badge } from '@chakra-ui/react';
 
-type Props = {
-  value: CommandDiscordStatus | null;
+export type Props = {
+  value: CommandDiscordStatus | undefined;
 };
 
 const DiscordStatusBadge = ({ value }: Props): JSX.Element => {
