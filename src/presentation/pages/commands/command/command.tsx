@@ -1,4 +1,4 @@
-import { Content, Loading } from '@/presentation/components';
+import { Content, DiscordStatusBadge, Loading } from '@/presentation/components';
 import { Checkbox, Flex, HStack, Heading, Stack, chakra, useColorModeValue, useToast, Divider } from '@chakra-ui/react';
 import { Choices, Input, Select, commandState, SubmitButton } from './components';
 import { HiCommandLine, HiEnvelopeOpen, HiInformationCircle } from 'react-icons/hi2';
@@ -209,7 +209,7 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
             </Flex>
             <Flex justifyContent="space-between">
               <Heading size="md">Discord Properties</Heading>
-              <p data-testid="discord-status">{state.command.discordStatus}</p>
+              <DiscordStatusBadge value={state.command.discordStatus} />
             </Flex>
             <Select name="discordType" placeholder="Type" options={state.applicationCommandTypes} />
             <Flex justifyContent="space-between">

@@ -2,7 +2,7 @@ import { Helper, renderWithHistory } from '@/presentation/mocks';
 import { screen, waitFor } from '@testing-library/react';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import Command from './command';
-import { AccountModel, CommandModel } from '@/domain/models';
+import { AccountModel, CommandDiscordStatus, CommandModel } from '@/domain/models';
 import { SaveCommandSpy, LoadCommandByIdSpy, mockCommandModel, mockSaveCommandParams } from '@/domain/mocks';
 import { faker } from '@faker-js/faker';
 import userEvent from '@testing-library/user-event';
@@ -421,12 +421,12 @@ describe('Command Component', () => {
     });
   });
 
-  test('should show DiscordStatus', async () => {
+  test('should show DiscordStatusBadge', async () => {
     const loadCommandByIdSpy = new LoadCommandByIdSpy();
     const commandModel = mockCommandModel('message');
-    commandModel.discordStatus = 'SENT';
+    commandModel.discordStatus = CommandDiscordStatus.SENT;
     vi.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
     makeSut();
-    await waitFor(() => expect(screen.getByTestId('discord-status')).toBeTruthy());
+    await waitFor(() => expect(screen.getByTestId('discord-status-badge')).toBeTruthy());
   });
 });
