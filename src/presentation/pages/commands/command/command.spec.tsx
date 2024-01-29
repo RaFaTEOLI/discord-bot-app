@@ -420,4 +420,13 @@ describe('Command Component', () => {
       });
     });
   });
+
+  test('should show DiscordStatus', async () => {
+    const loadCommandByIdSpy = new LoadCommandByIdSpy();
+    const commandModel = mockCommandModel('message');
+    commandModel.discordStatus = 'SENT';
+    vi.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
+    makeSut();
+    await waitFor(() => expect(screen.getByTestId('discord-status')).toBeTruthy());
+  });
 });
