@@ -207,8 +207,10 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
                 options={state.dispatchers}
               />
             </Flex>
-            <Heading size="md">Discord Properties</Heading>
-            <p data-testid="discord-status">{state.command.discordStatus}</p>
+            <Flex justifyContent="space-between">
+              <Heading size="md">Discord Properties</Heading>
+              <p data-testid="discord-status">{state.command.discordStatus}</p>
+            </Flex>
             <Select name="discordType" placeholder="Type" options={state.applicationCommandTypes} />
             <Flex justifyContent="space-between">
               <Heading size="sm">Options</Heading>
