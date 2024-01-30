@@ -14,6 +14,7 @@ import { CommandModel, CommandOptionType } from '@/domain/models';
 import { useErrorHandler } from '@/presentation/hooks';
 import { AccessTokenExpiredError, AccessDeniedError } from '@/domain/errors';
 import { useNavigate } from 'react-router';
+import { Socket } from 'socket.io-client';
 
 const CommandsIcon = chakra(HiCommandLine);
 const DescriptionIcon = chakra(HiInformationCircle);
@@ -24,6 +25,7 @@ type Props = {
   commandId: string;
   loadCommandById: LoadCommandById;
   saveCommand: SaveCommand;
+  socketClient: Socket;
 };
 
 const schema = yupResolver(
@@ -54,7 +56,7 @@ const schema = yupResolver(
     .required()
 );
 
-export default function Command({ commandId, loadCommandById, saveCommand }: Props): JSX.Element {
+export default function Command({ commandId, loadCommandById, saveCommand, socketClient }: Props): JSX.Element {
   const navigate = useNavigate();
   const optionColor = useColorModeValue('gray.100', 'gray.900');
   const optionInputColor = useColorModeValue('white', 'gray.800');
@@ -165,6 +167,20 @@ export default function Command({ commandId, loadCommandById, saveCommand }: Pro
       setState(prev => ({ ...prev, isLoading: false }));
     }
   });
+
+  useEffect(() => {
+    function onCommandChange(value: any): void {
+      if (value.id === commandId) {
+        setState(prev => ({ ...prev, reload: new Date() }));
+      }
+    }
+
+    socketClient.on('command', onCommandChange);
+
+    return () => {
+      socketClient.off('command', onCommandChange);
+    };
+  }, [commandId]);
 
   return (
     <Content title="Command">
