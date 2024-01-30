@@ -13,9 +13,9 @@ describe('LocalStorageAdapter', () => {
   test('should call localStorage.setItem with correct values', () => {
     const sut = makeSut();
     const key = faker.database.column();
-    const value = JSON.parse(faker.datatype.json());
+    const value = JSON.stringify({ test: faker.word.verb() });
     sut.set(key, value);
-    expect(localStorage.setItem).toHaveBeenCalledWith(key, JSON.stringify(value));
+    expect(localStorage.setItem).toHaveBeenCalledWith(key, value);
   });
 
   test('should call localStorage.removeItem if value is null', () => {
@@ -44,10 +44,10 @@ describe('LocalStorageAdapter', () => {
     Object.defineProperty(window, 'localStorage', { value: mock });
     const sut = makeSut();
     const key = faker.database.column();
-    const value = faker.datatype.json();
+    const value = JSON.stringify({ test: faker.word.verb() });
     const getItemSpy = vi.spyOn(localStorage, 'getItem').mockReturnValueOnce(value);
     const obj = sut.get(key);
-    expect(obj).toEqual(JSON.parse(value));
+    expect(obj).toEqual(value);
     expect(getItemSpy).toHaveBeenCalledWith(key);
   });
 });

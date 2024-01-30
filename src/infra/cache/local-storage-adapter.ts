@@ -2,17 +2,17 @@
 import { SetStorage } from '@/data/protocols/cache';
 
 export class LocalStorageAdapter implements SetStorage {
-  set(key: string, value: object | null): void {
+  set(key: string, value: string | null): void {
     if (value) {
-      localStorage.setItem(key, JSON.stringify(value));
+      localStorage.setItem(key, value);
     } else {
       localStorage.removeItem(key);
     }
   }
 
-  get(key: string): any {
+  get(key: string): string {
     // eslint-disable-next-line
     // @ts-ignore
-    return JSON.parse(localStorage.getItem(key));
+    return localStorage.getItem(key);
   }
 }
