@@ -27,8 +27,10 @@ const DiscordStatusBadge = ({ value }: Props): JSX.Element => {
       return <CustomBadge colorScheme="red">Failed</CustomBadge>;
     default:
       return (
-        <Tooltip hasArrow label="To send command to Discord API please save command" placement="bottom">
-          <CustomBadge>Not Sent</CustomBadge>
+        <Tooltip hasArrow label="To send command to Discord API please save command" placement="left">
+          <span tabIndex={0}>
+            <CustomBadge>Not Sent</CustomBadge>
+          </span>
         </Tooltip>
       );
   }
