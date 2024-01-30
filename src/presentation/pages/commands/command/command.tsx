@@ -37,12 +37,12 @@ const schema = yupResolver(
       dispatcher: yup.string().required('Required field'),
       type: yup.string().required('Required field'),
       response: yup.string().max(255).nullable(),
-      discordType: yup.string().required('Required field'),
+      discordType: yup.number().required('Required field'),
       options: yup.array().of(
         yup.object({
           name: yup.string().min(2).max(25).required('Required field'),
           description: yup.string().min(2).max(50).required('Required field'),
-          type: yup.string().required('Required field'),
+          type: yup.number().required('Required field'),
           required: yup.boolean(),
           choices: yup.array().of(
             yup.object({

@@ -64,8 +64,7 @@ const simulateValidSubmit = async (): Promise<FormValues> => {
   await Helper.asyncPopulateField('response', formValues.response);
   await Helper.asyncPopulateField('discordType', formValues.discordType.toString(), true);
   await userEvent.click(submitButton);
-  const { discordType, ...restValues } = formValues;
-  return { discordType: discordType.toString(), ...restValues } as FormValues;
+  return formValues as FormValues;
 };
 
 const simulateValidSubmit2 = async (): Promise<FormValues> => {
@@ -78,8 +77,7 @@ const simulateValidSubmit2 = async (): Promise<FormValues> => {
   Helper.populateField('discordType', formValues.discordType.toString(), true);
   const submitButton = await waitFor(() => screen.getByTestId('submit'));
   await userEvent.click(submitButton);
-  const { discordType, ...restValues } = formValues;
-  return { discordType: discordType.toString(), ...restValues } as FormValues;
+  return formValues as FormValues;
 };
 
 const history = createMemoryHistory({ initialEntries: ['/commands/1'] });
@@ -370,7 +368,7 @@ describe('Command Component', () => {
           id: commandModel.id,
           // eslint-disable-next-line
           // @ts-ignore
-          options: [{ ...commandModel.options[0], type: commandModel.options[0].type.toString(), choices: [] }]
+          options: [{ ...commandModel.options[0], type: commandModel.options[0].type, choices: [] }]
         })
       );
     });
