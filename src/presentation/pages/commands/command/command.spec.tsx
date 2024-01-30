@@ -3,12 +3,20 @@ import { screen, waitFor } from '@testing-library/react';
 import { createMemoryHistory, MemoryHistory } from 'history';
 import Command from './command';
 import { AccountModel, CommandDiscordStatus, CommandModel } from '@/domain/models';
-import { SaveCommandSpy, LoadCommandByIdSpy, mockCommandModel, mockSaveCommandParams } from '@/domain/mocks';
+import {
+  SaveCommandSpy,
+  LoadCommandByIdSpy,
+  mockCommandModel,
+  mockSaveCommandParams,
+  io as mockIo,
+  serverSocket
+} from '@/domain/mocks';
 import { faker } from '@faker-js/faker';
 import userEvent from '@testing-library/user-event';
 import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
 import { commandState, types, dispatchers, applicationCommandTypes, commandOptionTypes } from './components';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
+import { Socket } from 'socket.io-client';
 
 const mockToast = vi.fn();
 vi.mock('@chakra-ui/react', async () => {
@@ -23,6 +31,7 @@ type SutTypes = {
   commandId: string;
   loadCommandByIdSpy: LoadCommandByIdSpy;
   saveCommandSpy: SaveCommandSpy;
+  socketClientSpy: Socket;
   history: MemoryHistory;
   setCurrentAccountMock: (account: AccountModel) => void;
 };
@@ -36,6 +45,7 @@ type Override = {
   commandId?: string;
   loadCommandByIdSpy?: LoadCommandByIdSpy;
   saveCommandSpy?: SaveCommandSpy;
+  socketClientSpy?: Socket;
   adminUser?: boolean;
   invalidForm?: boolean;
 };
@@ -77,6 +87,7 @@ const makeSut = (override?: Override): SutTypes => {
   const commandId = override?.commandId ?? faker.datatype.uuid();
   const loadCommandByIdSpy = override?.loadCommandByIdSpy ?? new LoadCommandByIdSpy();
   const saveCommandSpy = override?.saveCommandSpy ?? new SaveCommandSpy();
+  const socketClientSpy = override?.socketClientSpy ?? (mockIo.connect() as unknown as Socket);
   const invalidForm = override?.invalidForm ?? false;
 
   const { setCurrentAccountMock } = renderWithHistory({
@@ -87,7 +98,8 @@ const makeSut = (override?: Override): SutTypes => {
       Command({
         commandId,
         loadCommandById: loadCommandByIdSpy,
-        saveCommand: saveCommandSpy
+        saveCommand: saveCommandSpy,
+        socketClient: socketClientSpy
       }),
     ...(invalidForm && {
       states: [
@@ -128,6 +140,7 @@ const makeSut = (override?: Override): SutTypes => {
     commandId,
     loadCommandByIdSpy,
     saveCommandSpy,
+    socketClientSpy,
     history,
     setCurrentAccountMock
   };
@@ -428,5 +441,23 @@ describe('Command Component', () => {
     vi.spyOn(loadCommandByIdSpy, 'loadById').mockResolvedValueOnce(commandModel);
     makeSut();
     await waitFor(() => expect(screen.getByTestId('discord-status-badge')).toBeTruthy());
+  });
+
+  test('should refetch command on command status change', async () => {
+    const commandId = faker.datatype.uuid();
+    const socketClientSpy = mockIo.connect() as unknown as Socket;
+    const loadCommandByIdSpy = new LoadCommandByIdSpy();
+    makeSut({ commandId, socketClientSpy, loadCommandByIdSpy });
+    expect(loadCommandByIdSpy.command.discordStatus).toBeFalsy();
+
+    const commandModel = mockCommandModel('message');
+    commandModel.id = commandId;
+    commandModel.discordStatus = CommandDiscordStatus.SENT;
+
+    serverSocket.emit('command', commandModel);
+
+    await waitFor(() => {
+      expect(loadCommandByIdSpy.callsCount).toBe(2);
+    });
   });
 });
