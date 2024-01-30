@@ -81,6 +81,22 @@ describe('AuthorizeHttpClientDecorator', () => {
     });
   });
 
+  test('should add spotify token to HttpClient when url is from spotify', async () => {
+    const { sut, getStorageSpy, httpClientSpy } = makeSut();
+    const spotifyAccount = mockAccountWithSpotifyModel().user.spotify;
+    getStorageSpy.value = JSON.stringify(spotifyAccount);
+    const httpRequest: HttpRequest = {
+      url: 'https://api.spotify.com/',
+      method: faker.helpers.arrayElement(['get', 'post', 'put', 'delete'])
+    };
+    await sut.request(httpRequest);
+    expect(httpClientSpy.url).toBe(httpRequest.url);
+    expect(httpClientSpy.method).toBe(httpRequest.method);
+    expect(httpClientSpy.headers).toEqual({
+      Authorization: `Bearer ${spotifyAccount?.accessToken as string}`
+    });
+  });
+
   test('should return the same result as HttpClient', async () => {
     const { sut, httpClientSpy } = makeSut();
     const httpResponse = await sut.request(mockHttpRequest());
