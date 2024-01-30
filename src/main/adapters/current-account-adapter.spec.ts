@@ -1,5 +1,5 @@
 import { setCurrentAccountAdapter, getCurrentAccountAdapter } from '@/main/adapters';
-import { mockAccountModel } from '@/domain/mocks';
+import { mockAccountModel, mockAccountWithSpotifyModel } from '@/domain/mocks';
 import { LocalStorageAdapter } from '@/infra/cache/local-storage-adapter';
 import { describe, test, expect, vi } from 'vitest';
 
@@ -49,5 +49,15 @@ describe('CurrentAccountAdapter', () => {
     const setSpy = vi.spyOn(LocalStorageAdapter.prototype, 'set');
     setCurrentAccountAdapter(undefined as any);
     expect(setSpy).toHaveBeenCalledWith(process.env.VITE_LOCAL_STORAGE_ACCOUNT_IDENTIFIER as string, '');
+  });
+
+  test('should call LocalStorageAdapter.set with correct values when user has spotify link', () => {
+    const account = mockAccountWithSpotifyModel();
+    const setSpy = vi.spyOn(LocalStorageAdapter.prototype, 'set');
+    setCurrentAccountAdapter(account);
+    expect(setSpy).toHaveBeenCalledWith(
+      process.env.VITE_LOCAL_STORAGE_SPOTIFY_IDENTIFIER as string,
+      JSON.stringify(account.user.spotify)
+    );
   });
 });
