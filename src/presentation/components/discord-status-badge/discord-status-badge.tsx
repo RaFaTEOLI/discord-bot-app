@@ -1,5 +1,5 @@
 import { CommandDiscordStatus } from '@/domain/models';
-import { Badge, Flex, chakra } from '@chakra-ui/react';
+import { Badge, Flex, Tooltip, chakra } from '@chakra-ui/react';
 import { FaDiscord } from 'react-icons/fa';
 
 const CFaDiscord = chakra(FaDiscord);
@@ -26,7 +26,11 @@ const DiscordStatusBadge = ({ value }: Props): JSX.Element => {
     case 'FAILED':
       return <CustomBadge colorScheme="red">Failed</CustomBadge>;
     default:
-      return <CustomBadge>Not Sent</CustomBadge>;
+      return (
+        <Tooltip hasArrow label="To send command to Discord API please save command" placement="bottom">
+          <CustomBadge>Not Sent</CustomBadge>
+        </Tooltip>
+      );
   }
 };
 
