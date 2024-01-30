@@ -9,6 +9,12 @@ export const setCurrentAccountAdapter = (account: AccountModel): void => {
   }
   makeLocalStorageAdapter().set(process.env.VITE_LOCAL_STORAGE_ACCOUNT_IDENTIFIER as string, encryptedAccount);
   makeLocalStorageAdapter().set(process.env.VITE_LOCAL_STORAGE_TOKEN_IDENTIFIER as string, account?.accessToken);
+  if (account?.user?.spotify) {
+    makeLocalStorageAdapter().set(
+      process.env.VITE_LOCAL_STORAGE_SPOTIFY_IDENTIFIER as string,
+      JSON.stringify(account?.user?.spotify)
+    );
+  }
 };
 
 export const getCurrentAccountAdapter = (): AccountModel => {
