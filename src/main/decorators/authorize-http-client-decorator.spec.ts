@@ -66,6 +66,21 @@ describe('AuthorizeHttpClientDecorator', () => {
     });
   });
 
+  test('should add auth headers to HttpClient', async () => {
+    const { sut, getStorageSpy, httpClientSpy } = makeSut();
+    getStorageSpy.value = JSON.stringify(mockAccountWithSpotifyModel().user.spotify);
+    const httpRequest: HttpRequest = {
+      url: faker.internet.url(),
+      method: faker.helpers.arrayElement(['get', 'post', 'put', 'delete'])
+    };
+    await sut.request(httpRequest);
+    expect(httpClientSpy.url).toBe(httpRequest.url);
+    expect(httpClientSpy.method).toBe(httpRequest.method);
+    expect(httpClientSpy.headers).toEqual({
+      'x-access-token': getStorageSpy.value as string
+    });
+  });
+
   test('should return the same result as HttpClient', async () => {
     const { sut, httpClientSpy } = makeSut();
     const httpResponse = await sut.request(mockHttpRequest());
