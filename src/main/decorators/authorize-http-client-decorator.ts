@@ -1,18 +1,19 @@
 import { HttpClient, HttpRequest, HttpResponse } from '@/data/protocols/http';
 import { GetStorage } from '@/data/protocols/cache';
-import { AccountModel } from '@/domain/models';
+import { UserSpotifyModel } from '@/domain/models';
 
 export class AuthorizeHttpClientDecorator implements HttpClient {
   constructor(private readonly getStorage: GetStorage, private readonly httpClient: HttpClient) {}
 
   async request(data: HttpRequest): Promise<HttpResponse> {
-    const account = this.getStorage.get('account') as AccountModel;
-    if (account?.accessToken) {
+    const accessToken = this.getStorage.get(process.env.VITE_LOCAL_STORAGE_TOKEN_IDENTIFIER as string) as string;
+    const spotifyObj = this.getStorage.get(process.env.VITE_LOCAL_STORAGE_SPOTIFY_IDENTIFIER as string) as string;
+    const spotifyAccessToken = spotifyObj ? (JSON.parse(spotifyObj) as UserSpotifyModel).accessToken : null;
+    if (accessToken) {
       Object.assign(data, {
         headers: Object.assign(data.headers || {}, {
-          ...(!data.url.includes('api.spotify') && { 'x-access-token': account.accessToken }),
-          ...(account.user.spotify?.accessToken &&
-            data.url.includes('api.spotify') && { Authorization: `Bearer ${account.user.spotify.accessToken}` })
+          ...(!data.url.includes('api.spotify') && { 'x-access-token': accessToken }),
+          ...(spotifyAccessToken && data.url.includes('api.spotify') && { Authorization: `Bearer ${spotifyAccessToken}` })
         })
       });
     }
