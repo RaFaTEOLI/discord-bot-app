@@ -1,10 +1,9 @@
 import { AuthorizeHttpClientDecorator } from '@/main/decorators';
 import { mockHttpRequest, GetStorageSpy, HttpClientSpy } from '@/data/mocks';
 import { HttpRequest } from '@/data/protocols/http';
-import { mockAccountModel, mockAccountWithSpotifyModel } from '@/domain/mocks';
 import { faker } from '@faker-js/faker';
-import { AccountModel } from '@/domain/models';
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, vi } from 'vitest';
+import { mockAccountWithSpotifyModel } from '@/domain/mocks';
 
 type SutTypes = {
   sut: AuthorizeHttpClientDecorator;
@@ -26,8 +25,13 @@ const makeSut = (): SutTypes => {
 describe('AuthorizeHttpClientDecorator', () => {
   test('should call GetStorage with correct value', async () => {
     const { sut, getStorageSpy } = makeSut();
+    const getSpy = vi.spyOn(getStorageSpy, 'get');
     await sut.request(mockHttpRequest());
-    expect(getStorageSpy.key).toBe('account');
+    const calls = [
+      [process.env.VITE_LOCAL_STORAGE_TOKEN_IDENTIFIER as string],
+      [process.env.VITE_LOCAL_STORAGE_SPOTIFY_IDENTIFIER as string]
+    ];
+    expect(getSpy.mock.calls).toEqual(calls);
   });
 
   test('should not add headers if GetStorage is invalid', async () => {
@@ -47,58 +51,18 @@ describe('AuthorizeHttpClientDecorator', () => {
 
   test('should add headers to HttpClient', async () => {
     const { sut, getStorageSpy, httpClientSpy } = makeSut();
-    getStorageSpy.value = mockAccountModel();
-    const httpRequest: HttpRequest = {
-      url: faker.internet.url(),
-      method: faker.helpers.arrayElement(['get', 'post', 'put', 'delete'])
-    };
-    await sut.request(httpRequest);
-    expect(httpClientSpy.url).toBe(httpRequest.url);
-    expect(httpClientSpy.method).toBe(httpRequest.method);
-    expect(httpClientSpy.headers).toEqual({
-      'x-access-token': getStorageSpy.value.accessToken
-    });
-  });
-
-  test('should merge headers to HttpClient', async () => {
-    const { sut, getStorageSpy, httpClientSpy } = makeSut();
-    getStorageSpy.value = mockAccountModel();
-    const field = faker.random.words();
+    getStorageSpy.value = JSON.stringify(mockAccountWithSpotifyModel().user.spotify);
     const httpRequest: HttpRequest = {
       url: faker.internet.url(),
       method: faker.helpers.arrayElement(['get', 'post', 'put', 'delete']),
-      headers: {
-        field
-      }
+      headers: { test: 1 }
     };
     await sut.request(httpRequest);
     expect(httpClientSpy.url).toBe(httpRequest.url);
     expect(httpClientSpy.method).toBe(httpRequest.method);
     expect(httpClientSpy.headers).toEqual({
-      field,
-      'x-access-token': getStorageSpy.value.accessToken
-    });
-  });
-
-  test('should merge headers to HttpClient with SpotifyAccess', async () => {
-    const { sut, getStorageSpy, httpClientSpy } = makeSut();
-    getStorageSpy.value = mockAccountWithSpotifyModel();
-    const storageValue: AccountModel = getStorageSpy.value;
-    const field = faker.random.words();
-    const httpRequest: HttpRequest = {
-      url: 'http://api.spotify.com/',
-      method: faker.helpers.arrayElement(['get', 'post', 'put', 'delete']),
-      headers: {
-        field
-      }
-    };
-    await sut.request(httpRequest);
-    expect(httpClientSpy.url).toBe(httpRequest.url);
-    expect(httpClientSpy.method).toBe(httpRequest.method);
-    expect(httpClientSpy.headers).toEqual({
-      field,
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      Authorization: `Bearer ${storageValue.user.spotify?.accessToken}`
+      ...{ test: 1 },
+      'x-access-token': getStorageSpy.value as string
     });
   });
 
@@ -106,5 +70,21 @@ describe('AuthorizeHttpClientDecorator', () => {
     const { sut, httpClientSpy } = makeSut();
     const httpResponse = await sut.request(mockHttpRequest());
     expect(httpResponse).toEqual(httpClientSpy.response);
+  });
+
+  test('should have default headers but overrides content-type', async () => {
+    const { sut, httpClientSpy, getStorageSpy } = makeSut();
+    getStorageSpy.value = undefined;
+    const httpRequest: HttpRequest = {
+      url: faker.internet.url(),
+      method: faker.helpers.arrayElement(['get', 'post', 'put', 'delete']),
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    };
+    await sut.request(httpRequest);
+    expect(httpClientSpy.url).toBe(httpRequest.url);
+    expect(httpClientSpy.method).toBe(httpRequest.method);
+    expect(httpClientSpy.headers).toEqual({ 'Content-Type': 'multipart/form-data' });
   });
 });
