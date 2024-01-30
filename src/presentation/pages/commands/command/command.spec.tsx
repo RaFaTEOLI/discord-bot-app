@@ -458,4 +458,20 @@ describe('Command Component', () => {
       expect(loadCommandByIdSpy.callsCount).toBe(2);
     });
   });
+
+  test('should not refetch command on command status change', async () => {
+    const commandId = faker.datatype.uuid();
+    const socketClientSpy = mockIo.connect() as unknown as Socket;
+    const loadCommandByIdSpy = new LoadCommandByIdSpy();
+    makeSut({ commandId, socketClientSpy, loadCommandByIdSpy });
+    expect(loadCommandByIdSpy.command.discordStatus).toBeFalsy();
+
+    const commandModel = mockCommandModel('message');
+
+    serverSocket.emit('command', commandModel);
+
+    await waitFor(() => {
+      expect(loadCommandByIdSpy.callsCount).toBe(1);
+    });
+  });
 });
