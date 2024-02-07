@@ -474,4 +474,19 @@ describe('Command Component', () => {
       expect(loadCommandByIdSpy.callsCount).toBe(1);
     });
   });
+
+  test('should show discordType description when selected', async () => {
+    makeSut();
+    await waitFor(() => screen.getByTestId('command-content'));
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    expect(commandForm).toBeTruthy();
+    const { discordType } = mockSaveCommandParams();
+    const selectedDiscordType = applicationCommandTypes.find(type => type.value === discordType.toString());
+    await Helper.asyncPopulateField('discordType', discordType.toString(), true);
+    await waitFor(() => {
+      expect(screen.getByTestId('discordType-description')).toBeTruthy();
+      expect(screen.getByTestId('discordType-description').textContent).toBe(selectedDiscordType?.description);
+    });
+  });
 });
