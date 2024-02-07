@@ -66,12 +66,15 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
     register,
     reset,
     handleSubmit,
+    watch,
     formState: { errors }
   } = useForm<CommandModel>({ resolver: schema });
   const { fields, append, remove, move } = useFieldArray({
     control,
     name: 'options'
   });
+
+  const watchDiscordType = watch('discordType');
 
   // eslint-disable-next-line n/handle-callback-err
   const handleError = useErrorHandler((error: Error) => {});
@@ -181,6 +184,10 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
       socketClient.off('command', onCommandChange);
     };
   }, [commandId]);
+
+  useEffect(() => {
+    setState(prev => ({ ...prev, discordType: watchDiscordType }));
+  }, [watchDiscordType]);
 
   return (
     <Content title="Command">

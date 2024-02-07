@@ -1,4 +1,4 @@
-import { CommandModel } from '@/domain/models';
+import { ApplicationCommandType, CommandModel } from '@/domain/models';
 import { atom } from 'recoil';
 
 export const types = [
@@ -30,15 +30,18 @@ export const dispatchers = [
 export const applicationCommandTypes = [
   {
     label: 'CHAT_INPUT',
-    value: '1'
+    value: '1',
+    description: 'Slash commands; a text-based command that shows up when a user types /'
   },
   {
     label: 'USER',
-    value: '2'
+    value: '2',
+    description: 'A UI-based command that shows up when you right click or tap on a user'
   },
   {
     label: 'MESSAGE',
-    value: '3'
+    value: '3',
+    description: 'A UI-based command that shows up when you right click or tap on a message'
   }
 ];
 
@@ -100,6 +103,7 @@ export const commandState = atom({
     dispatchers,
     applicationCommandTypes,
     commandOptionTypes,
-    disabledForm: false
+    disabledForm: false,
+    discordType: null as ApplicationCommandType | null
   }
 });
