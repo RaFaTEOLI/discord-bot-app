@@ -3,7 +3,7 @@ import { Checkbox, Flex, HStack, Heading, Stack, chakra, useColorModeValue, useT
 import { Choices, Input, Select, commandState, SubmitButton } from './components';
 import { HiCommandLine, HiEnvelopeOpen, HiInformationCircle } from 'react-icons/hi2';
 import { useRecoilState } from 'recoil';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import IconButton from '@/presentation/components/layout/components/icon-button';
 import { FiArrowDown, FiArrowUp, FiCheck, FiPlus, FiTrash } from 'react-icons/fi';
 import { useEffect } from 'react';
@@ -309,7 +309,15 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
                       placeholder="Description"
                       icon={<DescriptionIcon />}
                     />
-                    <Checkbox>Required</Checkbox>
+                    <Controller
+                      name={`options.${index}.required`}
+                      control={control}
+                      render={({ field }) => (
+                        <Checkbox isChecked={field.value} onChange={field.onChange}>
+                          Required
+                        </Checkbox>
+                      )}
+                    />
                   </Flex>
                   <Choices optionInputColor={optionInputColor} control={control} nestIndex={index} />
                 </Stack>
