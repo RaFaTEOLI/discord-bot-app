@@ -42,7 +42,8 @@ const Select = ({ name, state, options, setState, ...props }: Props): JSX.Elemen
   }, [state.errors]);
 
   const description = useMemo(() => {
-    const option = options.find(option => option.value === state[name]);
+    // eslint-disable-next-line eqeqeq
+    const option = options.find(option => option.value == state[name]);
     return option?.description;
   }, [state]);
 
