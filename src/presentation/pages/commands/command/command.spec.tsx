@@ -106,7 +106,16 @@ const makeSut = (override?: Override): SutTypes => {
           value: {
             reload: false,
             isLoading: false,
-            command: { id: '', command: '', description: '', type: '', dispatcher: '', response: '' },
+            command: {
+              id: null,
+              command: null,
+              description: null,
+              type: null,
+              dispatcher: null,
+              response: null,
+              discordType: null,
+              discordStatus: null
+            },
             types,
             dispatchers,
             applicationCommandTypes,
@@ -382,7 +391,7 @@ describe('Command Component', () => {
     expect(commandForm).toBeTruthy();
     const formValues = await simulateValidSubmit();
     await waitFor(() => {
-      expect(saveCommandSpy.params).toEqual(Object.assign({}, formValues, { options: [] }));
+      expect(saveCommandSpy.params).toEqual(formValues);
       expect(history.location.pathname).toBe('/commands');
     });
   });

@@ -96,7 +96,15 @@ export const commandState = atom({
   key: 'commandState',
   default: {
     reload: new Date(),
-    command: { id: '', command: '', description: '', type: '', dispatcher: '', response: '' } as CommandModel,
+    command: {
+      id: null,
+      command: null,
+      description: null,
+      type: null,
+      dispatcher: null,
+      response: null,
+      discordType: null
+    } as unknown as CommandModel,
     isLoading: true,
     error: '',
     types,
