@@ -66,12 +66,15 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
     register,
     reset,
     handleSubmit,
+    watch,
     formState: { errors }
-  } = useForm<CommandModel>({ resolver: schema });
+  } = useForm<CommandModel>({ resolver: schema, defaultValues: state.command });
   const { fields, append, remove, move } = useFieldArray({
     control,
     name: 'options'
   });
+
+  const watchDiscordType = watch('discordType');
 
   // eslint-disable-next-line n/handle-callback-err
   const handleError = useErrorHandler((error: Error) => {});
@@ -97,6 +100,16 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
         if (commandId !== 'new') {
           const command = await loadCommandById.loadById(commandId);
           setCommand(command);
+        } else {
+          reset({
+            id: null,
+            command: null,
+            description: null,
+            type: null,
+            dispatcher: null,
+            response: null,
+            discordType: null
+          } as any);
         }
       } catch (error: any) {
         if (error instanceof AccessTokenExpiredError || error instanceof AccessDeniedError) {
@@ -181,6 +194,10 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
       socketClient.off('command', onCommandChange);
     };
   }, [commandId]);
+
+  useEffect(() => {
+    setState(prev => ({ ...prev, discordType: watchDiscordType }));
+  }, [watchDiscordType]);
 
   return (
     <Content title="Command">

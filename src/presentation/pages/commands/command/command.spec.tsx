@@ -106,7 +106,16 @@ const makeSut = (override?: Override): SutTypes => {
           value: {
             reload: false,
             isLoading: false,
-            command: { id: '', command: '', description: '', type: '', dispatcher: '', response: '' },
+            command: {
+              id: null,
+              command: null,
+              description: null,
+              type: null,
+              dispatcher: null,
+              response: null,
+              discordType: null,
+              discordStatus: null
+            },
             types,
             dispatchers,
             applicationCommandTypes,
@@ -382,7 +391,7 @@ describe('Command Component', () => {
     expect(commandForm).toBeTruthy();
     const formValues = await simulateValidSubmit();
     await waitFor(() => {
-      expect(saveCommandSpy.params).toEqual(Object.assign({}, formValues, { options: [] }));
+      expect(saveCommandSpy.params).toEqual(formValues);
       expect(history.location.pathname).toBe('/commands');
     });
   });
@@ -472,6 +481,21 @@ describe('Command Component', () => {
 
     await waitFor(() => {
       expect(loadCommandByIdSpy.callsCount).toBe(1);
+    });
+  });
+
+  test('should show discordType description when selected', async () => {
+    makeSut();
+    await waitFor(() => screen.getByTestId('command-content'));
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    expect(commandForm).toBeTruthy();
+    const { discordType } = mockSaveCommandParams();
+    const selectedDiscordType = applicationCommandTypes.find(type => type.value === discordType.toString());
+    await Helper.asyncPopulateField('discordType', discordType.toString(), true);
+    await waitFor(() => {
+      expect(screen.getByTestId('discordType-description')).toBeTruthy();
+      expect(screen.getByTestId('discordType-description').textContent).toBe(selectedDiscordType?.description);
     });
   });
 });
