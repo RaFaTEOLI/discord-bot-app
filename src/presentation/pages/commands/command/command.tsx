@@ -12,7 +12,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CommandModel, CommandOptionType } from '@/domain/models';
 import { useErrorHandler } from '@/presentation/hooks';
-import { AccessTokenExpiredError, AccessDeniedError } from '@/domain/errors';
+import { AccessTokenExpiredError, AccessDeniedError, CommandAlreadyCreatedError } from '@/domain/errors';
 import { useNavigate } from 'react-router';
 import { Socket } from 'socket.io-client';
 
@@ -162,6 +162,14 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
           title: 'Access Denied',
           description: 'Your login has expired, please log in again!',
           status: 'error',
+          duration: 9000,
+          isClosable: true
+        });
+      } else if (error instanceof CommandAlreadyCreatedError) {
+        toast({
+          title: 'Ops!',
+          description: 'There is already a command created with this name!',
+          status: 'warning',
           duration: 9000,
           isClosable: true
         });
