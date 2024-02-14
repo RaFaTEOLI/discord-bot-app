@@ -13,7 +13,7 @@ import {
 } from '@/domain/mocks';
 import { faker } from '@faker-js/faker';
 import userEvent from '@testing-library/user-event';
-import { AccessDeniedError, AccessTokenExpiredError, UnexpectedError } from '@/domain/errors';
+import { AccessDeniedError, AccessTokenExpiredError, CommandAlreadyCreatedError, UnexpectedError } from '@/domain/errors';
 import { commandState, types, dispatchers, applicationCommandTypes, commandOptionTypes } from './components';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { Socket } from 'socket.io-client';
@@ -496,6 +496,27 @@ describe('Command Component', () => {
     await waitFor(() => {
       expect(screen.getByTestId('discordType-description')).toBeTruthy();
       expect(screen.getByTestId('discordType-description').textContent).toBe(selectedDiscordType?.description);
+    });
+  });
+
+  test('should show warning toast on CommandAlreadyCreated on SaveCommand', async () => {
+    const saveCommandSpy = new SaveCommandSpy();
+    const column = faker.database.column();
+    vi.spyOn(saveCommandSpy, 'save').mockRejectedValueOnce(new CommandAlreadyCreatedError(column));
+    makeSut({ saveCommandSpy, adminUser: true });
+    await waitFor(() => screen.getByTestId('command-content'));
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    expect(commandForm).toBeTruthy();
+    await simulateValidSubmit();
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Ops!',
+        description: 'There is already a command created with this name!',
+        status: 'warning',
+        duration: 9000,
+        isClosable: true
+      });
     });
   });
 });
