@@ -95,4 +95,16 @@ describe('RemoteSaveCommand', () => {
     const promise = sut.save(saveCommandParams);
     await expect(promise).rejects.toThrow(new CommandAlreadyCreatedError(saveCommandParams.command));
   });
+
+  test('should throw UnexpectedError if HttpClient returns 400 with any other message', async () => {
+    const { sut, httpClientSpy } = makeSut();
+    httpClientSpy.response = {
+      statusCode: HttpStatusCode.badRequest,
+      body: {
+        error: faker.lorem.sentence()
+      }
+    };
+    const promise = sut.save(mockSaveCommandParams());
+    await expect(promise).rejects.toThrow(new UnexpectedError());
+  });
 });
