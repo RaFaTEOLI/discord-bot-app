@@ -9,3 +9,4 @@ export * from './server-model';
 export * from './discord-access-model';
 export * from './discord-user-model';
 export * from './user-model';
+export * from './error-model';

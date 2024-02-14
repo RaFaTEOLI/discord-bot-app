@@ -1,7 +1,7 @@
 import { HttpClient, HttpStatusCode } from '@/data/protocols/http';
-import { CommandModel } from '@/domain/models';
+import { ErrorModel } from '@/domain/models';
 import { SaveCommand } from '@/domain/usecases';
-import { ForbiddenError, UnexpectedError } from '@/domain/errors';
+import { CommandAlreadyCreatedError, ForbiddenError, UnexpectedError } from '@/domain/errors';
 
 export class RemoteSaveCommand implements SaveCommand {
   constructor(private readonly url: string, private readonly httpClient: HttpClient<RemoteSaveCommand.Model>) {}
@@ -17,6 +17,11 @@ export class RemoteSaveCommand implements SaveCommand {
         return;
       case HttpStatusCode.forbidden:
         throw new ForbiddenError();
+      case HttpStatusCode.badRequest:
+        if (httpResponse.body?.error.includes('There is already a command created with this name')) {
+          throw new CommandAlreadyCreatedError(params.command);
+        }
+        throw new UnexpectedError();
       default:
         throw new UnexpectedError();
     }
@@ -24,5 +29,5 @@ export class RemoteSaveCommand implements SaveCommand {
 }
 
 export namespace RemoteSaveCommand {
-  export type Model = CommandModel;
+  export type Model = ErrorModel;
 }

@@ -2,7 +2,7 @@ import { HttpClientSpy } from '@/data/mocks';
 import { RemoteSaveCommand } from '@/data/usecases';
 import { HttpStatusCode } from '@/data/protocols/http';
 import { mockSaveCommandParams } from '@/domain/mocks';
-import { ForbiddenError, UnexpectedError } from '@/domain/errors';
+import { ForbiddenError, UnexpectedError, CommandAlreadyCreatedError } from '@/domain/errors';
 import { faker } from '@faker-js/faker';
 import { describe, test, expect } from 'vitest';
 
@@ -81,5 +81,30 @@ describe('RemoteSaveCommand', () => {
     };
     const response = await sut.save(mockSaveCommandParams());
     expect(response).toBeFalsy();
+  });
+
+  test('should throw CommandAlreadyCreatedError if HttpClient returns 400 with CommandAlreadyCreatedError message', async () => {
+    const { sut, httpClientSpy } = makeSut();
+    const saveCommandParams = mockSaveCommandParams();
+    httpClientSpy.response = {
+      statusCode: HttpStatusCode.badRequest,
+      body: {
+        error: `There is already a command created with this name: ${saveCommandParams.command}`
+      }
+    };
+    const promise = sut.save(saveCommandParams);
+    await expect(promise).rejects.toThrow(new CommandAlreadyCreatedError(saveCommandParams.command));
+  });
+
+  test('should throw UnexpectedError if HttpClient returns 400 with any other message', async () => {
+    const { sut, httpClientSpy } = makeSut();
+    httpClientSpy.response = {
+      statusCode: HttpStatusCode.badRequest,
+      body: {
+        error: faker.lorem.sentence()
+      }
+    };
+    const promise = sut.save(mockSaveCommandParams());
+    await expect(promise).rejects.toThrow(new UnexpectedError());
   });
 });
