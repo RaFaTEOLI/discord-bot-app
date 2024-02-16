@@ -326,10 +326,10 @@ export default function Layout({
                 </Flex>
               )}
             </Box>
-            <NavItem testName="home" active={currentRoute === '/'} to="/" title="Home" icon={HomeIcon} navSize={navSize} />
+            <NavItem testName="home" currentRoute={currentRoute} to="/" title="Home" icon={HomeIcon} navSize={navSize} />
             <NavItem
               testName="commands"
-              active={currentRoute === '/commands'}
+              currentRoute={currentRoute}
               to="/commands"
               title="Commands"
               icon={CommandsIcon}
@@ -337,7 +337,7 @@ export default function Layout({
             />
             <NavItem
               testName="spotify"
-              active={currentRoute === '/playlists'}
+              currentRoute={currentRoute}
               title="Spotify"
               to=""
               icon={SpotifyIcon}
@@ -348,16 +348,14 @@ export default function Layout({
                   title: 'Playlists',
                   icon: PlaylistIcon,
                   to: '/playlists'
+                },
+                {
+                  id: 'browse',
+                  title: 'Browse',
+                  icon: BrowseIcon,
+                  to: '/browse'
                 }
               ]}
-            />
-            <NavItem
-              testName="browse"
-              active={currentRoute === '/browse'}
-              to="/browse"
-              title="Browse"
-              icon={BrowseIcon}
-              navSize={navSize}
             />
           </Flex>
         </Flex>
