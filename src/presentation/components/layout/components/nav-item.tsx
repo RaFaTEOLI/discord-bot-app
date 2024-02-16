@@ -39,7 +39,6 @@ const NavItem = ({ navSize, icon, title, active, to, testName, subItems }: INavI
   const backgroundColor = useColorModeValue('gray.200', 'gray.700');
   const activeBackgroundColor = useColorModeValue('whiteAlpha.900', 'gray.800');
 
-  const subBackgroundColor = useColorModeValue('gray.200', 'gray.700');
   const subActiveBackgroundColor = useColorModeValue('whiteAlpha.800', 'gray.700');
 
   const { isOpen, onToggle } = useDisclosure();
@@ -112,8 +111,7 @@ const NavItem = ({ navSize, icon, title, active, to, testName, subItems }: INavI
                 p={2}
                 borderRadius={10}
                 borderTopRadius={0}
-                // TODO: Fix the hover effect
-                _hover={{ textDecor: 'none', subBackgroundColor }}
+                _hover={{ textDecor: 'none', backgroundColor }}
                 w={navSize === 'large' ? '100%' : 'none'}
                 {...boxShadowStyle}
                 rounded="md"
