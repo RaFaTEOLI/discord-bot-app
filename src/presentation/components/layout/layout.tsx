@@ -1,6 +1,8 @@
 import { Box, Flex, Text, useColorModeValue, chakra, useToast } from '@chakra-ui/react';
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { HiHome, HiCommandLine, HiMusicalNote, HiMagnifyingGlass } from 'react-icons/hi2';
+import { HiHome, HiCommandLine, HiMagnifyingGlass } from 'react-icons/hi2';
+import { RiPlayListFill } from 'react-icons/ri';
+import { FaSpotify } from 'react-icons/fa';
 import { Outlet, useLocation } from 'react-router';
 import { ThemeSwitcher, currentAccountState } from '@/presentation/components';
 import Logo from '../logo/logo';
@@ -13,8 +15,9 @@ import { Socket } from 'socket.io-client';
 
 const HomeIcon = chakra(HiHome);
 const CommandsIcon = chakra(HiCommandLine);
-const PlaylistsIcon = chakra(HiMusicalNote);
+const SpotifyIcon = chakra(FaSpotify);
 const BrowseIcon = chakra(HiMagnifyingGlass);
+const PlaylistIcon = chakra(RiPlayListFill);
 
 type Props = {
   loadUser: LoadUser;
@@ -323,30 +326,36 @@ export default function Layout({
                 </Flex>
               )}
             </Box>
-            <NavItem testName="home" active={currentRoute === '/'} to="/" title="Home" icon={HomeIcon} navSize={navSize} />
+            <NavItem testName="home" currentRoute={currentRoute} to="/" title="Home" icon={HomeIcon} navSize={navSize} />
             <NavItem
               testName="commands"
-              active={currentRoute === '/commands'}
+              currentRoute={currentRoute}
               to="/commands"
               title="Commands"
               icon={CommandsIcon}
               navSize={navSize}
             />
             <NavItem
-              testName="playlists"
-              active={currentRoute === '/playlists'}
-              to="/playlists"
-              title="Playlists"
-              icon={PlaylistsIcon}
+              testName="spotify"
+              currentRoute={currentRoute}
+              title="Spotify"
+              to=""
+              icon={SpotifyIcon}
               navSize={navSize}
-            />
-            <NavItem
-              testName="browse"
-              active={currentRoute === '/browse'}
-              to="/browse"
-              title="Browse"
-              icon={BrowseIcon}
-              navSize={navSize}
+              subItems={[
+                {
+                  id: 'playlists',
+                  title: 'Playlists',
+                  icon: PlaylistIcon,
+                  to: '/playlists'
+                },
+                {
+                  id: 'browse',
+                  title: 'Browse',
+                  icon: BrowseIcon,
+                  to: '/browse'
+                }
+              ]}
             />
           </Flex>
         </Flex>
