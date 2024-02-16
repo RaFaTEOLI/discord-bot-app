@@ -612,4 +612,23 @@ describe('Layout Component', () => {
     await userEvent.click(discordButton);
     expect(discordAuthorizeSpy.callsCount).toBe(1);
   });
+
+  test('should navigate to playlists page within spotify', async () => {
+    makeSut();
+    const playlistsNavlink = screen.getByTestId('playlists-link');
+    await userEvent.click(playlistsNavlink);
+    expect(history.location.pathname).toBe('/playlists');
+  });
+
+  test('should toggle spotify submenu when clicked', async () => {
+    makeSut();
+    const playlistsNavlink = screen.getByTestId('playlists-link');
+    expect(playlistsNavlink.getAttribute('data-open')).toBe('false');
+
+    const spotifyNavlink = screen.getByTestId('spotify-link');
+    await userEvent.click(spotifyNavlink);
+    await waitFor(() => {
+      expect(playlistsNavlink.getAttribute('data-open')).toBe('true');
+    });
+  });
 });
