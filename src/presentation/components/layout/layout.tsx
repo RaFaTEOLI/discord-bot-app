@@ -1,6 +1,8 @@
 import { Box, Flex, Text, useColorModeValue, chakra, useToast } from '@chakra-ui/react';
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { HiHome, HiCommandLine, HiMusicalNote, HiMagnifyingGlass } from 'react-icons/hi2';
+import { HiHome, HiCommandLine, HiMagnifyingGlass } from 'react-icons/hi2';
+import { RiPlayListFill } from 'react-icons/ri';
+import { FaSpotify } from 'react-icons/fa';
 import { Outlet, useLocation } from 'react-router';
 import { ThemeSwitcher, currentAccountState } from '@/presentation/components';
 import Logo from '../logo/logo';
@@ -13,8 +15,9 @@ import { Socket } from 'socket.io-client';
 
 const HomeIcon = chakra(HiHome);
 const CommandsIcon = chakra(HiCommandLine);
-const PlaylistsIcon = chakra(HiMusicalNote);
+const SpotifyIcon = chakra(FaSpotify);
 const BrowseIcon = chakra(HiMagnifyingGlass);
+const PlaylistIcon = chakra(RiPlayListFill);
 
 type Props = {
   loadUser: LoadUser;
@@ -333,12 +336,20 @@ export default function Layout({
               navSize={navSize}
             />
             <NavItem
-              testName="playlists"
+              testName="spotify"
               active={currentRoute === '/playlists'}
-              to="/playlists"
-              title="Playlists"
-              icon={PlaylistsIcon}
+              title="Spotify"
+              to=""
+              icon={SpotifyIcon}
               navSize={navSize}
+              subItems={[
+                {
+                  id: 'playlists',
+                  title: 'Playlists',
+                  icon: PlaylistIcon,
+                  to: '/playlists'
+                }
+              ]}
             />
             <NavItem
               testName="browse"
