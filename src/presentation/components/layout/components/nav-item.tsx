@@ -91,6 +91,9 @@ const NavItem = ({ navSize, icon, title, currentRoute, to, testName, subItems }:
           rounded="md"
           display="flex"
           alignItems="center"
+          borderLeftColor={subItems && navSize === 'small' ? 'blue.400' : 'green.500'}
+          borderLeftRadius={0}
+          borderLeftWidth={4}
         >
           <MenuButton w="100%" alignItems="center">
             <Flex ml={navSize === 'small' ? 0 : 2}>
@@ -108,13 +111,18 @@ const NavItem = ({ navSize, icon, title, currentRoute, to, testName, subItems }:
               </Text>
             </Flex>
           </MenuButton>
-          {subItems && (
-            <Icon as={isOpen ? ChevronUp : ChevronDown} fontSize="xl" color={isMainActive(to) ? 'green.500' : color} />
+          {subItems && navSize !== 'small' && (
+            <Icon
+              data-testid="subitem-chevron"
+              as={isOpen ? ChevronUp : ChevronDown}
+              fontSize="xl"
+              color={isMainActive(to) ? 'green.500' : color}
+            />
           )}
         </Link>
       </Menu>
       {subItems && (
-        <Collapse in={isOpen} animateOpacity style={{ width: '100%' }}>
+        <Collapse in={isOpen} animateOpacity style={{ width: navSize === 'small' ? '75%' : '100%' }}>
           {subItems.map(({ id, icon, title, to }, index) => (
             <Menu placement="right" key={index}>
               <Link
@@ -132,6 +140,9 @@ const NavItem = ({ navSize, icon, title, currentRoute, to, testName, subItems }:
                 rounded="md"
                 display="flex"
                 alignItems="center"
+                borderLeftColor={'gray.800'}
+                borderLeftRadius={0}
+                borderLeftWidth={4}
               >
                 <MenuButton w="100%" alignItems="center">
                   <Flex ml={navSize === 'small' ? 0 : 2}>

@@ -24,7 +24,7 @@ export default function MembersList(): JSX.Element {
         <Box
           key={member.id}
           borderRadius={5}
-          w="14rem"
+          w={['90%', '14rem']}
           h="4rem"
           bgColor={color}
           _hover={{ bg: hoverColor }}

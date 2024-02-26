@@ -12,7 +12,7 @@ export default function ChannelsList(): JSX.Element {
         <Box
           key={id}
           borderRadius={5}
-          w="14rem"
+          w={['90%', '14rem']}
           h="3rem"
           bgColor={color}
           _hover={{ bg: hoverColor }}
