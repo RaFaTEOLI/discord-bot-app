@@ -112,7 +112,12 @@ const NavItem = ({ navSize, icon, title, currentRoute, to, testName, subItems }:
             </Flex>
           </MenuButton>
           {subItems && navSize !== 'small' && (
-            <Icon as={isOpen ? ChevronUp : ChevronDown} fontSize="xl" color={isMainActive(to) ? 'green.500' : color} />
+            <Icon
+              data-testid="subitem-chevron"
+              as={isOpen ? ChevronUp : ChevronDown}
+              fontSize="xl"
+              color={isMainActive(to) ? 'green.500' : color}
+            />
           )}
         </Link>
       </Menu>
