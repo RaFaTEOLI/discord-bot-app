@@ -621,6 +621,7 @@ describe('Layout Component', () => {
   });
 
   test('should toggle spotify submenu when clicked', async () => {
+    window = Object.assign(window, { innerWidth: 1020 });
     makeSut();
     const playlistsNavlink = screen.getByTestId('playlists-link');
     expect(playlistsNavlink.getAttribute('data-open')).toBe('false');
@@ -628,6 +629,7 @@ describe('Layout Component', () => {
     const spotifyNavlink = screen.getByTestId('spotify-link');
     await userEvent.click(spotifyNavlink);
     await waitFor(() => {
+      expect(screen.getByTestId('subitem-chevron')).toBeTruthy();
       expect(playlistsNavlink.getAttribute('data-open')).toBe('true');
     });
   });
