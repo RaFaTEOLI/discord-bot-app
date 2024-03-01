@@ -99,7 +99,7 @@ export default function Playlists({ loadUserPlaylists, runCommand, refreshToken 
           </Flex>
         ) : (
           <Flex flexDir="column">
-            <Flex justifyContent="space-between" p={0} pb={5} pr={9}>
+            <Flex justifyContent="space-between" p={0} pb={5}>
               <InputFilter borderRightRadius={5} />
             </Flex>
             {state.error ? (

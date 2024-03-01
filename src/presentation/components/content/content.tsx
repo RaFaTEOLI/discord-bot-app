@@ -1,4 +1,4 @@
-import { Flex, Box, Heading } from '@chakra-ui/react';
+import { Flex, Heading } from '@chakra-ui/react';
 
 export interface Props {
   title: string;
@@ -11,9 +11,7 @@ export default function Content({ title, children }: Props): JSX.Element {
       <Heading mb={5} size={['md', 'xl']}>
         {title}
       </Heading>
-      <Box h="72vh" overflowY="auto">
-        {children}
-      </Box>
+      {children}
     </Flex>
   );
 }

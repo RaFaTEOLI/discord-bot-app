@@ -62,7 +62,7 @@ export default function PlaylistListItem({ playlists, handleView, handlePlay, se
   };
 
   return (
-    <Flex direction="column" pr={9}>
+    <Flex direction="column">
       <Grid
         templateColumns={[
           'repeat(1, 1fr)',
