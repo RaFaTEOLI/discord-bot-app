@@ -129,9 +129,9 @@ export default function Playlist({ loadPlaylistTracks, runCommand, loadUserById,
 
   return (
     <>
-      <Flex alignItems="center" gap={3} data-testid="playlist-container" w="100%">
+      <Flex alignItems="center" gap={3} data-testid="playlist-container" w="100%" h="100%">
         {state.isLoading ? (
-          <Flex alignItems="center" justifyContent="center">
+          <Flex alignItems="center" justifyContent="center" w="100%">
             <Loading />
           </Flex>
         ) : state.error ? (
@@ -141,7 +141,7 @@ export default function Playlist({ loadPlaylistTracks, runCommand, loadUserById,
             </Box>
           </Flex>
         ) : (
-          <VStack w="100%" h="82vh">
+          <VStack w="100%" h="100%" maxHeight="100%" position="relative">
             <Flex
               w="100%"
               flexDirection={['column', 'column', 'column', 'column', 'row']}
