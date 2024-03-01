@@ -7,10 +7,9 @@ type Props = {
   tracks: any;
   gridTableFontSize: number[];
   handlePrePlay: (event: MouseEvent<HTMLButtonElement>, url: string, music?: boolean) => void;
-  h?: string;
 };
 
-export default function TrackList({ tracks, gridTableFontSize, handlePrePlay, h = '48vh' }: Props): JSX.Element {
+export default function TrackList({ tracks, gridTableFontSize, handlePrePlay }: Props): JSX.Element {
   const trackColor = useColorModeValue('gray.50', 'gray.900');
   const trackHoverColor = useColorModeValue('gray.100', 'gray.700');
 
@@ -54,7 +53,15 @@ export default function TrackList({ tracks, gridTableFontSize, handlePrePlay, h 
         </GridItem>
       </Grid>
 
-      <VStack w="100%" justifyContent="flex-start" overflowY="scroll" h={h} data-testid="tracks-list">
+      <VStack
+        position="absolute"
+        top={[300, 300, 350, 410, 260]}
+        bottom={0}
+        w="100%"
+        justifyContent="flex-start"
+        overflowY="scroll"
+        data-testid="tracks-list"
+      >
         {tracks.map((trackInfo: any) => (
           <Grid
             key={trackInfo.track ? trackInfo.track.id : trackInfo.id}

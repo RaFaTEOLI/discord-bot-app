@@ -1,4 +1,4 @@
-import { Box, Flex, Text, useColorModeValue, chakra, useToast } from '@chakra-ui/react';
+import { Box, Flex, Text, useColorModeValue, chakra, useToast, Grid, GridItem } from '@chakra-ui/react';
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { HiHome, HiCommandLine, HiMagnifyingGlass } from 'react-icons/hi2';
 import { RiPlayListFill } from 'react-icons/ri';
@@ -291,103 +291,95 @@ export default function Layout({
   }, []);
 
   return (
-    <Flex flexDir="column" h="100vh">
-      <Flex justifyContent="space-between" bg={borderColor}>
-        <Flex
-          pos="sticky"
-          left="0"
-          h="88vh"
-          mr="1px"
-          w={navSize === 'small' ? '75px' : '300px'}
-          data-testid="nav-flex"
-          data-status={navSize === 'small' ? 'small' : 'large'}
-          flexDir="column"
-          justifyContent="space-between"
-          bgColor={sidebarColor}
-          borderBottomWidth={1.5}
-          borderBottomColor={borderColor}
-        >
-          <Flex p="1%" flexDir="column" alignItems={navSize === 'small' ? 'center' : 'flex-start'} as="nav">
-            <Box p={2} display="flex" alignItems="center">
-              <Logo data-testid="bot-logo" onClick={toggleSidebar} width="82px" height="82px" />
-              {navSize !== 'small' && (
-                <Flex flexDir="column">
-                  <Text
-                    data-testid="bot-name"
-                    fontSize="4xl"
-                    fontWeight={700}
-                    color="green"
-                    onClick={toggleSidebar}
-                    display={['none', 'flex']}
-                  >
-                    {process.env.VITE_BOT_NAME}
-                  </Text>
-                  <ThemeSwitcher />
-                </Flex>
-              )}
-            </Box>
-            <NavItem testName="home" currentRoute={currentRoute} to="/" title="Home" icon={HomeIcon} navSize={navSize} />
-            <NavItem
-              testName="commands"
-              currentRoute={currentRoute}
-              to="/commands"
-              title="Commands"
-              icon={CommandsIcon}
-              navSize={navSize}
-            />
-            <NavItem
-              testName="spotify"
-              currentRoute={currentRoute}
-              title="Spotify"
-              to=""
-              icon={SpotifyIcon}
-              navSize={navSize}
-              subItems={[
-                {
-                  id: 'playlists',
-                  title: 'Playlists',
-                  icon: PlaylistIcon,
-                  to: '/playlists'
-                },
-                {
-                  id: 'browse',
-                  title: 'Browse',
-                  icon: BrowseIcon,
-                  to: '/browse'
-                }
-              ]}
-            />
-          </Flex>
-        </Flex>
-        <Box
-          w="100%"
-          h="88vh"
-          p={8}
-          borderLeftWidth={1.5}
-          borderLeftColor={borderColor}
-          borderBottomWidth={1.5}
-          borderBottomColor={borderColor}
-          bg={useColorModeValue('white', 'gray.800')}
-          data-testid="page-outlet"
-          position="relative"
-          overflowX="hidden"
-          overflowY="hidden"
-        >
-          <UserMenu onSpotifySignUp={onSpotifySignUp} onDiscordLink={onDiscordLink} />
-          <Outlet />
-        </Box>
-      </Flex>
-      <Flex h="full">
-        <Box w="100%" h="100%" display="flex" justifyContent="center" alignItems="center">
-          <Player
-            onResume={onResume}
-            onPause={onPause}
-            onShuffle={onShuffle}
-            onSkip={onSkip}
-            onVolumeChange={onVolumeChange}
+    <Grid h="100vh" w="100vw" templateRows="repeat(8, 1fr)" templateColumns="repeat(12, 1fr)">
+      <GridItem
+        data-testid="nav-flex"
+        data-status={navSize === 'small' ? 'small' : 'large'}
+        bgColor={sidebarColor}
+        borderBottomWidth={1.5}
+        borderBottomColor={borderColor}
+        rowSpan={7}
+        colSpan={navSize === 'small' ? 1 : [3, 3, 3, 3, 3, 2]}
+      >
+        <Flex p="1%" flexDir="column" alignItems={navSize === 'small' ? 'center' : 'flex-start'} as="nav">
+          <Box p={2} display="flex" alignItems="center">
+            <Logo data-testid="bot-logo" onClick={toggleSidebar} width="82px" height="82px" />
+            {navSize !== 'small' && (
+              <Flex flexDir="column">
+                <Text
+                  data-testid="bot-name"
+                  fontSize="4xl"
+                  fontWeight={700}
+                  color="green"
+                  onClick={toggleSidebar}
+                  display={['none', 'flex']}
+                >
+                  {process.env.VITE_BOT_NAME}
+                </Text>
+                <ThemeSwitcher />
+              </Flex>
+            )}
+          </Box>
+          <NavItem testName="home" currentRoute={currentRoute} to="/" title="Home" icon={HomeIcon} navSize={navSize} />
+          <NavItem
+            testName="commands"
+            currentRoute={currentRoute}
+            to="/commands"
+            title="Commands"
+            icon={CommandsIcon}
+            navSize={navSize}
           />
-        </Box>
-      </Flex>
-    </Flex>
+          <NavItem
+            testName="spotify"
+            currentRoute={currentRoute}
+            title="Spotify"
+            to=""
+            icon={SpotifyIcon}
+            navSize={navSize}
+            subItems={[
+              {
+                id: 'playlists',
+                title: 'Playlists',
+                icon: PlaylistIcon,
+                to: '/playlists'
+              },
+              {
+                id: 'browse',
+                title: 'Browse',
+                icon: BrowseIcon,
+                to: '/browse'
+              }
+            ]}
+          />
+        </Flex>
+      </GridItem>
+
+      <GridItem
+        borderLeftWidth={1.5}
+        borderLeftColor={borderColor}
+        borderBottomWidth={1.5}
+        borderBottomColor={borderColor}
+        rowSpan={7}
+        colSpan={navSize === 'small' ? 11 : [9, 9, 9, 9, 9, 10]}
+        overflowY="auto"
+        p={8}
+        data-testid="page-outlet"
+        position="relative"
+        overflowX="hidden"
+      >
+        <UserMenu onSpotifySignUp={onSpotifySignUp} onDiscordLink={onDiscordLink} />
+        <Outlet />
+      </GridItem>
+
+      <GridItem rowSpan={1} colSpan={12} display="flex" justifyContent="center" alignItems="center">
+        <Player
+          onResume={onResume}
+          onPause={onPause}
+          onShuffle={onShuffle}
+          onSkip={onSkip}
+          onVolumeChange={onVolumeChange}
+        />
+      </GridItem>
+    </Grid>
   );
 }

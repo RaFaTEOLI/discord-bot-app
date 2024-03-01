@@ -152,7 +152,7 @@ export default function Commands({ loadCommands, deleteCommand, runCommand }: Pr
           </Flex>
         ) : (
           <Flex flexDir="column">
-            <Flex justifyContent="space-between" p={0} pb={5} pr={9}>
+            <Flex justifyContent="space-between" p={0} pb={5}>
               <InputFilter borderRightRadius={getCurrentAccount().user.role === 'admin' ? 0 : 5} />
               {getCurrentAccount().user.role === 'admin' && (
                 <Button

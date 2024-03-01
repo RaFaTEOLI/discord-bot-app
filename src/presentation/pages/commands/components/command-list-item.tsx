@@ -11,7 +11,7 @@ type Props = {
 export default function CommandListItem({ commands, handleView, handleRun }: Props): JSX.Element {
   const color = useColorModeValue('gray.50', 'gray.900');
   return (
-    <Flex direction="column" pr={9}>
+    <Flex direction="column">
       <Grid
         templateColumns={[
           'repeat(1, 1fr)',
