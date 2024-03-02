@@ -127,7 +127,6 @@ export default function Browse({ spotifySearch, runCommand, refreshToken }: Prop
                     tracks={state.search.tracks.items}
                     gridTableFontSize={gridTableFontSize}
                     handlePrePlay={handlePrePlay}
-                    h="60vh"
                   />
                 ) : (
                   <Flex flexDir="column" h="250px" justifyContent="center" alignItems="center">
