@@ -12,6 +12,8 @@ const ThemeSwitcher = ({ mt = 0 }: BoxProps): JSX.Element => {
       <Box position="relative" display="flex" alignItems="center" w="fit-content">
         <Switch isChecked={colorMode === 'light'} colorScheme="blue" onChange={toggleColorMode} size="lg" />
         <Icon
+          onClick={toggleColorMode}
+          cursor="pointer"
           data-testid={colorMode === 'light' ? 'sun' : 'moon'}
           color="white"
           position="absolute"
