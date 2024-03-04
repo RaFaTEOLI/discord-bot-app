@@ -299,7 +299,7 @@ export default function Layout({
         borderBottomWidth={1.5}
         borderBottomColor={borderColor}
         rowSpan={7}
-        colSpan={navSize === 'small' ? 1 : [3, 3, 3, 3, 3, 2]}
+        colSpan={navSize === 'small' ? 1 : [6, 5, 5, 3, 3, 2]}
       >
         <Flex p="1%" flexDir="column" alignItems={navSize === 'small' ? 'center' : 'flex-start'} as="nav">
           <Box p={2} display="flex" alignItems="center">
@@ -360,7 +360,7 @@ export default function Layout({
         borderBottomWidth={1.5}
         borderBottomColor={borderColor}
         rowSpan={7}
-        colSpan={navSize === 'small' ? 11 : [9, 9, 9, 9, 9, 10]}
+        colSpan={navSize === 'small' ? 11 : [6, 7, 7, 9, 9, 10]}
         overflowY="auto"
         p={8}
         data-testid="page-outlet"
