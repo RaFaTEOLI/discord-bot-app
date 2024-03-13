@@ -8,7 +8,8 @@ import {
   ProfileFactory,
   PlaylistsFactory,
   PlaylistFactory,
-  BrowseFactory
+  BrowseFactory,
+  DiscordCommandsFactory
 } from '@/main/factories/pages/';
 import { getCurrentAccountAdapter, setCurrentAccountAdapter } from '@/main/adapters/current-account-adapter';
 import { currentAccountState } from '@/presentation/components';
@@ -46,7 +47,7 @@ const Router = (): JSX.Element => {
               <Route path="/profile" element={<ProfileFactory />} />
               <Route path="/browse" element={<BrowseFactory />} />
 
-              <Route path="/discord/commands" element={<p>Test</p>} />
+              <Route path="/discord/commands" element={<DiscordCommandsFactory />} />
             </Route>
           </Route>
           <Route path="/discord" element={<DiscordContainerFactory />} />
