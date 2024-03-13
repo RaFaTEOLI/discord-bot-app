@@ -45,6 +45,8 @@ const Router = (): JSX.Element => {
 
               <Route path="/profile" element={<ProfileFactory />} />
               <Route path="/browse" element={<BrowseFactory />} />
+
+              <Route path="/discord/commands" element={<p>Test</p>} />
             </Route>
           </Route>
           <Route path="/discord" element={<DiscordContainerFactory />} />
