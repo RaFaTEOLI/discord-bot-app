@@ -18,3 +18,4 @@ export * from './mock-discord-request-token';
 export * from './mock-discord-load-user';
 export * from './mock-user';
 export * from './mock-spotify-refresh-token';
+export * from './mock-discord-commands';
