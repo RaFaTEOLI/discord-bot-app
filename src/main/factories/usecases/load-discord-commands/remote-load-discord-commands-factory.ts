@@ -1,8 +1,8 @@
 import { LoadDiscordCommands } from '@/domain/usecases';
-import { makeDiscordApplicationApiUrl } from '@/main/factories/http';
 import { RemoteLoadDiscordCommands } from '@/data/usecases';
 import { makeAuthorizeHttpClientDecorator } from '@/main/factories/decorators';
+import { makeApiUrl } from '@/main/factories/http';
 
 export const makeRemoteLoadDiscordCommands = (): LoadDiscordCommands => {
-  return new RemoteLoadDiscordCommands(makeDiscordApplicationApiUrl('/commands'), makeAuthorizeHttpClientDecorator());
+  return new RemoteLoadDiscordCommands(makeApiUrl('/discord/commands'), makeAuthorizeHttpClientDecorator());
 };

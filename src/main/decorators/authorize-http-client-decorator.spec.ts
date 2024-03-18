@@ -118,18 +118,4 @@ describe('AuthorizeHttpClientDecorator', () => {
     expect(httpClientSpy.method).toBe(httpRequest.method);
     expect(httpClientSpy.headers).toEqual({ 'Content-Type': 'multipart/form-data' });
   });
-
-  test('should add discord bot token to HttpClient when url is from discord', async () => {
-    const { sut, httpClientSpy } = makeSut();
-    const httpRequest: HttpRequest = {
-      url: 'https://discord.com/',
-      method: faker.helpers.arrayElement(['get', 'post', 'put', 'delete'])
-    };
-    await sut.request(httpRequest);
-    expect(httpClientSpy.url).toBe(httpRequest.url);
-    expect(httpClientSpy.method).toBe(httpRequest.method);
-    expect(httpClientSpy.headers).toEqual({
-      Authorization: `Bot ${process.env.VITE_DISCORD_BOT_TOKEN as string}`
-    });
-  });
 });

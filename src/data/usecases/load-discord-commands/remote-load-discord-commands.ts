@@ -7,7 +7,10 @@ export class RemoteLoadDiscordCommands implements LoadDiscordCommands {
   constructor(private readonly url: string, private readonly httpClient: HttpClient<RemoteLoadDiscordCommands.Model[]>) {}
 
   async all(): Promise<LoadDiscordCommands.Model> {
-    const httpResponse = await this.httpClient.request({ url: this.url, method: 'get' });
+    const httpResponse = await this.httpClient.request({
+      url: this.url,
+      method: 'get'
+    });
     const remoteCommands = httpResponse.body ?? [];
     switch (httpResponse.statusCode) {
       case HttpStatusCode.success:
