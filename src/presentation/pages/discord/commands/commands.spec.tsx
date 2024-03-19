@@ -44,4 +44,14 @@ describe('Discord Commands', () => {
     const { loadDiscordCommandsSpy } = makeSut();
     await waitFor(() => expect(loadDiscordCommandsSpy.callsCount).toBe(1));
   });
+
+  test('should display the discord commands', async () => {
+    const { loadDiscordCommandsSpy } = makeSut();
+    await waitFor(() => {
+      expect(loadDiscordCommandsSpy.callsCount).toBe(1);
+      expect(screen.getByTestId('discord-commands').querySelectorAll('.command').length).toBe(
+        loadDiscordCommandsSpy.commands.length
+      );
+    });
+  });
 });
