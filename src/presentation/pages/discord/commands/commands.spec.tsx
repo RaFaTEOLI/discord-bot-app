@@ -54,4 +54,12 @@ describe('Discord Commands', () => {
       );
     });
   });
+
+  test('should display loading and then not display once page is loaded', async () => {
+    makeSut();
+    expect(screen.getByTestId('loading')).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.queryByTestId('loading')).toBeFalsy();
+    });
+  });
 });
