@@ -130,7 +130,12 @@ export default function Layout({
   }, [getCurrentAccount().user.spotify?.accessToken]);
 
   const currentRoute = useMemo(() => {
-    return location.pathname;
+    const pathname = location.pathname.split('/');
+
+    if (pathname.length === 3 && !/\d/.test(pathname[2])) {
+      return `/${pathname[1]}/${pathname[2]}`;
+    }
+    return `/${pathname[1]}`;
   }, [location]);
 
   const toggleSidebar = (): void => {
