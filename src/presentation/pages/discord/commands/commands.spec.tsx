@@ -5,6 +5,7 @@ import { describe, expect, vi } from 'vitest';
 import Commands from './commands';
 import { screen, waitFor } from '@testing-library/react';
 import { LoadDiscordCommandsSpy } from '@/domain/mocks';
+import { faker } from '@faker-js/faker';
 
 type SutTypes = {
   loadDiscordCommandsSpy: LoadDiscordCommandsSpy;
@@ -13,8 +14,7 @@ type SutTypes = {
 };
 
 const history = createMemoryHistory({ initialEntries: ['/discord/commands'] });
-const makeSut = (): SutTypes => {
-  const loadDiscordCommandsSpy = new LoadDiscordCommandsSpy();
+const makeSut = (loadDiscordCommandsSpy = new LoadDiscordCommandsSpy()): SutTypes => {
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
@@ -49,9 +49,7 @@ describe('Discord Commands', () => {
     const { loadDiscordCommandsSpy } = makeSut();
     await waitFor(() => {
       expect(loadDiscordCommandsSpy.callsCount).toBe(1);
-      expect(screen.getByTestId('discord-commands').querySelectorAll('.command').length).toBe(
-        loadDiscordCommandsSpy.commands.length
-      );
+      expect(screen.getByTestId('commands-list').children).toHaveLength(loadDiscordCommandsSpy.commands.length);
     });
   });
 
@@ -61,5 +59,16 @@ describe('Discord Commands', () => {
     await waitFor(() => {
       expect(screen.queryByTestId('loading')).toBeFalsy();
     });
+  });
+
+  test('should display error and reload button', async () => {
+    const loadDiscordCommandsSpy = new LoadDiscordCommandsSpy();
+    const errorMessage = faker.lorem.words();
+    vi.spyOn(loadDiscordCommandsSpy, 'all').mockRejectedValueOnce(new Error(errorMessage));
+    makeSut(loadDiscordCommandsSpy);
+    await waitFor(() => screen.getByTestId('error'));
+    expect(screen.queryByTestId('commands-list')).not.toBeTruthy();
+    const errorWrap = await screen.findByTestId('error');
+    expect(errorWrap.textContent).toBe(`${errorMessage}Try again`);
   });
 });
