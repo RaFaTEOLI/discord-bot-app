@@ -1,8 +1,9 @@
 import { LoadDiscordCommands } from '@/domain/usecases';
-import { Content } from '@/presentation/components';
+import { Content, Loading } from '@/presentation/components';
 import { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
 import { discordCommandsState } from './components';
+import { Flex } from '@chakra-ui/react';
 
 type Props = {
   loadDiscordCommands: LoadDiscordCommands;
@@ -20,16 +21,22 @@ export default function Commands({ loadDiscordCommands }: Props): JSX.Element {
 
   return (
     <Content title="Commands">
-      <>
-        <p>Commands Page</p>
-        <div data-testid="discord-commands">
-          {state.commands.map(command => (
-            <div key={command.id} className="command">
-              {command.name}
-            </div>
-          ))}
-        </div>
-      </>
+      {state.isLoading ? (
+        <Flex w="full" justifyContent="center" alignItems="center">
+          <Loading />
+        </Flex>
+      ) : (
+        <>
+          <p>Commands Page</p>
+          <div data-testid="discord-commands">
+            {state.commands.map(command => (
+              <div key={command.id} className="command">
+                {command.name}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </Content>
   );
 }
