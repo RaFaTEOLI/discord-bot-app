@@ -1,9 +1,10 @@
 import { LoadDiscordCommands } from '@/domain/usecases';
-import { Content, Loading } from '@/presentation/components';
+import { Content, Error, Loading } from '@/presentation/components';
 import { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
 import { discordCommandsState } from './components';
-import { Flex } from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
+import CommandListItem from './components/command-list-item';
 
 type Props = {
   loadDiscordCommands: LoadDiscordCommands;
@@ -12,12 +13,19 @@ type Props = {
 export default function Commands({ loadDiscordCommands }: Props): JSX.Element {
   const [state, setState] = useRecoilState(discordCommandsState);
 
+  const reload = (): void => setState(prev => ({ ...prev, commands: [], error: '', reload: !prev.reload }));
   useEffect(() => {
     (async () => {
-      const response = await loadDiscordCommands.all();
-      setState({ commands: response, isLoading: false });
+      try {
+        const commands = await loadDiscordCommands.all();
+        setState(prev => ({ ...prev, commands, error: '', reload: false }));
+      } catch (err: any) {
+        setState(prev => ({ ...prev, error: err.message }));
+      } finally {
+        setState(prev => ({ ...prev, isLoading: false }));
+      }
     })();
-  }, [loadDiscordCommands]);
+  }, [loadDiscordCommands, state.reload]);
 
   return (
     <Content title="Commands">
@@ -27,14 +35,15 @@ export default function Commands({ loadDiscordCommands }: Props): JSX.Element {
         </Flex>
       ) : (
         <>
-          <p>Commands Page</p>
-          <div data-testid="discord-commands">
-            {state.commands.map(command => (
-              <div key={command.id} className="command">
-                {command.name}
-              </div>
-            ))}
-          </div>
+          {state.error ? (
+            <Flex justifyContent="center" alignItems="center">
+              <Box w="md">
+                <Error error={state.error} reload={reload} />
+              </Box>
+            </Flex>
+          ) : (
+            <CommandListItem commands={state.commands} />
+          )}
         </>
       )}
     </Content>

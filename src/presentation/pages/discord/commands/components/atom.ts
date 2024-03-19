@@ -5,6 +5,8 @@ export const discordCommandsState = atom({
   key: 'discordCommandsState',
   default: {
     commands: [] as unknown as DiscordCommandModel[],
-    isLoading: true
+    isLoading: true,
+    error: '',
+    reload: false
   }
 });
