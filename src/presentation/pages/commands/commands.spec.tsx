@@ -70,7 +70,7 @@ describe('Commands Component', () => {
     makeSut();
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
-    expect(commandsList.children).toHaveLength(3);
+    expect(commandsList.children).toHaveLength(4);
     expect(screen.queryByTestId('error')).not.toBeTruthy();
   });
 
@@ -142,7 +142,7 @@ describe('Commands Component', () => {
     await waitFor(() => commandsList);
     const inputFilter = screen.getByTestId('filter-command-input');
     await userEvent.type(inputFilter, ' ');
-    expect(commandsList.children).toHaveLength(3);
+    expect(commandsList.children).toHaveLength(4);
   });
 
   test('should show zero commands from CommandList if filter does not match with any command', async () => {
