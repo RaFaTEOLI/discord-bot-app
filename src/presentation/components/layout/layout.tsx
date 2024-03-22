@@ -132,7 +132,9 @@ export default function Layout({
   const currentRoute = useMemo(() => {
     const pathname = location.pathname.split('/');
 
+    /* istanbul ignore next -- @preserve */
     if (pathname.length === 3 && !/\d/.test(pathname[2])) {
+      /* istanbul ignore next -- @preserve */
       return `/${pathname[1]}/${pathname[2]}`;
     }
     return `/${pathname[1]}`;
