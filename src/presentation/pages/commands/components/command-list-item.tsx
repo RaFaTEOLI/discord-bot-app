@@ -1,5 +1,6 @@
-import { CommandModel } from '@/domain/models';
-import { Box, Badge, Flex, Grid, IconButton, Tooltip, useColorModeValue } from '@chakra-ui/react';
+import { CommandDiscordStatus, CommandModel } from '@/domain/models';
+import { Box, Badge, Flex, Grid, IconButton, Tooltip, useColorModeValue, chakra } from '@chakra-ui/react';
+import { FaDiscord } from 'react-icons/fa';
 import { HiCloudArrowUp, HiEye } from 'react-icons/hi2';
 
 type Props = {
@@ -7,6 +8,8 @@ type Props = {
   handleView: (command: CommandModel) => void;
   handleRun: (command: string) => void;
 };
+
+const DiscordIcon = chakra(FaDiscord);
 
 export default function CommandListItem({ commands, handleView, handleRun }: Props): JSX.Element {
   const color = useColorModeValue('gray.50', 'gray.900');
@@ -27,7 +30,15 @@ export default function CommandListItem({ commands, handleView, handleRun }: Pro
         data-testid="commands-list"
       >
         {commands.map(command => (
-          <Box bgColor={color} key={command.id} w="100%" borderWidth="1px" borderRadius="lg" overflow="hidden">
+          <Box
+            bgColor={color}
+            key={command.id}
+            w="100%"
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+            position="relative"
+          >
             <Box p="6">
               <Box mt="1" fontWeight="semibold" as="h4" lineHeight="tight" noOfLines={1} className="command-name">
                 !{command.command}
@@ -82,6 +93,15 @@ export default function CommandListItem({ commands, handleView, handleRun }: Pro
                 </Box>
               </Flex>
             </Box>
+            {command.discordStatus && command.discordStatus === CommandDiscordStatus.RECEIVED && (
+              <Tooltip hasArrow label="Slash Command Integrated with Discord Application" placement="top">
+                <Box position="absolute" top="0" right="0" p="2" data-testid={`${command.id}-received`}>
+                  <Badge borderRadius="full" p="2" colorScheme="blue">
+                    <DiscordIcon />
+                  </Badge>
+                </Box>
+              </Tooltip>
+            )}
           </Box>
         ))}
       </Grid>
