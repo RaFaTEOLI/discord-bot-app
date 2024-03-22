@@ -1,6 +1,6 @@
 import { DeleteCommand, LoadCommands, RunCommand, SaveCommand, LoadCommandById } from '@/domain/usecases';
 import { faker } from '@faker-js/faker';
-import { ApplicationCommandType, CommandOptionType } from '../models';
+import { ApplicationCommandType, CommandDiscordStatus, CommandOptionType } from '../models';
 
 export const mockApplicationCommandDiscordType = (): ApplicationCommandType =>
   faker.helpers.arrayElement([
@@ -24,7 +24,10 @@ const mockCommandOptionDiscordType = (): CommandOptionType =>
     CommandOptionType.ATTACHMENT
   ]);
 
-export const mockCommandModel = (type = faker.helpers.arrayElement(['music', 'action', 'message'])): LoadCommands.Model => ({
+export const mockCommandModel = (
+  type = faker.helpers.arrayElement(['music', 'action', 'message']),
+  discordStatusReceived = false
+): LoadCommands.Model => ({
   id: faker.datatype.uuid(),
   command: faker.word.verb(),
   description: faker.lorem.words(3),
@@ -39,32 +42,40 @@ export const mockCommandModel = (type = faker.helpers.arrayElement(['music', 'ac
       required: faker.datatype.boolean(),
       type: mockCommandOptionDiscordType()
     }
-  ]
+  ],
+  ...(discordStatusReceived && { discordStatus: CommandDiscordStatus.RECEIVED })
 });
 
-export const mockSaveCommandParams = (withOptions?: boolean): SaveCommand.Params => ({
-  command: faker.word.verb(),
-  description: faker.lorem.words(3),
-  dispatcher: faker.helpers.arrayElement(['client', 'message']),
-  type: faker.helpers.arrayElement(['music', 'action', 'message']),
-  response: faker.lorem.words(2),
-  discordType: mockApplicationCommandDiscordType(),
-  ...(withOptions && {
-    options: [
-      {
-        name: faker.word.verb(),
-        description: faker.lorem.words(3),
-        required: faker.datatype.boolean(),
-        type: mockCommandOptionDiscordType()
-      }
-    ]
-  })
-});
+export const mockSaveCommandParams = (withOptions?: boolean, discordStatusReceived = false): SaveCommand.Params => {
+  const type = faker.helpers.arrayElement(['music', 'action', 'message']);
+  return {
+    command: faker.word.verb(),
+    description: faker.lorem.words(3),
+    dispatcher: faker.helpers.arrayElement(['client', 'message']),
+    type,
+    response: faker.lorem.words(2),
+    discordType: mockApplicationCommandDiscordType(),
+    ...(discordStatusReceived && { discordStatus: CommandDiscordStatus.RECEIVED }),
+    ...(withOptions
+      ? {
+          options: [
+            {
+              name: faker.word.verb(),
+              description: faker.lorem.words(3),
+              required: faker.datatype.boolean(),
+              type: mockCommandOptionDiscordType()
+            }
+          ]
+        }
+      : { options: [] })
+  };
+};
 
 export const mockCommandListModel = (): LoadCommands.Model[] => [
   mockCommandModel('action'),
   mockCommandModel('music'),
-  mockCommandModel('message')
+  mockCommandModel('message'),
+  mockCommandModel(undefined, true)
 ];
 
 export class LoadCommandsSpy implements LoadCommands {

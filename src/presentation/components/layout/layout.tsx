@@ -1,8 +1,8 @@
 import { Box, Flex, Text, useColorModeValue, chakra, useToast, Grid, GridItem } from '@chakra-ui/react';
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { HiHome, HiCommandLine, HiMagnifyingGlass } from 'react-icons/hi2';
-import { RiPlayListFill } from 'react-icons/ri';
-import { FaSpotify } from 'react-icons/fa';
+import { RiPlayListFill, RiSlashCommands2 } from 'react-icons/ri';
+import { FaSpotify, FaDiscord } from 'react-icons/fa';
 import { Outlet, useLocation } from 'react-router';
 import { ThemeSwitcher, currentAccountState } from '@/presentation/components';
 import Logo from '../logo/logo';
@@ -18,6 +18,8 @@ const CommandsIcon = chakra(HiCommandLine);
 const SpotifyIcon = chakra(FaSpotify);
 const BrowseIcon = chakra(HiMagnifyingGlass);
 const PlaylistIcon = chakra(RiPlayListFill);
+const DiscordIcon = chakra(FaDiscord);
+const DiscordCommandsIcon = chakra(RiSlashCommands2);
 
 type Props = {
   loadUser: LoadUser;
@@ -129,6 +131,12 @@ export default function Layout({
 
   const currentRoute = useMemo(() => {
     const pathname = location.pathname.split('/');
+
+    /* istanbul ignore next -- @preserve */
+    if (pathname.length === 3 && !/\d/.test(pathname[2])) {
+      /* istanbul ignore next -- @preserve */
+      return `/${pathname[1]}/${pathname[2]}`;
+    }
     return `/${pathname[1]}`;
   }, [location]);
 
@@ -350,6 +358,15 @@ export default function Layout({
                 to: '/browse'
               }
             ]}
+          />
+          <NavItem
+            testName="discord"
+            currentRoute={currentRoute}
+            title="Discord"
+            to=""
+            icon={DiscordIcon}
+            navSize={navSize}
+            subItems={[{ id: 'discord-commands', title: 'Commands', icon: DiscordCommandsIcon, to: '/discord/commands' }]}
           />
         </Flex>
       </GridItem>

@@ -20,3 +20,4 @@ export * from './discord-load-user/remote-discord-load-user';
 export * from './save-user/remote-save-user';
 export * from './spotify-refresh-token/remote-spotify-refresh-token';
 export * from './load-command-by-id/remote-load-command-by-id';
+export * from './load-discord-commands/remote-load-discord-commands';

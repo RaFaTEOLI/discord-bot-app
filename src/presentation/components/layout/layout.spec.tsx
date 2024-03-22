@@ -629,8 +629,15 @@ describe('Layout Component', () => {
     const spotifyNavlink = screen.getByTestId('spotify-link');
     await userEvent.click(spotifyNavlink);
     await waitFor(() => {
-      expect(screen.getByTestId('subitem-chevron')).toBeTruthy();
+      expect(screen.getByTestId('spotify-subitem-chevron')).toBeTruthy();
       expect(playlistsNavlink.getAttribute('data-open')).toBe('true');
     });
+  });
+
+  test('should navigate to commands page within discord', async () => {
+    makeSut();
+    const commandsNavlink = screen.getByTestId('discord-commands-link');
+    await userEvent.click(commandsNavlink);
+    expect(history.location.pathname).toBe('/discord/commands');
   });
 });

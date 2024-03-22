@@ -6,3 +6,4 @@ export { default as Playlists } from './playlists/playlists';
 export { default as Playlist } from './playlists/playlist/playlist';
 export { default as Profile } from './profile/profile';
 export { default as Browse } from './browse/browse';
+export { default as DiscordCommands } from './discord/commands/commands';

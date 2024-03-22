@@ -108,7 +108,8 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
             type: null,
             dispatcher: null,
             response: null,
-            discordType: null
+            discordType: null,
+            options: []
           } as any);
         }
       } catch (error: any) {

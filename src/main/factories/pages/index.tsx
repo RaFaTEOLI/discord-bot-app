@@ -7,3 +7,4 @@ export * from './profile/profile-factory';
 export * from './playlists/playlists-factory';
 export * from './playlists/playlist/playlist-factory';
 export * from './browse/browse-factory';
+export * from './discord/commands/commands-factory';

@@ -20,3 +20,4 @@ export * from './discord-load-user';
 export * from './save-user';
 export * from './spotify-refresh-token';
 export * from './load-command-by-id';
+export * from './load-discord-commands';

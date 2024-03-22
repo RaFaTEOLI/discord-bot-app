@@ -11,8 +11,9 @@ export class AuthorizeHttpClientDecorator implements HttpClient {
     const spotifyAccessToken = spotifyObj ? (JSON.parse(spotifyObj) as UserSpotifyModel).accessToken : null;
     if (accessToken) {
       Object.assign(data, {
+        // TODO: improve this logic, maybe create a separate authorize client for each service
         headers: Object.assign(data.headers || {}, {
-          ...(!data.url.includes('api.spotify') && { 'x-access-token': accessToken }),
+          ...(!data.url.includes('api.spotify') && !data.url.includes('discord.com') && { 'x-access-token': accessToken }),
           ...(spotifyAccessToken && data.url.includes('api.spotify') && { Authorization: `Bearer ${spotifyAccessToken}` })
         })
       });
