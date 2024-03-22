@@ -1,6 +1,6 @@
 import { DeleteCommand, LoadCommands, RunCommand, SaveCommand, LoadCommandById } from '@/domain/usecases';
 import { faker } from '@faker-js/faker';
-import { ApplicationCommandType, CommandOptionType } from '../models';
+import { ApplicationCommandType, CommandDiscordStatus, CommandOptionType } from '../models';
 
 export const mockApplicationCommandDiscordType = (): ApplicationCommandType =>
   faker.helpers.arrayElement([
@@ -39,7 +39,8 @@ export const mockCommandModel = (type = faker.helpers.arrayElement(['music', 'ac
       required: faker.datatype.boolean(),
       type: mockCommandOptionDiscordType()
     }
-  ]
+  ],
+  ...(type === 'message' && { discordStatus: CommandDiscordStatus.RECEIVED })
 });
 
 export const mockSaveCommandParams = (withOptions?: boolean): SaveCommand.Params => ({

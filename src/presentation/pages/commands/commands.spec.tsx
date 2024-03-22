@@ -4,7 +4,7 @@ import { createMemoryHistory, MemoryHistory } from 'history';
 import { setTimeout } from 'timers/promises';
 import userEvent from '@testing-library/user-event';
 import Commands from './commands';
-import { AccountModel } from '@/domain/models';
+import { AccountModel, CommandDiscordStatus, CommandModel } from '@/domain/models';
 import { RunCommandSpy, DeleteCommandSpy, LoadCommandsSpy } from '@/domain/mocks';
 import { AccessDeniedError, UnexpectedError } from '@/domain/errors';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
@@ -293,5 +293,16 @@ describe('Commands Component', () => {
     await waitFor(() => commandsList);
     await userEvent.click(screen.getByTestId('new-command'));
     expect(history.location.pathname).toBe('/commands/new');
+  });
+
+  test('should show discord slash command badge', async () => {
+    const { loadCommandsSpy } = makeSut();
+    const commandsList = await screen.findByTestId('commands-list');
+    const slashCommand = loadCommandsSpy.commands.find(
+      command => command.discordStatus === CommandDiscordStatus.RECEIVED
+    ) as CommandModel;
+    console.log({ commands: loadCommandsSpy.commands });
+    await waitFor(() => commandsList);
+    await waitFor(() => expect(screen.getByTestId(`${slashCommand.id}-received`)).toBeTruthy());
   });
 });
