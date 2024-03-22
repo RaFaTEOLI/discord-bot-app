@@ -49,16 +49,18 @@ export const mockSaveCommandParams = (withOptions?: boolean): SaveCommand.Params
   type: faker.helpers.arrayElement(['music', 'action', 'message']),
   response: faker.lorem.words(2),
   discordType: mockApplicationCommandDiscordType(),
-  ...(withOptions && {
-    options: [
-      {
-        name: faker.word.verb(),
-        description: faker.lorem.words(3),
-        required: faker.datatype.boolean(),
-        type: mockCommandOptionDiscordType()
+  ...(withOptions
+    ? {
+        options: [
+          {
+            name: faker.word.verb(),
+            description: faker.lorem.words(3),
+            required: faker.datatype.boolean(),
+            type: mockCommandOptionDiscordType()
+          }
+        ]
       }
-    ]
-  })
+    : { options: [] })
 });
 
 export const mockCommandListModel = (): LoadCommands.Model[] => [
