@@ -2,9 +2,8 @@ import { LoadDiscordCommands } from '@/domain/usecases';
 import { Content, Error, Loading } from '@/presentation/components';
 import { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
-import { discordCommandsState } from './components';
+import { discordCommandsState, CommandListItem, InputFilter } from './components';
 import { Box, Flex } from '@chakra-ui/react';
-import CommandListItem from './components/command-list-item';
 
 type Props = {
   loadDiscordCommands: LoadDiscordCommands;
@@ -42,7 +41,10 @@ export default function Commands({ loadDiscordCommands }: Props): JSX.Element {
               </Box>
             </Flex>
           ) : (
-            <CommandListItem commands={state.commands} />
+            <Flex flexDir="column" gap={3}>
+              <InputFilter borderRightRadius={5} />
+              <CommandListItem commands={state.filteredCommands} />
+            </Flex>
           )}
         </>
       )}
