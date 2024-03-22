@@ -6,6 +6,7 @@ import Commands from './commands';
 import { screen, waitFor } from '@testing-library/react';
 import { LoadDiscordCommandsSpy } from '@/domain/mocks';
 import { faker } from '@faker-js/faker';
+import userEvent from '@testing-library/user-event';
 
 type SutTypes = {
   loadDiscordCommandsSpy: LoadDiscordCommandsSpy;
@@ -70,5 +71,18 @@ describe('Discord Commands', () => {
     expect(screen.queryByTestId('commands-list')).not.toBeTruthy();
     const errorWrap = await screen.findByTestId('error');
     expect(errorWrap.textContent).toBe(`${errorMessage}Try again`);
+  });
+
+  test('should have only one command filtered from CommandList by command name', async () => {
+    const { loadDiscordCommandsSpy } = makeSut();
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    const inputFilter = screen.getByTestId('filter-command-input');
+    await userEvent.type(inputFilter, loadDiscordCommandsSpy.commands[1].name);
+    expect(commandsList.children).toHaveLength(1);
+    expect(commandsList.querySelector('.command-name')?.textContent).toBe(`${loadDiscordCommandsSpy.commands[1].name}`);
+    expect(commandsList.querySelector('.command-description')?.textContent).toBe(
+      loadDiscordCommandsSpy.commands[1].description
+    );
   });
 });
