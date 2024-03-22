@@ -7,6 +7,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { LoadDiscordCommandsSpy } from '@/domain/mocks';
 import { faker } from '@faker-js/faker';
 import userEvent from '@testing-library/user-event';
+import { UnexpectedError } from '@/domain/errors';
 
 type SutTypes = {
   loadDiscordCommandsSpy: LoadDiscordCommandsSpy;
@@ -83,6 +84,47 @@ describe('Discord Commands', () => {
     expect(commandsList.querySelector('.command-name')?.textContent).toBe(`${loadDiscordCommandsSpy.commands[1].name}`);
     expect(commandsList.querySelector('.command-description')?.textContent).toBe(
       loadDiscordCommandsSpy.commands[1].description
+    );
+  });
+
+  test('should show all commands from CommandList if empty filter is provided', async () => {
+    makeSut();
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    const inputFilter = screen.getByTestId('filter-command-input');
+    await userEvent.type(inputFilter, ' ');
+    expect(commandsList.children).toHaveLength(3);
+  });
+
+  test('should show zero commands from CommandList if filter does not match with any command', async () => {
+    makeSut();
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    const inputFilter = screen.getByTestId('filter-command-input');
+    await userEvent.type(inputFilter, 'INVALID FILTER');
+    expect(commandsList.children).toHaveLength(0);
+  });
+
+  test('should call LoadDiscordCommands on reload', async () => {
+    const loadDiscordCommandsSpy = new LoadDiscordCommandsSpy();
+    vi.spyOn(loadDiscordCommandsSpy, 'all').mockRejectedValueOnce(new UnexpectedError());
+    makeSut(loadDiscordCommandsSpy);
+    await waitFor(() => screen.getByTestId('error'));
+    await userEvent.click(screen.getByTestId('reload'));
+    await waitFor(() => screen.getByTestId('commands-list'));
+    expect(loadDiscordCommandsSpy.callsCount).toBe(2);
+  });
+
+  test('should only one command filtered from CommandList by command description', async () => {
+    const { loadDiscordCommandsSpy } = makeSut();
+    const commandsList = await screen.findByTestId('commands-list');
+    await waitFor(() => commandsList);
+    const inputFilter = screen.getByTestId('filter-command-input');
+    await userEvent.type(inputFilter, loadDiscordCommandsSpy.commands[2].description);
+    expect(commandsList.children).toHaveLength(1);
+    expect(commandsList.querySelector('.command-name')?.textContent).toBe(loadDiscordCommandsSpy.commands[2].name);
+    expect(commandsList.querySelector('.command-description')?.textContent).toBe(
+      loadDiscordCommandsSpy.commands[2].description
     );
   });
 });
