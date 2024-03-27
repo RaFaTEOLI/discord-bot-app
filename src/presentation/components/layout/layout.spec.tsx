@@ -600,6 +600,48 @@ describe('Layout Component', () => {
     });
   });
 
+  test('should call RunCommand with remove with index when remove is from Queue', async () => {
+    const { runCommandSpy } = makeSut();
+    const runSpy = vi.spyOn(runCommandSpy, 'run');
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    await userEvent.click(screen.getByTestId('show-queue'));
+    const queueList = await screen.findByTestId('queue-list');
+    await userEvent.click(queueList.querySelectorAll('.song-remove-button')[1]);
+    await waitFor(() => {
+      expect(runCommandSpy.callsCount).toBe(1);
+      expect(runSpy).toHaveBeenCalledWith('remove 1');
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Song Removed',
+        description: 'Your song was successfully removed from queue',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
+    });
+  });
+
+  test('should show toast if RunCommand with remove fails', async () => {
+    const { runCommandSpy } = makeSut();
+    vi.spyOn(runCommandSpy, 'run').mockRejectedValueOnce(new Error());
+    const player = await screen.findByTestId('player');
+    await waitFor(() => player);
+    await userEvent.click(screen.getByTestId('show-queue'));
+    const queueList = await screen.findByTestId('queue-list');
+    await userEvent.click(queueList.querySelectorAll('.song-remove-button')[1]);
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Remove Error',
+        description: 'There was an error while trying to remove song from queue',
+        status: 'error',
+        duration: 9000,
+        position: 'top',
+        isClosable: true
+      });
+    });
+  });
+
   test('should show account linked with discord when user is linked', async () => {
     makeSut(mockAccountWithDiscordModel());
     const discordButton = screen.getByTestId('link-discord');
