@@ -610,7 +610,7 @@ describe('Layout Component', () => {
     await userEvent.click(queueList.querySelectorAll('.song-remove-button')[1]);
     await waitFor(() => {
       expect(runCommandSpy.callsCount).toBe(1);
-      expect(runSpy).toHaveBeenCalledWith('remove 1');
+      expect(runSpy).toHaveBeenCalledWith('remove 2');
       expect(mockToast).toHaveBeenCalledWith({
         title: 'Song Removed',
         description: 'Your song was successfully removed from queue',
