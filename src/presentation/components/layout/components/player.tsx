@@ -39,6 +39,7 @@ import { HiPlay, HiTrash } from 'react-icons/hi2';
 import { useRecoilValue } from 'recoil';
 import { playerState } from './atom';
 import IconButton from './icon-button';
+import { motion } from 'framer-motion';
 
 const PlayIcon = chakra(BsPlayCircleFill);
 const PauseIcon = chakra(BsPauseCircleFill);
@@ -67,6 +68,8 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
   const [sliding, setSliding] = useState<boolean>(false);
   const [skippedIndex, setSkippedIndex] = useState<number>(1);
   const [queue, setQueue] = useState(state.queue);
+
+  const [hoveredIndex, setHoveredIndex] = useState<number | undefined>(undefined);
 
   const music = useMemo(() => {
     if (state.music.name) {
@@ -210,7 +213,13 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
                 <VStack gap={2} data-testid="queue-list">
                   {queue.length ? (
                     queue.map((song, index) => (
-                      <Box w="100%" key={song.id} className="music-queue">
+                      <Box
+                        w="100%"
+                        key={song.id}
+                        className="music-queue"
+                        onMouseEnter={() => setHoveredIndex(index)}
+                        onMouseLeave={() => setHoveredIndex(undefined)}
+                      >
                         <Box gap={3} w="100%" display="flex" alignItems="center">
                           <ChakraIconButton
                             className="song-play-button"
@@ -225,17 +234,26 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
                           <Text className="queue-song-name" fontSize="sm" noOfLines={1} w="90%">
                             {song.name}
                           </Text>
-                          {/* TODO: show button only on hover and also change background color on hover */}
-                          <ChakraIconButton
-                            className="song-remove-button"
-                            variant="outline"
-                            borderRadius={50}
-                            size={['xs', 'sm']}
-                            colorScheme="red"
-                            aria-label="Remove Song"
-                            onClick={async () => handleRemove(index)}
-                            icon={<HiTrash />}
-                          />
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            transition={{ ease: 'easeOut', duration: 0.5 }}
+                            {...(hoveredIndex === index && {
+                              animate: {
+                                opacity: 1
+                              }
+                            })}
+                          >
+                            <ChakraIconButton
+                              className="song-remove-button"
+                              variant="outline"
+                              borderRadius={50}
+                              size={['xs', 'sm']}
+                              colorScheme="red"
+                              aria-label="Remove Song"
+                              onClick={async () => handleRemove(index)}
+                              icon={<HiTrash />}
+                            />
+                          </motion.div>
                         </Box>
                         {index < queue.length - 1 && <Divider mt={1} />}
                       </Box>
