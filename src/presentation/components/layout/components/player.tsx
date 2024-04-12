@@ -66,6 +66,7 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
   const [volume, setVolume] = useState<number>(-1);
   const [sliding, setSliding] = useState<boolean>(false);
   const [skippedIndex, setSkippedIndex] = useState<number>(1);
+  const [queue, setQueue] = useState(state.queue);
 
   const music = useMemo(() => {
     if (state.music.name) {
@@ -83,12 +84,12 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
     }
   }, [state.music]);
 
-  const queue = useMemo(() => {
+  useEffect(() => {
     if (state.queue.length) {
       const queueList = [...state.queue];
-      return queueList.splice(skippedIndex, 8);
+      setQueue(queueList.splice(skippedIndex, 8));
     } else {
-      return state.queue;
+      setQueue(state.queue);
     }
   }, [state.queue, skippedIndex]);
 
@@ -132,7 +133,8 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
   };
 
   const handleRemove = (index: number): void => {
-    onRemove(index);
+    onRemove(index + 1);
+    setQueue(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -210,7 +212,6 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
                     queue.map((song, index) => (
                       <Box w="100%" key={song.id} className="music-queue">
                         <Box gap={3} w="100%" display="flex" alignItems="center">
-                          {/* TODO: show button only on hover and also change background color on hover */}
                           <ChakraIconButton
                             className="song-play-button"
                             variant="solid"
@@ -224,13 +225,14 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
                           <Text className="queue-song-name" fontSize="sm" noOfLines={1} w="90%">
                             {song.name}
                           </Text>
+                          {/* TODO: show button only on hover and also change background color on hover */}
                           <ChakraIconButton
                             className="song-remove-button"
                             variant="outline"
                             borderRadius={50}
                             size={['xs', 'sm']}
                             colorScheme="red"
-                            aria-label="Play Song"
+                            aria-label="Remove Song"
                             onClick={async () => handleRemove(index)}
                             icon={<HiTrash />}
                           />
