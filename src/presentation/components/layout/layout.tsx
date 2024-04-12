@@ -281,6 +281,30 @@ export default function Layout({
     }
   };
 
+  const onRemove = async (index: number): Promise<void> => {
+    try {
+      await runCommand.run(`remove ${index}`);
+      toast({
+        title: 'Song Removed',
+        description: 'Your song was successfully removed from queue',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
+    } catch (error: any) {
+      handleError(error);
+      toast({
+        title: 'Remove Error',
+        description: 'There was an error while trying to remove song from queue',
+        status: 'error',
+        duration: 9000,
+        position: 'top',
+        isClosable: true
+      });
+    }
+  };
+
   useEffect(() => {
     function onMusicChange(value: any): void {
       setState(prev => ({
@@ -395,6 +419,7 @@ export default function Layout({
           onShuffle={onShuffle}
           onSkip={onSkip}
           onVolumeChange={onVolumeChange}
+          onRemove={onRemove}
         />
       </GridItem>
     </Grid>

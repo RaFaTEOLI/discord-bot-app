@@ -35,10 +35,11 @@ import {
   BsFillVolumeMuteFill,
   BsJustify
 } from 'react-icons/bs';
-import { HiPlay } from 'react-icons/hi2';
+import { HiPlay, HiTrash } from 'react-icons/hi2';
 import { useRecoilValue } from 'recoil';
 import { playerState } from './atom';
 import IconButton from './icon-button';
+import { motion } from 'framer-motion';
 
 const PlayIcon = chakra(BsPlayCircleFill);
 const PauseIcon = chakra(BsPauseCircleFill);
@@ -55,9 +56,10 @@ type Props = {
   onShuffle: () => Promise<void>;
   onSkip: (index?: number) => Promise<void>;
   onVolumeChange: (volume: number) => Promise<void>;
+  onRemove: (index: number) => Promise<void>;
 };
 
-export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeChange }: Props): JSX.Element {
+export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeChange, onRemove }: Props): JSX.Element {
   const iconColor = useColorModeValue('gray.700', 'gray.300');
   const secondaryIconColor = useColorModeValue('gray', 'gray.300');
   const state = useRecoilValue(playerState);
@@ -65,6 +67,9 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
   const [volume, setVolume] = useState<number>(-1);
   const [sliding, setSliding] = useState<boolean>(false);
   const [skippedIndex, setSkippedIndex] = useState<number>(1);
+  const [queue, setQueue] = useState(state.queue);
+
+  const [hoveredIndex, setHoveredIndex] = useState<number | undefined>(undefined);
 
   const music = useMemo(() => {
     if (state.music.name) {
@@ -82,12 +87,12 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
     }
   }, [state.music]);
 
-  const queue = useMemo(() => {
+  useEffect(() => {
     if (state.queue.length) {
       const queueList = [...state.queue];
-      return queueList.splice(skippedIndex, 8);
+      setQueue(queueList.splice(skippedIndex, 8));
     } else {
-      return state.queue;
+      setQueue(state.queue);
     }
   }, [state.queue, skippedIndex]);
 
@@ -128,6 +133,11 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
   const handleQueueSkip = (index: number): void => {
     onSkip(index);
     setSkippedIndex(prev => prev + index + 1);
+  };
+
+  const handleRemove = (index: number): void => {
+    onRemove(index + 1);
+    setQueue(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -203,7 +213,13 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
                 <VStack gap={2} data-testid="queue-list">
                   {queue.length ? (
                     queue.map((song, index) => (
-                      <Box w="100%" key={song.id} className="music-queue">
+                      <Box
+                        w="100%"
+                        key={song.id}
+                        className="music-queue"
+                        onMouseEnter={() => setHoveredIndex(index)}
+                        onMouseLeave={() => setHoveredIndex(undefined)}
+                      >
                         <Box gap={3} w="100%" display="flex" alignItems="center">
                           <ChakraIconButton
                             className="song-play-button"
@@ -218,6 +234,26 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
                           <Text className="queue-song-name" fontSize="sm" noOfLines={1} w="90%">
                             {song.name}
                           </Text>
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            transition={{ ease: 'easeOut', duration: 0.5 }}
+                            {...(hoveredIndex === index && {
+                              animate: {
+                                opacity: 1
+                              }
+                            })}
+                          >
+                            <ChakraIconButton
+                              className="song-remove-button"
+                              variant="outline"
+                              borderRadius={50}
+                              size={['xs', 'sm']}
+                              colorScheme="red"
+                              aria-label="Remove Song"
+                              onClick={async () => handleRemove(index)}
+                              icon={<HiTrash />}
+                            />
+                          </motion.div>
                         </Box>
                         {index < queue.length - 1 && <Divider mt={1} />}
                       </Box>
