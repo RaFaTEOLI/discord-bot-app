@@ -607,7 +607,9 @@ describe('Layout Component', () => {
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('show-queue'));
     const queueList = await screen.findByTestId('queue-list');
+    await userEvent.hover(queueList.querySelectorAll('.music-queue')[1]);
     await userEvent.click(queueList.querySelectorAll('.song-remove-button')[1]);
+    await userEvent.unhover(queueList.querySelectorAll('.music-queue')[1]);
     await waitFor(() => {
       expect(runCommandSpy.callsCount).toBe(1);
       expect(runSpy).toHaveBeenCalledWith('remove 2');
@@ -629,6 +631,7 @@ describe('Layout Component', () => {
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('show-queue'));
     const queueList = await screen.findByTestId('queue-list');
+    await userEvent.hover(queueList.querySelectorAll('.music-queue')[1]);
     await userEvent.click(queueList.querySelectorAll('.song-remove-button')[1]);
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith({
