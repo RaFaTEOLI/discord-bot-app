@@ -565,10 +565,10 @@ describe('Layout Component', () => {
       duration: `${faker.random.numeric()}:${faker.random.numeric(2)}`
     });
 
-    await setTimeout(500);
-
-    expect(loadMusicSpy.callsCount).toBe(2);
-    expect(loadQueueSpy.callsCount).toBe(2);
+    await waitFor(() => {
+      expect(loadMusicSpy.callsCount).toBe(2);
+      expect(loadQueueSpy.callsCount).toBe(2);
+    });
   });
 
   test('should show render small layout then resize to a big one', async () => {
@@ -586,17 +586,20 @@ describe('Layout Component', () => {
     await waitFor(() => player);
     await userEvent.click(screen.getByTestId('show-queue'));
     const queueList = await screen.findByTestId('queue-list');
+    await userEvent.hover(queueList.querySelectorAll('.music-queue')[1]);
     await userEvent.click(queueList.querySelectorAll('.song-play-button')[1]);
-    await setTimeout(500);
-    expect(runCommandSpy.callsCount).toBe(1);
-    expect(runSpy).toHaveBeenCalledWith('skip 1');
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Song Skipped',
-      description: 'Your song was successfully skipped',
-      status: 'success',
-      duration: 9000,
-      isClosable: true,
-      position: 'top'
+    await userEvent.unhover(queueList.querySelectorAll('.music-queue')[1]);
+    await waitFor(() => {
+      expect(runCommandSpy.callsCount).toBe(1);
+      expect(runSpy).toHaveBeenCalledWith('skip 1');
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Song Skipped',
+        description: 'Your song was successfully skipped',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
     });
   });
 
