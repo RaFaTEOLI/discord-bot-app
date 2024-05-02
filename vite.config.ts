@@ -41,7 +41,8 @@ export default defineConfig({
         'src/*/mocks/*',
         'src/presentation/components/index.tsx',
         'src/presentation/pages/index.tsx',
-        'src/presentation/components/story-wrapper/chakra-story-wrapper.tsx'
+        'src/presentation/components/story-wrapper/chakra-story-wrapper.tsx',
+        'src/presentation/components/layout/components/player.tsx' // Ignore because the drag and drog feature cannot be tested with our current testing library
       ],
       provider: 'istanbul',
       reporter: ['text', 'json', 'html'],
