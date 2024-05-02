@@ -305,6 +305,22 @@ export default function Layout({
     }
   };
 
+  const onMove = async (from: number, to: number): Promise<void> => {
+    try {
+      await runCommand.run(`move ${from} ${to}`);
+    } catch (error: any) {
+      handleError(error);
+      toast({
+        title: 'Move Error',
+        description: 'There was an error while trying to move',
+        status: 'error',
+        duration: 9000,
+        position: 'top',
+        isClosable: true
+      });
+    }
+  };
+
   useEffect(() => {
     function onMusicChange(value: any): void {
       setState(prev => ({
@@ -420,6 +436,7 @@ export default function Layout({
           onSkip={onSkip}
           onVolumeChange={onVolumeChange}
           onRemove={onRemove}
+          onMove={onMove}
         />
       </GridItem>
     </Grid>

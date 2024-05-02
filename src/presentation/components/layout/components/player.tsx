@@ -71,9 +71,18 @@ type Props = {
   onSkip: (index?: number) => Promise<void>;
   onVolumeChange: (volume: number) => Promise<void>;
   onRemove: (index: number) => Promise<void>;
+  onMove: (from: number, to: number) => Promise<void>;
 };
 
-export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeChange, onRemove }: Props): JSX.Element {
+export default function Player({
+  onResume,
+  onPause,
+  onShuffle,
+  onSkip,
+  onVolumeChange,
+  onRemove,
+  onMove
+}: Props): JSX.Element {
   const iconColor = useColorModeValue('gray.700', 'gray.300');
   const secondaryIconColor = useColorModeValue('gray', 'gray.300');
   const state = useRecoilValue(playerState);
@@ -228,6 +237,7 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
     }
 
     const items = reorder(queue, result.source.index, result.destination.index);
+    onMove(Number(result.source.index) + 1, Number(result.destination.index) + 1);
     setQueue(items);
   };
 
