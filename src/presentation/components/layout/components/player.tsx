@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import {
   chakra,
   Flex,
@@ -40,6 +41,18 @@ import { useRecoilValue } from 'recoil';
 import { playerState } from './atom';
 import IconButton from './icon-button';
 import { motion } from 'framer-motion';
+import {
+  DragDropContext,
+  Draggable,
+  DraggableProvided,
+  DraggableRubric,
+  DraggableStateSnapshot,
+  Droppable,
+  DroppableProvided,
+  DroppableStateSnapshot
+} from 'react-beautiful-dnd';
+import { QueueModel } from '@/domain/models';
+import { MdDragIndicator } from 'react-icons/md';
 
 const PlayIcon = chakra(BsPlayCircleFill);
 const PauseIcon = chakra(BsPauseCircleFill);
@@ -49,6 +62,7 @@ const VolumeIcon = chakra(BsFillVolumeUpFill);
 const VolumeMuteIcon = chakra(BsFillVolumeMuteFill);
 const QueueIcon = chakra(BsJustify);
 const CircleIcon = chakra(BsCircleFill);
+const DragIcon = chakra(MdDragIndicator);
 
 type Props = {
   onResume: () => Promise<void>;
@@ -57,9 +71,18 @@ type Props = {
   onSkip: (index?: number) => Promise<void>;
   onVolumeChange: (volume: number) => Promise<void>;
   onRemove: (index: number) => Promise<void>;
+  onMove: (from: number, to: number) => Promise<void>;
 };
 
-export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeChange, onRemove }: Props): JSX.Element {
+export default function Player({
+  onResume,
+  onPause,
+  onShuffle,
+  onSkip,
+  onVolumeChange,
+  onRemove,
+  onMove
+}: Props): JSX.Element {
   const iconColor = useColorModeValue('gray.700', 'gray.300');
   const secondaryIconColor = useColorModeValue('gray', 'gray.300');
   const state = useRecoilValue(playerState);
@@ -140,6 +163,84 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
     setQueue(prev => prev.filter((_, i) => i !== index));
   };
 
+  const SongItem = ({
+    song,
+    index,
+    provided,
+    snapshot
+  }: {
+    song: QueueModel;
+    index: number;
+    provided: DraggableProvided;
+    snapshot: DraggableStateSnapshot;
+  }): JSX.Element => (
+    <Box
+      w="100%"
+      key={song.id}
+      className="music-queue"
+      onMouseEnter={() => setHoveredIndex(index)}
+      onMouseLeave={() => setHoveredIndex(undefined)}
+      ref={provided.innerRef}
+      {...provided.draggableProps}
+      {...provided.dragHandleProps}
+    >
+      <Box gap={3} w="100%" display="flex" alignItems="center">
+        <DragIcon size={45} color={snapshot.isDragging ? 'gray.500' : 'white'} />
+        <ChakraIconButton
+          className="song-play-button"
+          variant="solid"
+          borderRadius={50}
+          size={['xs', 'sm']}
+          colorScheme="green"
+          aria-label="Play Song"
+          onClick={async () => handleQueueSkip(index)}
+          icon={<HiPlay />}
+        />
+        <Text className="queue-song-name" fontSize="sm" noOfLines={1} w="90%">
+          {song.name}
+        </Text>
+        <motion.div
+          initial={{ opacity: 0 }}
+          transition={{ ease: 'easeOut', duration: 0.5 }}
+          {...(hoveredIndex === index && {
+            animate: {
+              opacity: 1
+            }
+          })}
+        >
+          <ChakraIconButton
+            className="song-remove-button"
+            variant="outline"
+            borderRadius={50}
+            size={['xs', 'sm']}
+            colorScheme="red"
+            aria-label="Remove Song"
+            onClick={async () => handleRemove(index)}
+            icon={<HiTrash />}
+          />
+        </motion.div>
+      </Box>
+      {index < queue.length - 1 && <Divider mt={1} />}
+    </Box>
+  );
+
+  const reorder = (list: QueueModel[], startIndex: number, endIndex: number): QueueModel[] => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    return result;
+  };
+
+  const onDragEnd = (result: any): void => {
+    if (!result.destination) {
+      return;
+    }
+
+    const items = reorder(queue, result.source.index, result.destination.index);
+    onMove(Number(result.source.index) + 1, Number(result.destination.index) + 1);
+    setQueue(items);
+  };
+
   return (
     <Grid
       templateColumns={['repeat(1, 1fr)', 'repeat(3, 1fr)']}
@@ -210,60 +311,44 @@ export default function Player({ onResume, onPause, onShuffle, onSkip, onVolumeC
               <PopoverCloseButton />
               <PopoverHeader>Queue</PopoverHeader>
               <PopoverBody>
-                <VStack gap={2} data-testid="queue-list">
-                  {queue.length ? (
-                    queue.map((song, index) => (
-                      <Box
-                        w="100%"
-                        key={song.id}
-                        className="music-queue"
-                        onMouseEnter={() => setHoveredIndex(index)}
-                        onMouseLeave={() => setHoveredIndex(undefined)}
-                      >
-                        <Box gap={3} w="100%" display="flex" alignItems="center">
-                          <ChakraIconButton
-                            className="song-play-button"
-                            variant="solid"
-                            borderRadius={50}
-                            size={['xs', 'sm']}
-                            colorScheme="green"
-                            aria-label="Play Song"
-                            onClick={async () => handleQueueSkip(index)}
-                            icon={<HiPlay />}
-                          />
-                          <Text className="queue-song-name" fontSize="sm" noOfLines={1} w="90%">
-                            {song.name}
+                <DragDropContext onDragEnd={onDragEnd}>
+                  <Droppable
+                    droppableId="droppable"
+                    renderClone={(
+                      provided: DraggableProvided,
+                      snapshot: DraggableStateSnapshot,
+                      rubric: DraggableRubric
+                    ) => (
+                      <SongItem
+                        song={queue[rubric.source.index]}
+                        index={rubric.source.index}
+                        provided={provided}
+                        snapshot={snapshot}
+                      />
+                    )}
+                  >
+                    {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
+                      <VStack gap={2} data-testid="queue-list" {...provided.droppableProps} ref={provided.innerRef}>
+                        {queue.length ? (
+                          <>
+                            {queue.map((song, index) => (
+                              <Draggable key={song.id} draggableId={song.id} index={index}>
+                                {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
+                                  <SongItem song={song} index={index} provided={provided} snapshot={snapshot} />
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </>
+                        ) : (
+                          <Text fontSize="sm" noOfLines={1} w="90%" data-testid="empty-queue">
+                            Queue is empty
                           </Text>
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            transition={{ ease: 'easeOut', duration: 0.5 }}
-                            {...(hoveredIndex === index && {
-                              animate: {
-                                opacity: 1
-                              }
-                            })}
-                          >
-                            <ChakraIconButton
-                              className="song-remove-button"
-                              variant="outline"
-                              borderRadius={50}
-                              size={['xs', 'sm']}
-                              colorScheme="red"
-                              aria-label="Remove Song"
-                              onClick={async () => handleRemove(index)}
-                              icon={<HiTrash />}
-                            />
-                          </motion.div>
-                        </Box>
-                        {index < queue.length - 1 && <Divider mt={1} />}
-                      </Box>
-                    ))
-                  ) : (
-                    <Text fontSize="sm" noOfLines={1} w="90%" data-testid="empty-queue">
-                      Queue is empty
-                    </Text>
-                  )}
-                </VStack>
+                        )}
+                      </VStack>
+                    )}
+                  </Droppable>
+                </DragDropContext>
               </PopoverBody>
             </PopoverContent>
           </Popover>
