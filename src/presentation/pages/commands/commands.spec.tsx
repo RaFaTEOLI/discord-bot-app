@@ -313,7 +313,6 @@ describe('Commands Component', () => {
     const slashCommand = loadCommandsSpy.commands.find(
       command => command.discordStatus === CommandDiscordStatus.RECEIVED
     ) as CommandModel;
-    console.log({ commands: loadCommandsSpy.commands });
     await waitFor(() => commandsList);
     await waitFor(() => expect(screen.getByTestId(`${slashCommand.id}-received`)).toBeTruthy());
   });

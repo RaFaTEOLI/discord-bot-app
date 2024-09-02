@@ -77,14 +77,12 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
     register,
     reset,
     handleSubmit,
-    watch,
     formState: { errors, isValid }
   } = useForm<CommandModel>({ mode: 'all', resolver: schema, defaultValues: state.command });
   const { fields, append, remove, move } = useFieldArray({
     control,
     name: 'options'
   });
-  const values = watch();
 
   // eslint-disable-next-line n/handle-callback-err
   const handleError = useErrorHandler((error: Error) => {});
@@ -205,8 +203,6 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
       socketClient.off('command', onCommandChange);
     };
   }, [commandId]);
-
-  console.log({ values });
 
   return (
     <Content title="Command">

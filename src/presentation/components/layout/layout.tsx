@@ -305,6 +305,8 @@ export default function Layout({
     }
   };
 
+  // Ignore coverage because it's a drag event and we can't test it
+  /* istanbul ignore next -- @preserve */
   const onMove = async (from: number, to: number): Promise<void> => {
     try {
       await runCommand.run(`move ${from} ${to}`);

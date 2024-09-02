@@ -332,7 +332,7 @@ describe('Command Component', () => {
     const saveCommandSpy = new SaveCommandSpy();
     const error = new UnexpectedError();
     vi.spyOn(saveCommandSpy, 'save').mockRejectedValueOnce(error);
-    makeSut({ saveCommandSpy, adminUser: true });
+    makeSut({ saveCommandSpy, adminUser: true, commandId: 'new' });
     await waitFor(() => screen.getByTestId('command-content'));
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
@@ -367,7 +367,7 @@ describe('Command Component', () => {
   test('should show error toast on AccessDeniedError on SaveCommand and send it to login', async () => {
     const saveCommandSpy = new SaveCommandSpy();
     vi.spyOn(saveCommandSpy, 'save').mockRejectedValueOnce(new AccessDeniedError());
-    const { setCurrentAccountMock, history } = makeSut({ saveCommandSpy, adminUser: true });
+    const { setCurrentAccountMock, history } = makeSut({ saveCommandSpy, adminUser: true, commandId: 'new' });
     await waitFor(() => screen.getByTestId('command-content'));
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
