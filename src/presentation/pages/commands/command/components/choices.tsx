@@ -1,20 +1,22 @@
 import { Divider, Flex, HStack, Heading, Stack, chakra } from '@chakra-ui/react';
-import { useFieldArray } from 'react-hook-form';
-import Input from './input';
+import { FieldErrors, useFieldArray } from 'react-hook-form';
 import { HiBars2, HiOutlineReceiptRefund } from 'react-icons/hi2';
 import IconButton from '@/presentation/components/layout/components/icon-button';
 import { FiArrowDown, FiArrowUp, FiPlus, FiTrash } from 'react-icons/fi';
+import { Input } from '@/presentation/components';
 
 type Props = {
   nestIndex: number;
   control: any;
   optionInputColor: string;
+  register: any;
+  errors: FieldErrors;
 };
 
 const NameIcon = chakra(HiBars2);
 const ValueIcon = chakra(HiOutlineReceiptRefund);
 
-const Choices = ({ nestIndex, control, optionInputColor }: Props): JSX.Element => {
+const Choices = ({ nestIndex, control, register, errors, optionInputColor }: Props): JSX.Element => {
   const { fields, remove, move, append } = useFieldArray({
     control,
     name: `options[${nestIndex}].choices`
@@ -43,16 +45,18 @@ const Choices = ({ nestIndex, control, optionInputColor }: Props): JSX.Element =
               <Input
                 bgColor={optionInputColor}
                 type="text"
-                name={`options[${nestIndex}].choices.${index}.name`}
                 placeholder="Name"
                 icon={<NameIcon />}
+                errors={errors}
+                {...register(`options[${nestIndex}].choices.${index}.name`)}
               />
               <Input
                 bgColor={optionInputColor}
                 type="text"
-                name={`options[${nestIndex}].choices.${index}.value`}
                 placeholder="Value"
                 icon={<ValueIcon />}
+                errors={errors}
+                {...register(`options[${nestIndex}].choices.${index}.value`)}
               />
             </Flex>
 

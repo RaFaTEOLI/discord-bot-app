@@ -1,10 +1,7 @@
 export { default as Error } from './error/error';
 export { default as FormStatusBase } from './form-status/form-status';
-export { default as InputBase } from './input/input';
-export { default as SelectBase } from './select/select';
 export { default as Logo } from './logo/logo';
 export { default as Spinner } from './spinner/spinner';
-export { default as SubmitButtonBase } from './submit-button/submit-button';
 export { default as Loading } from './loading/loading';
 export { default as Switcher } from './switcher/switcher';
 export { default as Layout } from './layout/layout';
@@ -16,4 +13,6 @@ export { default as ConfirmationModal } from './confirmation-modal/confirmation-
 export { default as TrackList } from './track-list/track-list';
 export { default as DiscordContainer } from './discord-container/discord-container';
 export { default as DiscordStatusBadge } from './discord-status-badge/discord-status-badge';
+export { default as Input } from './form-input/form-input';
+export { default as Select } from './form-select/form-select';
 export * from './atoms/atoms';

@@ -30,6 +30,7 @@ export default function Commands({ loadCommands, deleteCommand, runCommand }: Pr
   const toast = useToast();
 
   const {
+    control,
     register,
     setValue,
     reset,
@@ -72,14 +73,6 @@ export default function Commands({ loadCommands, deleteCommand, runCommand }: Pr
       setState(prev => ({ ...prev, disabledForm: false }));
     }
   }, [state.selectedCommand]);
-
-  useEffect(() => {
-    setState(prev => ({
-      ...prev,
-      register,
-      errors
-    }));
-  }, [register, errors, state.selectedCommand]);
 
   const handleClose = (): void => {
     setState(prev => ({
@@ -180,7 +173,14 @@ export default function Commands({ loadCommands, deleteCommand, runCommand }: Pr
           </Flex>
         )}
       </Content>
-      <CommandModal isOpen={isOpen} onClose={handleClose} onDelete={onDelete} />
+      <CommandModal
+        isOpen={isOpen}
+        onClose={handleClose}
+        onDelete={onDelete}
+        control={control}
+        errors={errors}
+        register={register}
+      />
     </>
   );
 }

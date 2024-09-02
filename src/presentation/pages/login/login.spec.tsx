@@ -7,7 +7,6 @@ import { InvalidCredentialsError } from '@/domain/errors';
 import { AuthenticationSpy, SpotifyAuthorizeSpy } from '@/domain/mocks';
 import { Authentication } from '@/domain/usecases';
 import userEvent from '@testing-library/user-event';
-import { loginState } from './components';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 
 type SutTypes = {
@@ -17,7 +16,7 @@ type SutTypes = {
 };
 
 const history = createMemoryHistory({ initialEntries: ['/login'] });
-const makeSut = (invalidForm = false): SutTypes => {
+const makeSut = (): SutTypes => {
   const authenticationSpy = new AuthenticationSpy();
   const spotifyAuthorizeSpy = new SpotifyAuthorizeSpy();
   const { setCurrentAccountMock } = renderWithHistory({
@@ -27,38 +26,21 @@ const makeSut = (invalidForm = false): SutTypes => {
       Login({
         authentication: authenticationSpy,
         spotifyAuthorize: spotifyAuthorizeSpy
-      }),
-    ...(invalidForm && {
-      states: [
-        {
-          atom: loginState,
-          value: {
-            isLoading: false,
-            mainError: '',
-            errors: {
-              email: {
-                message: 'Required field'
-              },
-              password: {
-                message: 'Required field'
-              }
-            }
-          }
-        }
-      ]
-    })
+      })
   });
   return { authenticationSpy, setCurrentAccountMock, spotifyAuthorizeSpy };
 };
 
 const simulateValidSubmit = async (email = faker.internet.email(), password = faker.internet.password()): Promise<void> => {
-  Helper.populateField('email', email);
-  Helper.populateField('password', password);
+  await Helper.asyncPopulateField('email', email);
+  await Helper.asyncPopulateField('password', password);
   const submitButton = await waitFor(() => screen.getByTestId('submit'));
   await userEvent.click(submitButton);
 };
 
 const simulateInvalidSubmit = async (): Promise<void> => {
+  await userEvent.click(screen.getByTestId('email'));
+  await userEvent.click(screen.getByTestId('password'));
   const submitButton = screen.getByTestId('submit');
   await userEvent.click(submitButton);
 };
@@ -74,22 +56,28 @@ describe('Login Component', () => {
   });
 
   test('should show email error and password error if validation fails', async () => {
-    makeSut(true);
+    makeSut();
     await simulateInvalidSubmit();
-    Helper.testStatusForField('email', 'Required field');
-    Helper.testStatusForField('password', 'Required field');
+    await waitFor(() => {
+      Helper.testStatusForField('email', 'Required field');
+      Helper.testStatusForField('password', 'Required field');
+    });
   });
 
-  test('should show valid email state if validation succeeds', () => {
+  test('should show valid email state if validation succeeds', async () => {
     makeSut();
-    Helper.populateField('email');
-    Helper.testStatusForField('email');
+    await waitFor(() => {
+      Helper.populateField('email');
+      Helper.testStatusForField('email');
+    });
   });
 
-  test('should show valid password state if validation succeeds', () => {
+  test('should show valid password state if validation succeeds', async () => {
     makeSut();
-    Helper.populateField('password');
-    Helper.testStatusForField('password');
+    await waitFor(() => {
+      Helper.populateField('password');
+      Helper.testStatusForField('password');
+    });
   });
 
   test('should call Authentication with correct values', async () => {

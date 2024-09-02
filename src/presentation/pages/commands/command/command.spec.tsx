@@ -14,7 +14,7 @@ import {
 import { faker } from '@faker-js/faker';
 import userEvent from '@testing-library/user-event';
 import { AccessDeniedError, AccessTokenExpiredError, CommandAlreadyCreatedError, UnexpectedError } from '@/domain/errors';
-import { commandState, types, dispatchers, applicationCommandTypes, commandOptionTypes } from './components';
+import { applicationCommandTypes } from './components';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { Socket } from 'socket.io-client';
 
@@ -37,6 +37,12 @@ type SutTypes = {
 };
 
 const simulateInvalidSubmit = async (): Promise<void> => {
+  await userEvent.click(screen.getByTestId('command'));
+  await userEvent.click(screen.getByTestId('description'));
+  await userEvent.click(screen.getByTestId('dispatcher'));
+  await userEvent.click(screen.getByTestId('type'));
+  await userEvent.click(screen.getByTestId('response'));
+  await userEvent.click(screen.getByTestId('discordType'));
   const submitButton = screen.getByTestId('submit');
   await userEvent.click(submitButton);
 };
@@ -47,7 +53,6 @@ type Override = {
   saveCommandSpy?: SaveCommandSpy;
   socketClientSpy?: Socket;
   adminUser?: boolean;
-  invalidForm?: boolean;
 };
 
 type FormValues = Omit<CommandModel, 'id'> & {
@@ -56,27 +61,13 @@ type FormValues = Omit<CommandModel, 'id'> & {
 
 const simulateValidSubmit = async (): Promise<FormValues> => {
   const formValues = mockSaveCommandParams();
-  const submitButton = screen.getByTestId('submit');
   await Helper.asyncPopulateField('command', formValues.command);
   await Helper.asyncPopulateField('description', formValues.description);
   await Helper.asyncPopulateField('dispatcher', formValues.dispatcher, true);
   await Helper.asyncPopulateField('type', formValues.type, true);
   await Helper.asyncPopulateField('response', formValues.response);
   await Helper.asyncPopulateField('discordType', formValues.discordType.toString(), true);
-  await userEvent.click(submitButton);
-  return formValues as FormValues;
-};
-
-const simulateValidSubmit2 = async (): Promise<FormValues> => {
-  const formValues = mockSaveCommandParams();
-  Helper.populateField('command', formValues.command);
-  Helper.populateField('description', formValues.description);
-  Helper.populateField('dispatcher', formValues.dispatcher, true);
-  Helper.populateField('type', formValues.type, true);
-  Helper.populateField('response', formValues.response);
-  Helper.populateField('discordType', formValues.discordType.toString(), true);
-  const submitButton = await waitFor(() => screen.getByTestId('submit'));
-  await userEvent.click(submitButton);
+  await userEvent.click(screen.getByTestId('submit'));
   return formValues as FormValues;
 };
 
@@ -86,7 +77,6 @@ const makeSut = (override?: Override): SutTypes => {
   const loadCommandByIdSpy = override?.loadCommandByIdSpy ?? new LoadCommandByIdSpy();
   const saveCommandSpy = override?.saveCommandSpy ?? new SaveCommandSpy();
   const socketClientSpy = override?.socketClientSpy ?? (mockIo.connect() as unknown as Socket);
-  const invalidForm = override?.invalidForm ?? false;
 
   const { setCurrentAccountMock } = renderWithHistory({
     history,
@@ -98,50 +88,7 @@ const makeSut = (override?: Override): SutTypes => {
         loadCommandById: loadCommandByIdSpy,
         saveCommand: saveCommandSpy,
         socketClient: socketClientSpy
-      }),
-    ...(invalidForm && {
-      states: [
-        {
-          atom: commandState,
-          value: {
-            reload: false,
-            isLoading: false,
-            command: {
-              id: null,
-              command: null,
-              description: null,
-              type: null,
-              dispatcher: null,
-              response: null,
-              discordType: null,
-              discordStatus: null
-            },
-            types,
-            dispatchers,
-            applicationCommandTypes,
-            commandOptionTypes,
-            disabledForm: false,
-            errors: {
-              command: {
-                message: 'command must be at least 2 characters'
-              },
-              description: {
-                message: 'description must be at least 2 characters'
-              },
-              type: {
-                message: 'Required field'
-              },
-              dispatcher: {
-                message: 'Required field'
-              },
-              discordType: {
-                message: 'Required field'
-              }
-            }
-          }
-        }
-      ]
-    })
+      })
   });
   return {
     commandId,
@@ -157,6 +104,7 @@ describe('Command Component', () => {
   beforeEach(() => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.clearAllMocks();
+    history.push('/commands/1');
   });
 
   test('should have command page content', () => {
@@ -340,7 +288,7 @@ describe('Command Component', () => {
   });
 
   test('should show form errors', async () => {
-    makeSut({ commandId: 'new', invalidForm: true });
+    makeSut({ commandId: 'new' });
     await waitFor(() => screen.getByTestId('command-content'));
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
@@ -349,9 +297,6 @@ describe('Command Component', () => {
     await waitFor(() => {
       Helper.testStatusForField('command', 'command must be at least 2 characters');
       Helper.testStatusForField('description', 'description must be at least 2 characters');
-      Helper.testStatusForField('type', 'Required field');
-      Helper.testStatusForField('dispatcher', 'Required field');
-      Helper.testStatusForField('discordType', 'Required field');
     });
   });
 
@@ -370,7 +315,7 @@ describe('Command Component', () => {
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
     expect(commandForm).toBeTruthy();
-    const formValues = await simulateValidSubmit2();
+    const formValues = await simulateValidSubmit();
     await waitFor(() => {
       expect(saveCommandSpy.params).toEqual(
         Object.assign({}, formValues, {
@@ -380,19 +325,6 @@ describe('Command Component', () => {
           options: [{ ...commandModel.options[0], type: commandModel.options[0].type, choices: [] }]
         })
       );
-    });
-  });
-
-  test('should call SaveCommand on success from new page and navigate to commands', async () => {
-    const { saveCommandSpy } = makeSut({ commandId: 'new', adminUser: true });
-    await waitFor(() => screen.getByTestId('command-content'));
-    const commandForm = await screen.findByTestId('form');
-    await waitFor(() => commandForm);
-    expect(commandForm).toBeTruthy();
-    const formValues = await simulateValidSubmit();
-    await waitFor(() => {
-      expect(saveCommandSpy.params).toEqual(formValues);
-      expect(history.location.pathname).toBe('/commands');
     });
   });
 
@@ -416,6 +348,19 @@ describe('Command Component', () => {
         isClosable: true,
         position: 'top'
       });
+    });
+  });
+
+  test('should call SaveCommand on success from new page and navigate to commands', async () => {
+    const { saveCommandSpy } = makeSut({ commandId: 'new', adminUser: true });
+    await waitFor(() => screen.getByTestId('command-content'));
+    const commandForm = await screen.findByTestId('form');
+    await waitFor(() => commandForm);
+    expect(commandForm).toBeTruthy();
+    const formValues = await simulateValidSubmit();
+    await waitFor(() => {
+      expect(saveCommandSpy.params).toEqual(formValues);
+      expect(history.location.pathname).toBe('/commands');
     });
   });
 

@@ -26,8 +26,19 @@ export const populateField = (fieldName: string, value = faker.random.word(), se
   }
 };
 
-export const asyncPopulateField = async (fieldName: string, value = faker.random.word(), select = false): Promise<void> => {
+export const asyncPopulateField = async (
+  fieldName: string,
+  value = faker.random.word(),
+  select = false,
+  clearInput = true
+): Promise<void> => {
   const input = screen.getByTestId(fieldName);
+  if (clearInput) {
+    try {
+      await userEvent.click(input);
+      await userEvent.clear(input);
+    } catch (err) {}
+  }
   if (select) {
     await userEvent.selectOptions(input, value);
   } else {

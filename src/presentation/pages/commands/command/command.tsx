@@ -1,6 +1,17 @@
-import { Content, DiscordStatusBadge, Loading } from '@/presentation/components';
-import { Checkbox, Flex, HStack, Heading, Stack, chakra, useColorModeValue, useToast, Divider } from '@chakra-ui/react';
-import { Choices, Input, Select, commandState, SubmitButton } from './components';
+import { Content, DiscordStatusBadge, Input, Loading, Select } from '@/presentation/components';
+import {
+  Checkbox,
+  Flex,
+  HStack,
+  Heading,
+  Stack,
+  chakra,
+  useColorModeValue,
+  useToast,
+  Divider,
+  Button
+} from '@chakra-ui/react';
+import { Choices, commandState } from './components';
 import { HiCommandLine, HiEnvelopeOpen, HiInformationCircle } from 'react-icons/hi2';
 import { useRecoilState } from 'recoil';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
@@ -36,7 +47,7 @@ const schema = yupResolver(
       description: yup.string().min(2).max(50).required('Required field'),
       dispatcher: yup.string().required('Required field'),
       type: yup.string().required('Required field'),
-      response: yup.string().max(255).nullable(),
+      response: yup.string().min(2).max(255).nullable(),
       discordType: yup.number().required('Required field'),
       options: yup.array().of(
         yup.object({
@@ -67,27 +78,18 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
     reset,
     handleSubmit,
     watch,
-    formState: { errors }
-  } = useForm<CommandModel>({ resolver: schema, defaultValues: state.command });
+    formState: { errors, isValid }
+  } = useForm<CommandModel>({ mode: 'all', resolver: schema, defaultValues: state.command });
   const { fields, append, remove, move } = useFieldArray({
     control,
     name: 'options'
   });
-
-  const watchDiscordType = watch('discordType');
+  const values = watch();
 
   // eslint-disable-next-line n/handle-callback-err
   const handleError = useErrorHandler((error: Error) => {});
 
   const toast = useToast();
-
-  useEffect(() => {
-    setState(prev => ({
-      ...prev,
-      register,
-      errors
-    }));
-  }, [register, errors, state.command]);
 
   const setCommand = (command: LoadCommandById.Model): void => {
     setState(prev => ({ ...prev, command }));
@@ -204,9 +206,7 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
     };
   }, [commandId]);
 
-  useEffect(() => {
-    setState(prev => ({ ...prev, discordType: watchDiscordType }));
-  }, [watchDiscordType]);
+  console.log({ values });
 
   return (
     <Content title="Command">
@@ -221,39 +221,78 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
               <Input
                 isDisabled={state.command.type === 'action'}
                 type="text"
-                name="command"
                 placeholder="Command"
                 icon={<CommandsIcon />}
+                errors={errors}
+                {...register('command')}
               />
               <Input
                 isDisabled={state.command.type === 'action'}
                 type="text"
-                name="description"
                 placeholder="Description"
                 icon={<DescriptionIcon />}
+                errors={errors}
+                {...register('description')}
               />
             </Flex>
             <Input
               isDisabled={state.command.type === 'action'}
               type="text"
-              name="response"
               placeholder="Response"
               icon={<ResponseIcon />}
+              errors={errors}
+              {...register('response')}
             />
             <Flex gap={2}>
-              <Select isDisabled={state.command.type === 'action'} name="type" placeholder="Type" options={state.types} />
-              <Select
-                isDisabled={state.command.type === 'action'}
+              <Controller
+                control={control}
+                name="type"
+                render={({ field: { onChange, value, name } }) => (
+                  <Select
+                    disabled={state.command.type === 'action'}
+                    name={name}
+                    onChange={onChange}
+                    value={state.types.find(item => item.value === value)}
+                    options={state.types}
+                    placeholder="Type"
+                    errors={errors}
+                  />
+                )}
+              />
+              <Controller
+                control={control}
                 name="dispatcher"
-                placeholder="Dispatcher"
-                options={state.dispatchers}
+                render={({ field: { onChange, value, name } }) => (
+                  <Select
+                    disabled={state.command.type === 'action'}
+                    name={name}
+                    onChange={onChange}
+                    value={state.dispatchers.find(item => item.value === value)}
+                    options={state.dispatchers}
+                    placeholder="Dispatcher"
+                    errors={errors}
+                  />
+                )}
               />
             </Flex>
             <Flex justifyContent="space-between">
               <Heading size="md">Discord Properties</Heading>
               <DiscordStatusBadge value={state.command.discordStatus} />
             </Flex>
-            <Select name="discordType" placeholder="Type" options={state.applicationCommandTypes} />
+            <Controller
+              control={control}
+              name="discordType"
+              render={({ field: { onChange, value, name } }) => (
+                <Select
+                  name={name}
+                  onChange={onChange}
+                  value={state.applicationCommandTypes.find(item => item.value === value?.toString())}
+                  options={state.applicationCommandTypes}
+                  placeholder="Type"
+                  errors={errors}
+                />
+              )}
+            />
             <Flex justifyContent="space-between">
               <Heading size="sm">Options</Heading>
               <IconButton
@@ -274,15 +313,25 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
                     <Input
                       bgColor={optionInputColor}
                       type="text"
-                      name={`options.${index}.name`}
                       placeholder="Name"
                       icon={<CommandsIcon />}
+                      errors={errors}
+                      {...register(`options.${index}.name`)}
                     />
-                    <Select
-                      bgColor={optionInputColor}
+                    <Controller
+                      control={control}
                       name={`options.${index}.type`}
-                      placeholder="Type"
-                      options={state.commandOptionTypes}
+                      render={({ field: { onChange, value, name } }) => (
+                        <Select
+                          bgColor={optionInputColor}
+                          name={name}
+                          onChange={onChange}
+                          value={state.commandOptionTypes.find(item => item.value === value?.toString())}
+                          options={state.commandOptionTypes}
+                          placeholder="Type"
+                          errors={errors}
+                        />
+                      )}
                     />
                     <HStack position="absolute" right={4} top={3}>
                       {index > 0 && (
@@ -324,9 +373,10 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
                     <Input
                       bgColor={optionInputColor}
                       type="text"
-                      name={`options.${index}.description`}
                       placeholder="Description"
                       icon={<DescriptionIcon />}
+                      errors={errors}
+                      {...register(`options.${index}.description`)}
                     />
                     <Controller
                       name={`options.${index}.required`}
@@ -338,14 +388,29 @@ export default function Command({ commandId, loadCommandById, saveCommand, socke
                       )}
                     />
                   </Flex>
-                  <Choices optionInputColor={optionInputColor} control={control} nestIndex={index} />
+                  <Choices
+                    optionInputColor={optionInputColor}
+                    control={control}
+                    nestIndex={index}
+                    register={register}
+                    errors={errors}
+                  />
                 </Stack>
               ))}
             </Stack>
 
             <Divider />
             <Flex>
-              <SubmitButton text="Save" icon={<CheckIcon />} />
+              <Button
+                isDisabled={!isValid}
+                variant="solid"
+                w="full"
+                leftIcon={<CheckIcon />}
+                data-testid="submit"
+                type="submit"
+              >
+                Save
+              </Button>
             </Flex>
           </Stack>
         </form>

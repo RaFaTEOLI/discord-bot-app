@@ -1,7 +1,6 @@
 import { Helper, renderWithHistory } from '@/presentation/mocks';
 import { screen, waitFor } from '@testing-library/react';
 import { createMemoryHistory, MemoryHistory } from 'history';
-import { setTimeout } from 'timers/promises';
 import userEvent from '@testing-library/user-event';
 import Commands from './commands';
 import { AccountModel, CommandDiscordStatus, CommandModel } from '@/domain/models';
@@ -82,10 +81,12 @@ describe('Commands Component', () => {
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
     expect(commandForm).toBeTruthy();
-    Helper.testValueForField('command', loadCommandsSpy.commands[0].command);
-    Helper.testValueForField('description', loadCommandsSpy.commands[0].description);
-    Helper.testValueForField('type', loadCommandsSpy.commands[0].type);
-    Helper.testValueForField('dispatcher', loadCommandsSpy.commands[0].dispatcher);
+    await waitFor(() => {
+      Helper.testValueForField('command', loadCommandsSpy.commands[0].command);
+      Helper.testValueForField('description', loadCommandsSpy.commands[0].description);
+      Helper.testValueForField('type', loadCommandsSpy.commands[0].type);
+      Helper.testValueForField('dispatcher', loadCommandsSpy.commands[0].dispatcher);
+    });
   });
 
   test('should call LoadCommands', async () => {
@@ -110,9 +111,10 @@ describe('Commands Component', () => {
     vi.spyOn(loadCommandsSpy, 'all').mockRejectedValueOnce(new AccessDeniedError());
     const { setCurrentAccountMock, history } = makeSut(loadCommandsSpy);
     await waitFor(() => screen.getByRole('heading'));
-    await setTimeout(500);
-    expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
-    expect(history.location.pathname).toBe('/login');
+    await waitFor(() => {
+      expect(setCurrentAccountMock).toHaveBeenCalledWith(undefined);
+      expect(history.location.pathname).toBe('/login');
+    });
   });
 
   test('should call LoadSurveyList on reload', async () => {
@@ -131,9 +133,11 @@ describe('Commands Component', () => {
     await waitFor(() => commandsList);
     const inputFilter = screen.getByTestId('filter-command-input');
     await userEvent.type(inputFilter, loadCommandsSpy.commands[1].command);
-    expect(commandsList.children).toHaveLength(1);
-    expect(commandsList.querySelector('.command-name')?.textContent).toBe(`!${loadCommandsSpy.commands[1].command}`);
-    expect(commandsList.querySelector('.command-description')?.textContent).toBe(loadCommandsSpy.commands[1].description);
+    await waitFor(() => {
+      expect(commandsList.children).toHaveLength(1);
+      expect(commandsList.querySelector('.command-name')?.textContent).toBe(`!${loadCommandsSpy.commands[1].command}`);
+      expect(commandsList.querySelector('.command-description')?.textContent).toBe(loadCommandsSpy.commands[1].description);
+    });
   });
 
   test('should show all commands from CommandList if empty filter is provided', async () => {
@@ -142,7 +146,7 @@ describe('Commands Component', () => {
     await waitFor(() => commandsList);
     const inputFilter = screen.getByTestId('filter-command-input');
     await userEvent.type(inputFilter, ' ');
-    expect(commandsList.children).toHaveLength(4);
+    await waitFor(() => expect(commandsList.children).toHaveLength(4));
   });
 
   test('should show zero commands from CommandList if filter does not match with any command', async () => {
@@ -151,7 +155,7 @@ describe('Commands Component', () => {
     await waitFor(() => commandsList);
     const inputFilter = screen.getByTestId('filter-command-input');
     await userEvent.type(inputFilter, 'INVALID FILTER');
-    expect(commandsList.children).toHaveLength(0);
+    await waitFor(() => expect(commandsList.children).toHaveLength(0));
   });
 
   test('should only one command filtered from CommandList by command description', async () => {
@@ -160,9 +164,11 @@ describe('Commands Component', () => {
     await waitFor(() => commandsList);
     const inputFilter = screen.getByTestId('filter-command-input');
     await userEvent.type(inputFilter, loadCommandsSpy.commands[2].description);
-    expect(commandsList.children).toHaveLength(1);
-    expect(commandsList.querySelector('.command-name')?.textContent).toBe(`!${loadCommandsSpy.commands[2].command}`);
-    expect(commandsList.querySelector('.command-description')?.textContent).toBe(loadCommandsSpy.commands[2].description);
+    await waitFor(() => {
+      expect(commandsList.children).toHaveLength(1);
+      expect(commandsList.querySelector('.command-name')?.textContent).toBe(`!${loadCommandsSpy.commands[2].command}`);
+      expect(commandsList.querySelector('.command-description')?.textContent).toBe(loadCommandsSpy.commands[2].description);
+    });
   });
 
   test('should call DeleteCommand with correct values', async () => {
@@ -182,17 +188,22 @@ describe('Commands Component', () => {
     const confirmButton = await screen.findByTestId('confirmation-confirm-button');
     await waitFor(() => confirmButton);
     await userEvent.click(confirmButton);
-    await setTimeout(500);
-    expect(deleteCommandSpy.callsCount).toBe(1);
-    expect(deleteSpy).toHaveBeenCalledWith(loadCommandsSpy.commands[1].id);
+
+    await waitFor(() => {
+      expect(deleteCommandSpy.callsCount).toBe(1);
+      expect(deleteSpy).toHaveBeenCalledWith(loadCommandsSpy.commands[1].id);
+    });
+
     await waitFor(() => expect(screen.queryByTestId('form')).toBeFalsy());
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Deleted Command',
-      description: 'Your command was successfully deleted',
-      status: 'success',
-      duration: 9000,
-      isClosable: true,
-      position: 'top'
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Deleted Command',
+        description: 'Your command was successfully deleted',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
     });
   });
 
@@ -210,12 +221,13 @@ describe('Commands Component', () => {
     const confirmButton = await screen.findByTestId('confirmation-confirm-button');
     await waitFor(() => confirmButton);
     await userEvent.click(confirmButton);
-    await setTimeout(1000);
     await waitFor(() => expect(screen.queryByTestId('form')).toBeFalsy());
     await waitFor(() => screen.getByTestId('error'));
-    expect(screen.queryByTestId('commands-list')).toBeFalsy();
-    const errorWrap = await screen.findByTestId('error');
-    expect(errorWrap.textContent).toBe(`${error.message}Try again`);
+    await waitFor(async () => {
+      expect(screen.queryByTestId('commands-list')).toBeFalsy();
+      const errorWrap = await screen.findByTestId('error');
+      expect(errorWrap.textContent).toBe(`${error.message}Try again`);
+    });
   });
 
   test('should call RunCommand with correct values', async () => {
@@ -229,16 +241,17 @@ describe('Commands Component', () => {
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
     await userEvent.click(commandsList.querySelectorAll('.command-run-button')[1]);
-    await setTimeout(500);
-    expect(runCommandSpy.callsCount).toBe(1);
-    expect(runSpy).toHaveBeenCalledWith(loadCommandsSpy.commands[1].command);
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Run Command',
-      description: 'Your command was successfully run',
-      status: 'success',
-      duration: 9000,
-      isClosable: true,
-      position: 'top'
+    await waitFor(() => {
+      expect(runCommandSpy.callsCount).toBe(1);
+      expect(runSpy).toHaveBeenCalledWith(loadCommandsSpy.commands[1].command);
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Run Command',
+        description: 'Your command was successfully run',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
     });
   });
 
@@ -249,14 +262,15 @@ describe('Commands Component', () => {
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
     await userEvent.click(commandsList.querySelectorAll('.command-run-button')[1]);
-    await setTimeout(1000);
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Run Command',
-      description: 'There was an error while trying to run your command!',
-      status: 'error',
-      duration: 9000,
-      isClosable: true,
-      position: 'top'
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Run Command',
+        description: 'There was an error while trying to run your command!',
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+        position: 'top'
+      });
     });
   });
 
@@ -269,8 +283,7 @@ describe('Commands Component', () => {
     await waitFor(() => commandForm);
     expect(commandForm).toBeTruthy();
     await userEvent.click(screen.getByTestId('close-modal'));
-    await setTimeout(500);
-    expect(screen.queryByTestId('form')).toBeFalsy();
+    await waitFor(() => expect(screen.queryByTestId('form')).toBeFalsy());
   });
 
   test('should navigate to Command page on edit', async () => {
@@ -281,10 +294,9 @@ describe('Commands Component', () => {
     await userEvent.click(commandsList.querySelectorAll('.command-view-button')[1]);
     const commandForm = await screen.findByTestId('form');
     await waitFor(() => commandForm);
-    await setTimeout(500);
-    expect(commandForm).toBeTruthy();
+    await waitFor(() => expect(commandForm).toBeTruthy());
     await userEvent.click(screen.getByTestId('custom-button'));
-    expect(history.location.pathname).toBe(`/commands/${loadCommandsSpy.commands[1].id}`);
+    await waitFor(() => expect(history.location.pathname).toBe(`/commands/${loadCommandsSpy.commands[1].id}`));
   });
 
   test('should navigate to Command page on edit', async () => {
@@ -292,7 +304,7 @@ describe('Commands Component', () => {
     const commandsList = await screen.findByTestId('commands-list');
     await waitFor(() => commandsList);
     await userEvent.click(screen.getByTestId('new-command'));
-    expect(history.location.pathname).toBe('/commands/new');
+    await waitFor(() => expect(history.location.pathname).toBe('/commands/new'));
   });
 
   test('should show discord slash command badge', async () => {

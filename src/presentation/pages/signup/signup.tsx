@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
-import { signUpState, Input, SubmitButton, FormStatus, SignUpSpotifyButton } from './components';
-import { currentAccountState, Switcher } from '@/presentation/components';
+import { signUpState, FormStatus } from './components';
+import { currentAccountState, Input, SpotifyButton, Switcher } from '@/presentation/components';
 import { AddAccount, SpotifyAuthorize } from '@/domain/usecases';
 import { useRecoilState, useRecoilValue, useResetRecoilState } from 'recoil';
-import { Flex, Heading, Box, Stack, Avatar, useColorModeValue, chakra } from '@chakra-ui/react';
+import { Flex, Heading, Box, Stack, Avatar, useColorModeValue, chakra, Button } from '@chakra-ui/react';
 import { FiLock, FiMail, FiCheck, FiUser } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -48,8 +48,9 @@ const SignUp: React.FC<Props> = ({ addAccount, spotifyAuthorize }: Props) => {
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors, isValid }
   } = useForm<AddAccount.Params>({
+    mode: 'all',
     defaultValues: {
       email: '',
       password: ''
@@ -58,13 +59,6 @@ const SignUp: React.FC<Props> = ({ addAccount, spotifyAuthorize }: Props) => {
   });
 
   useEffect(() => resetSignUpState(), []);
-  useEffect(() => {
-    setState(prev => ({
-      ...prev,
-      register,
-      errors
-    }));
-  }, [register, errors]);
 
   const onSubmit = handleSubmit(async data => {
     try {
@@ -112,17 +106,35 @@ const SignUp: React.FC<Props> = ({ addAccount, spotifyAuthorize }: Props) => {
             <form style={{ width: '100%' }} data-testid="form" onSubmit={onSubmit}>
               <Box w="full" px="8" borderRadius="10px">
                 <Stack spacing={4} py="6">
-                  <Input type="text" name="name" placeholder="Name" icon={<CFiUser />} />
-                  <Input type="email" name="email" placeholder="E-mail" icon={<CFiMail />} />
-                  <Input type="password" name="password" placeholder="Password" icon={<CFiLock />} />
+                  <Input type="text" placeholder="Name" icon={<CFiUser />} errors={errors} {...register('name')} />
+                  <Input type="email" placeholder="E-mail" icon={<CFiMail />} errors={errors} {...register('email')} />
                   <Input
                     type="password"
-                    name="passwordConfirmation"
+                    placeholder="Password"
+                    icon={<CFiLock />}
+                    errors={errors}
+                    {...register('password')}
+                  />
+                  <Input
+                    type="password"
                     placeholder="Password Confirmation"
                     icon={<CFiLock />}
+                    errors={errors}
+                    {...register('passwordConfirmation')}
                   />
-                  <SubmitButton text="Sign Up" icon={<CFiCheck />} />
-                  <SignUpSpotifyButton onClick={onSpotifySignUp} text="Sign Up with Spotify" />
+
+                  <Button
+                    isDisabled={!isValid}
+                    variant="solid"
+                    w="full"
+                    leftIcon={<CFiCheck />}
+                    data-testid="submit"
+                    type="submit"
+                    isLoading={state.isLoading}
+                  >
+                    Sign Up
+                  </Button>
+                  <SpotifyButton onClick={onSpotifySignUp} isLoading={state.isLoading} text="Sign Up with Spotify" />
                   <FormStatus />
                   <Flex justifyContent="space-between" alignItems="center">
                     <Box display="flex" flexDir="column">

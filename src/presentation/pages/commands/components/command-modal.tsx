@@ -14,12 +14,12 @@ import { FiEdit } from 'react-icons/fi';
 import { HiCommandLine, HiEnvelopeOpen, HiInformationCircle } from 'react-icons/hi2';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { commandsState } from '@/presentation/pages/commands/components';
-import Input from './input';
 import Button from './button';
-import Select from './select';
 import DeleteButton from './delete-button';
-import { ConfirmationModal, currentAccountState } from '@/presentation/components';
+import { ConfirmationModal, currentAccountState, Input, Select } from '@/presentation/components';
 import { useNavigate } from 'react-router';
+import { Control, Controller, FieldErrors } from 'react-hook-form';
+import { CommandModel } from '@/domain/models';
 
 const CommandsIcon = chakra(HiCommandLine);
 const DescriptionIcon = chakra(HiInformationCircle);
@@ -30,9 +30,12 @@ export type Props = {
   isOpen: boolean;
   onClose: () => void;
   onDelete: () => Promise<void>;
+  errors: FieldErrors;
+  control: Control<CommandModel>;
+  register: any;
 };
 
-const CommandModal = ({ isOpen, onClose, onDelete }: Props): JSX.Element => {
+const CommandModal = ({ isOpen, onClose, onDelete, errors, control, register }: Props): JSX.Element => {
   const navigate = useNavigate();
   const [state] = useRecoilState(commandsState);
   const { getCurrentAccount } = useRecoilValue(currentAccountState);
@@ -53,11 +56,64 @@ const CommandModal = ({ isOpen, onClose, onDelete }: Props): JSX.Element => {
             <ModalCloseButton data-testid="close-modal" />
             <ModalBody>
               <Stack spacing={4}>
-                <Input isDisabled type="text" name="command" placeholder="Command" icon={<CommandsIcon />} />
-                <Input isDisabled type="text" name="description" placeholder="Description" icon={<DescriptionIcon />} />
-                <Input isDisabled type="text" name="response" placeholder="Response" icon={<ResponseIcon />} />
-                <Select isDisabled name="type" placeholder="Type" options={state.types} />
-                <Select isDisabled name="dispatcher" placeholder="Dispatcher" options={state.dispatchers} />
+                <Input
+                  isDisabled
+                  type="text"
+                  placeholder="Command"
+                  icon={<CommandsIcon />}
+                  errors={errors}
+                  {...register('command')}
+                />
+
+                <Input
+                  isDisabled
+                  type="text"
+                  placeholder="Description"
+                  icon={<DescriptionIcon />}
+                  errors={errors}
+                  {...register('description')}
+                />
+
+                <Input
+                  isDisabled
+                  type="text"
+                  placeholder="Response"
+                  icon={<ResponseIcon />}
+                  errors={errors}
+                  {...register('response')}
+                />
+
+                <Controller
+                  control={control}
+                  name="type"
+                  render={({ field: { onChange, value, name } }) => (
+                    <Select
+                      isDisabled
+                      name={name}
+                      onChange={onChange}
+                      value={state.types.find(item => item.value === value)}
+                      options={state.types}
+                      placeholder="Type"
+                      errors={errors}
+                    />
+                  )}
+                />
+
+                <Controller
+                  control={control}
+                  name="dispatcher"
+                  render={({ field: { onChange, value, name } }) => (
+                    <Select
+                      isDisabled
+                      name={name}
+                      onChange={onChange}
+                      value={state.dispatchers.find(item => item.value === value)}
+                      options={state.dispatchers}
+                      placeholder="Dispatcher"
+                      errors={errors}
+                    />
+                  )}
+                />
               </Stack>
             </ModalBody>
 

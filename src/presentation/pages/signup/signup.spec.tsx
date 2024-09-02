@@ -6,7 +6,6 @@ import { EmailAlreadyBeingUsedError } from '@/domain/errors';
 import { createMemoryHistory } from 'history';
 import { AddAccountSpy, SpotifyAuthorizeSpy } from '@/domain/mocks';
 import { AddAccount } from '@/domain/usecases';
-import { signUpState } from './components';
 import userEvent from '@testing-library/user-event';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 
@@ -17,38 +16,13 @@ type SutTypes = {
 };
 
 const history = createMemoryHistory({ initialEntries: ['/signup'] });
-const makeSut = (invalidForm = false): SutTypes => {
+const makeSut = (): SutTypes => {
   const addAccountSpy = new AddAccountSpy();
   const spotifyAuthorizeSpy = new SpotifyAuthorizeSpy();
   const { setCurrentAccountMock } = renderWithHistory({
     history,
     useAct: true,
-    Page: () => SignUp({ addAccount: addAccountSpy, spotifyAuthorize: spotifyAuthorizeSpy }),
-    ...(invalidForm && {
-      states: [
-        {
-          atom: signUpState,
-          value: {
-            isLoading: false,
-            mainError: '',
-            errors: {
-              name: {
-                message: 'Required field'
-              },
-              email: {
-                message: 'Required field'
-              },
-              password: {
-                message: 'Required field'
-              },
-              passwordConfirmation: {
-                message: 'Required field'
-              }
-            }
-          }
-        }
-      ]
-    })
+    Page: () => SignUp({ addAccount: addAccountSpy, spotifyAuthorize: spotifyAuthorizeSpy })
   });
   return { addAccountSpy, setCurrentAccountMock, spotifyAuthorizeSpy };
 };
@@ -58,15 +32,19 @@ const simulateValidSubmit = async (
   email = faker.internet.email(),
   password = faker.internet.password()
 ): Promise<void> => {
-  Helper.populateField('name', name);
-  Helper.populateField('email', email);
-  Helper.populateField('password', password);
-  Helper.populateField('passwordConfirmation', password);
+  await Helper.asyncPopulateField('name', name);
+  await Helper.asyncPopulateField('email', email);
+  await Helper.asyncPopulateField('password', password);
+  await Helper.asyncPopulateField('passwordConfirmation', password);
   const submitButton = await waitFor(() => screen.getByTestId('submit'));
   await userEvent.click(submitButton);
 };
 
 const simulateInvalidSubmit = async (): Promise<void> => {
+  await userEvent.click(screen.getByTestId('name'));
+  await userEvent.click(screen.getByTestId('email'));
+  await userEvent.click(screen.getByTestId('password'));
+  await userEvent.click(screen.getByTestId('passwordConfirmation'));
   const submitButton = screen.getByTestId('submit');
   await userEvent.click(submitButton);
 };
@@ -82,36 +60,46 @@ describe('SignUp Component', () => {
   });
 
   test('should show form error if validation fails', async () => {
-    makeSut(true);
+    makeSut();
     await simulateInvalidSubmit();
-    Helper.testStatusForField('name', 'Required field');
-    Helper.testStatusForField('email', 'Required field');
-    Helper.testStatusForField('password', 'Required field');
-    Helper.testStatusForField('passwordConfirmation', 'Required field');
+    await waitFor(() => {
+      Helper.testStatusForField('name', 'Required field');
+      Helper.testStatusForField('email', 'Required field');
+      Helper.testStatusForField('password', 'Required field');
+      Helper.testStatusForField('passwordConfirmation', 'Required field');
+    });
   });
 
-  test('should show valid name state if validation succeeds', () => {
+  test('should show valid name state if validation succeeds', async () => {
     makeSut();
-    Helper.populateField('name');
-    Helper.testStatusForField('name');
+    await waitFor(() => {
+      Helper.populateField('name');
+      Helper.testStatusForField('name');
+    });
   });
 
-  test('should show valid email state if validation succeeds', () => {
+  test('should show valid email state if validation succeeds', async () => {
     makeSut();
-    Helper.populateField('email');
-    Helper.testStatusForField('email');
+    await waitFor(() => {
+      Helper.populateField('email');
+      Helper.testStatusForField('email');
+    });
   });
 
-  test('should show valid password state if validation succeeds', () => {
+  test('should show valid password state if validation succeeds', async () => {
     makeSut();
-    Helper.populateField('password');
-    Helper.testStatusForField('password');
+    await waitFor(() => {
+      Helper.populateField('password');
+      Helper.testStatusForField('password');
+    });
   });
 
-  test('should show valid passwordConfirmation state if validation succeeds', () => {
+  test('should show valid passwordConfirmation state if validation succeeds', async () => {
     makeSut();
-    Helper.populateField('passwordConfirmation');
-    Helper.testStatusForField('passwordConfirmation');
+    await waitFor(() => {
+      Helper.populateField('passwordConfirmation');
+      Helper.testStatusForField('passwordConfirmation');
+    });
   });
 
   test('should call AddAccount with correct value', async () => {
@@ -137,7 +125,7 @@ describe('SignUp Component', () => {
   });
 
   test('should not call AddAccount if form is invalid', async () => {
-    const { addAccountSpy } = makeSut(true);
+    const { addAccountSpy } = makeSut();
     await simulateInvalidSubmit();
     expect(addAccountSpy.callsCount).toBe(0);
   });

@@ -80,11 +80,13 @@ describe('Discord Commands', () => {
     await waitFor(() => commandsList);
     const inputFilter = screen.getByTestId('filter-command-input');
     await userEvent.type(inputFilter, loadDiscordCommandsSpy.commands[1].name);
-    expect(commandsList.children).toHaveLength(1);
-    expect(commandsList.querySelector('.command-name')?.textContent).toBe(`${loadDiscordCommandsSpy.commands[1].name}`);
-    expect(commandsList.querySelector('.command-description')?.textContent).toBe(
-      loadDiscordCommandsSpy.commands[1].description
-    );
+    await waitFor(() => {
+      expect(commandsList.children).toHaveLength(1);
+      expect(commandsList.querySelector('.command-name')?.textContent).toBe(`${loadDiscordCommandsSpy.commands[1].name}`);
+      expect(commandsList.querySelector('.command-description')?.textContent).toBe(
+        loadDiscordCommandsSpy.commands[1].description
+      );
+    });
   });
 
   test('should show all commands from CommandList if empty filter is provided', async () => {
