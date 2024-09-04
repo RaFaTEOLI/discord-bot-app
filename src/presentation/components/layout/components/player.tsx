@@ -91,6 +91,7 @@ export default function Player({
   const [sliding, setSliding] = useState<boolean>(false);
   const [skippedIndex, setSkippedIndex] = useState<number>(1);
   const [queue, setQueue] = useState(state.queue);
+  const dragColor = useColorModeValue('gray.500', 'white');
 
   const [hoveredIndex, setHoveredIndex] = useState<number | undefined>(undefined);
 
@@ -185,7 +186,7 @@ export default function Player({
       {...provided.dragHandleProps}
     >
       <Box gap={3} w="100%" display="flex" alignItems="center">
-        <DragIcon size={45} color={snapshot.isDragging ? 'gray.500' : 'white'} />
+        <DragIcon size={45} color={snapshot.isDragging ? 'gray.500' : dragColor} />
         <ChakraIconButton
           className="song-play-button"
           variant="solid"

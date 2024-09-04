@@ -55,12 +55,13 @@ export default function TrackList({ tracks, gridTableFontSize, handlePrePlay }: 
 
       <VStack
         position="absolute"
-        top={[300, 300, 350, 410, 260]}
+        top={[160, 180, 180, 180, 180]}
         bottom={0}
         w="100%"
         justifyContent="flex-start"
         overflowY="scroll"
         data-testid="tracks-list"
+        px={10}
       >
         {tracks.map((trackInfo: any) => (
           <Grid

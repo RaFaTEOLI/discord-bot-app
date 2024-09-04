@@ -1,12 +1,12 @@
 import { Flex, Button, InputGroup, InputLeftElement, Input, chakra } from '@chakra-ui/react';
 import { HiMagnifyingGlass } from 'react-icons/hi2';
-import { useSetRecoilState } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { searchState } from './atom';
 
 const CSearchIcon = chakra(HiMagnifyingGlass);
 
 const SearchContainer = ({ onClick }: { onClick: () => Promise<void> }): JSX.Element => {
-  const setState = useSetRecoilState(searchState);
+  const [state, setState] = useRecoilState(searchState);
 
   return (
     <Flex>
@@ -23,6 +23,7 @@ const SearchContainer = ({ onClick }: { onClick: () => Promise<void> }): JSX.Ele
           title="Search"
           placeholder="Search..."
           data-testid="search-song-input"
+          value={state.value}
           onChange={event => setState(prev => ({ ...prev, value: event.target.value }))}
         />
       </InputGroup>
