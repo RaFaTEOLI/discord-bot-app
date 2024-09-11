@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { GetStorage } from '@/data/protocols/cache';
+import { GetStorage, SetStorage } from '@/data/protocols/cache';
 import { faker } from '@faker-js/faker';
 
 export class GetStorageSpy implements GetStorage {
@@ -9,5 +9,15 @@ export class GetStorageSpy implements GetStorage {
   get(key: string): any {
     this.key = key;
     return this.value;
+  }
+}
+
+export class SetStorageSpy implements SetStorage {
+  key: string | undefined;
+  value: any = faker.datatype.json();
+
+  set(key: string, value: string | undefined): void {
+    this.key = key;
+    this.value = value;
   }
 }
