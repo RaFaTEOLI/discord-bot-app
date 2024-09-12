@@ -16,7 +16,8 @@ const makeSut = (): SutTypes => {
   const getStorageSpy = new GetStorageSpy();
   const setStorageSpy = new SetStorageSpy();
   const httpClientSpy = new HttpClientSpy();
-  const sut = new SpotifyHttpClientDecorator(getStorageSpy, setStorageSpy, httpClientSpy);
+  const url = faker.internet.url();
+  const sut = new SpotifyHttpClientDecorator(getStorageSpy, setStorageSpy, httpClientSpy, url);
   return {
     sut,
     getStorageSpy,
@@ -107,7 +108,7 @@ describe('SpotifyHttpClientDecorator', () => {
       statusCode: HttpStatusCode.success,
       body: {
         accessToken: guestToken,
-        accessTokenExpirationTimestampMs: Date.now() + 1000
+        expiresAt: Date.now() + 1000
       }
     };
 
@@ -175,7 +176,7 @@ describe('SpotifyHttpClientDecorator', () => {
       statusCode: HttpStatusCode.success,
       body: {
         accessToken: newGuestToken,
-        accessTokenExpirationTimestampMs: Date.now() + 1000
+        expiresAt: Date.now() + 1000
       }
     };
 

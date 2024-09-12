@@ -6,7 +6,8 @@ export class SpotifyHttpClientDecorator implements HttpClient {
   constructor(
     private readonly getStorage: GetStorage,
     private readonly setStorage: SetStorage,
-    private readonly httpClient: HttpClient
+    private readonly httpClient: HttpClient, // TODO: Replace this httpClient with a usecase
+    private readonly url: string
   ) {}
 
   async getSpotifyAccessToken(data: HttpRequest): Promise<string | null> {
@@ -23,7 +24,7 @@ export class SpotifyHttpClientDecorator implements HttpClient {
       if (Date.now() > guessTokenObj?.expiresAt || !guessTokenObj?.guestToken) {
         try {
           const response = await this.httpClient.request({
-            url: process.env.VITE_SPOTIFY_GUESS_TOKEN_URL as string,
+            url: this.url,
             method: 'get'
           });
           if (response.statusCode === 200 && response.body?.accessToken) {
@@ -31,7 +32,7 @@ export class SpotifyHttpClientDecorator implements HttpClient {
               process.env.VITE_LOCAL_STORAGE_GUEST_SPOTIFY_IDENTIFIER as string,
               JSON.stringify({
                 guestToken: response.body.accessToken,
-                expiresAt: response.body.accessTokenExpirationTimestampMs
+                expiresAt: response.body.expiresAt
               })
             );
             return response.body.accessToken;
