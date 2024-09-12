@@ -27,10 +27,7 @@ describe('AuthorizeHttpClientDecorator', () => {
     const { sut, getStorageSpy } = makeSut();
     const getSpy = vi.spyOn(getStorageSpy, 'get');
     await sut.request(mockHttpRequest());
-    const calls = [
-      [process.env.VITE_LOCAL_STORAGE_TOKEN_IDENTIFIER as string],
-      [process.env.VITE_LOCAL_STORAGE_SPOTIFY_IDENTIFIER as string]
-    ];
+    const calls = [[process.env.VITE_LOCAL_STORAGE_TOKEN_IDENTIFIER as string]];
     expect(getSpy.mock.calls).toEqual(calls);
   });
 
@@ -78,22 +75,6 @@ describe('AuthorizeHttpClientDecorator', () => {
     expect(httpClientSpy.method).toBe(httpRequest.method);
     expect(httpClientSpy.headers).toEqual({
       'x-access-token': getStorageSpy.value as string
-    });
-  });
-
-  test('should add spotify token to HttpClient when url is from spotify', async () => {
-    const { sut, getStorageSpy, httpClientSpy } = makeSut();
-    const spotifyAccount = mockAccountWithSpotifyModel().user.spotify;
-    getStorageSpy.value = JSON.stringify(spotifyAccount);
-    const httpRequest: HttpRequest = {
-      url: 'https://api.spotify.com/',
-      method: faker.helpers.arrayElement(['get', 'post', 'put', 'delete'])
-    };
-    await sut.request(httpRequest);
-    expect(httpClientSpy.url).toBe(httpRequest.url);
-    expect(httpClientSpy.method).toBe(httpRequest.method);
-    expect(httpClientSpy.headers).toEqual({
-      Authorization: `Bearer ${spotifyAccount?.accessToken as string}`
     });
   });
 
